@@ -525,13 +525,13 @@
     "semantic_hash": "f0402b67b6ce880f65666bb49e841696"
   },
   "src/components/editor/TagBar.tsx": {
-    "mtime": 1785988447.7111824,
-    "ast_hash": "17d881d047ae87d7d6567c74bf3dafac",
+    "mtime": 1785987583.339115,
+    "ast_hash": "ade924a13141071f03e7b0348e3d7534",
     "semantic_hash": ""
   },
   "src/components/notes/TagList.tsx": {
-    "mtime": 1785988423.3554802,
-    "ast_hash": "2c89b9b3650223d5ef910dac1830113f",
+    "mtime": 1785987545.3313172,
+    "ast_hash": "10d05dfe24cb577d7ae1830df563532c",
     "semantic_hash": ""
   },
   "src/lib/tags.ts": {

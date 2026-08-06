@@ -25,6 +25,7 @@ pub struct NoteMetadata {
     pub title: String,
     pub preview: String,
     pub modified: i64,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -42,6 +43,7 @@ pub struct Note {
     pub content: String,
     pub path: String,
     pub modified: i64,
+    pub tags: Vec<String>,
 }
 
 // Theme color customization
@@ -135,6 +137,8 @@ pub struct Settings {
     pub custom_colors_light: Option<std::collections::HashMap<String, String>>,
     #[serde(rename = "customColorsDark")]
     pub custom_colors_dark: Option<std::collections::HashMap<String, String>>,
+    #[serde(rename = "tagColors")]
+    pub tag_colors: Option<std::collections::HashMap<String, String>>,
 }
 
 // Search result
@@ -500,6 +504,122 @@ fn generate_preview(content: &str) -> String {
         }
     }
     String::new()
+}
+
+// Utility: Extract the frontmatter block (without the surrounding `---` markers), if present
+fn frontmatter_block(content: &str) -> Option<&str> {
+    let trimmed = content.trim_start();
+    if trimmed.starts_with("---") {
+        if let Some(rest) = trimmed.strip_prefix("---") {
+            if let Some(end) = rest.find("\n---") {
+                return Some(&rest[..end]);
+            }
+        }
+    }
+    None
+}
+
+// Utility: Parse a `tags:` entry (flow-style `[a, b, "c d"]`) from frontmatter content
+fn parse_frontmatter_tags(content: &str) -> Vec<String> {
+    let Some(block) = frontmatter_block(content) else {
+        return Vec::new();
+    };
+
+    for line in block.lines() {
+        let trimmed = line.trim();
+        if let Some(value) = trimmed.strip_prefix("tags:") {
+            let value = value.trim();
+            let inner = value
+                .strip_prefix('[')
+                .and_then(|v| v.strip_suffix(']'))
+                .unwrap_or(value);
+
+            let mut seen: HashSet<String> = HashSet::new();
+            let mut tags: Vec<String> = Vec::new();
+            for entry in inner.split(',') {
+                let mut tag = entry.trim();
+                if (tag.starts_with('"') && tag.ends_with('"') && tag.len() >= 2)
+                    || (tag.starts_with('\'') && tag.ends_with('\'') && tag.len() >= 2)
+                {
+                    tag = &tag[1..tag.len() - 1];
+                }
+                let tag = tag.trim();
+                if tag.is_empty() {
+                    continue;
+                }
+                if seen.insert(tag.to_string()) {
+                    tags.push(tag.to_string());
+                }
+            }
+            return tags;
+        }
+    }
+
+    Vec::new()
+}
+
+// Serialize a single tag as a bare word or a quoted string if it needs escaping
+fn serialize_tag(tag: &str) -> String {
+    let is_bare = !tag.is_empty()
+        && tag
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_');
+    if is_bare {
+        tag.to_string()
+    } else {
+        format!("\"{}\"", tag.replace('"', "\\\""))
+    }
+}
+
+// Utility: Set/replace the `tags:` entry in frontmatter, adding or removing the block as needed
+fn set_frontmatter_tags(content: &str, tags: &[String]) -> String {
+    let new_tags_line = format!(
+        "tags: [{}]",
+        tags.iter().map(|t| serialize_tag(t)).collect::<Vec<_>>().join(", ")
+    );
+
+    let trimmed = content.trim_start();
+    if trimmed.starts_with("---") {
+        if let Some(rest) = trimmed.strip_prefix("---") {
+            if let Some(end) = rest.find("\n---") {
+                let raw_block = &rest[..end];
+                let block = raw_block
+                    .strip_prefix("\r\n")
+                    .or_else(|| raw_block.strip_prefix('\n'))
+                    .unwrap_or(raw_block);
+                let after_close = &rest[end + 4..];
+                let body = after_close
+                    .strip_prefix("\r\n")
+                    .or_else(|| after_close.strip_prefix('\n'))
+                    .unwrap_or(after_close);
+
+                let mut new_block_lines: Vec<String> = Vec::new();
+                let mut replaced = false;
+                for line in block.lines() {
+                    if line.trim_start().starts_with("tags:") {
+                        replaced = true;
+                        if !tags.is_empty() {
+                            new_block_lines.push(new_tags_line.clone());
+                        }
+                    } else {
+                        new_block_lines.push(line.to_string());
+                    }
+                }
+                if !replaced && !tags.is_empty() {
+                    new_block_lines.push(new_tags_line.clone());
+                }
+
+                let block_content = new_block_lines.join("\n");
+                return format!("---\n{}\n---\n{}", block_content, body);
+            }
+        }
+    }
+
+    if tags.is_empty() {
+        content.to_string()
+    } else {
+        format!("---\n{}\n---\n\n{}", new_tags_line, content)
+    }
 }
 
 // Strip common markdown formatting from text
@@ -911,7 +1031,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
     let path_clone = path.clone();
     let discovered = tokio::task::spawn_blocking(move || {
         use walkdir::WalkDir;
-        let mut results: Vec<(String, String, String, i64)> = Vec::new();
+        let mut results: Vec<(String, String, String, i64, Vec<String>)> = Vec::new();
         for entry in WalkDir::new(&path_clone)
             .max_depth(10)
             .into_iter()
@@ -933,7 +1053,8 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                         .unwrap_or(0);
                     let title = extract_title(&content);
                     let preview = generate_preview(&content);
-                    results.push((id, title, preview, modified));
+                    let tags = parse_frontmatter_tags(&content);
+                    results.push((id, title, preview, modified, tags));
                 }
             }
         }
@@ -944,11 +1065,12 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
 
     let mut notes: Vec<NoteMetadata> = discovered
         .into_iter()
-        .map(|(id, title, preview, modified)| NoteMetadata {
+        .map(|(id, title, preview, modified, tags)| NoteMetadata {
             id,
             title,
             preview,
             modified,
+            tags,
         })
         .collect();
 
@@ -1016,12 +1138,15 @@ async fn read_note(id: String, state: State<'_, AppState>) -> Result<Note, Strin
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
 
+    let tags = parse_frontmatter_tags(&content);
+
     Ok(Note {
         id,
         title: extract_title(&content),
         content,
         path: file_path.to_string_lossy().into_owned(),
         modified,
+        tags,
     })
 }
 
@@ -1133,12 +1258,15 @@ async fn save_note(
         cache.remove(old_id_str);
     }
 
+    let tags = parse_frontmatter_tags(&content);
+
     Ok(Note {
         id: final_id,
         title,
         content,
         path: file_path.to_string_lossy().into_owned(),
         modified,
+        tags,
     })
 }
 
@@ -1274,6 +1402,7 @@ async fn create_note(target_folder: Option<String>, state: State<'_, AppState>) 
         content,
         path: file_path.to_string_lossy().into_owned(),
         modified,
+        tags: Vec::new(),
     })
 }
 
@@ -1742,6 +1871,168 @@ async fn move_folder(
 }
 
 #[tauri::command]
+async fn set_note_tags(
+    id: String,
+    tags: Vec<String>,
+    state: State<'_, AppState>,
+) -> Result<Note, String> {
+    let folder = {
+        let app_config = state.app_config.read().expect("app_config read lock");
+        app_config
+            .notes_folder
+            .clone()
+            .ok_or("Notes folder not set")?
+    };
+
+    let folder_path = PathBuf::from(&folder);
+    let file_path = abs_path_from_id(&folder_path, &id)?;
+    if !file_path.exists() {
+        return Err("Note not found".to_string());
+    }
+
+    let content = fs::read_to_string(&file_path)
+        .await
+        .map_err(|e| e.to_string())?;
+    let new_content = set_frontmatter_tags(&content, &tags);
+
+    fs::write(&file_path, &new_content)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let metadata = fs::metadata(&file_path)
+        .await
+        .map_err(|e| e.to_string())?;
+    let modified = metadata
+        .modified()
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0);
+
+    let title = extract_title(&new_content);
+
+    // Update search index
+    {
+        let index = state.search_index.lock().expect("search index mutex");
+        if let Some(ref search_index) = *index {
+            let _ = search_index.index_note(&id, &title, &new_content, modified);
+        }
+    }
+
+    let final_tags = parse_frontmatter_tags(&new_content);
+
+    Ok(Note {
+        id,
+        title,
+        content: new_content,
+        path: file_path.to_string_lossy().into_owned(),
+        modified,
+        tags: final_tags,
+    })
+}
+
+#[tauri::command]
+async fn rename_tag(
+    old_name: String,
+    new_name: String,
+    state: State<'_, AppState>,
+) -> Result<u32, String> {
+    if old_name == new_name || new_name.is_empty() {
+        return Ok(0);
+    }
+
+    let folder = {
+        let app_config = state.app_config.read().expect("app_config read lock");
+        app_config
+            .notes_folder
+            .clone()
+            .ok_or("Notes folder not set")?
+    };
+
+    let path = PathBuf::from(&folder);
+    if !path.exists() {
+        return Ok(0);
+    }
+
+    let ignored_dirs = {
+        let settings = state.settings.read().expect("settings read lock");
+        get_effective_ignored_dirs(&settings)
+    };
+
+    let path_clone = path.clone();
+    let old_name_clone = old_name.clone();
+    let new_name_clone = new_name.clone();
+    let updated: Vec<(String, String, String, i64)> = tokio::task::spawn_blocking(move || {
+        use walkdir::WalkDir;
+        let mut results: Vec<(String, String, String, i64)> = Vec::new();
+        for entry in WalkDir::new(&path_clone)
+            .max_depth(10)
+            .into_iter()
+            .filter_entry(|e| is_visible_notes_entry(e, &ignored_dirs))
+            .flatten()
+        {
+            let file_path = entry.path();
+            if !file_path.is_file() {
+                continue;
+            }
+            let Some(id) = id_from_abs_path(&path_clone, file_path, &ignored_dirs) else {
+                continue;
+            };
+            let Ok(content) = std::fs::read_to_string(file_path) else {
+                continue;
+            };
+            let tags = parse_frontmatter_tags(&content);
+            if !tags.contains(&old_name_clone) {
+                continue;
+            }
+
+            let mut new_tags: Vec<String> = Vec::new();
+            for tag in tags {
+                if tag == old_name_clone {
+                    if !new_tags.contains(&new_name_clone) {
+                        new_tags.push(new_name_clone.clone());
+                    }
+                } else if !new_tags.contains(&tag) {
+                    new_tags.push(tag);
+                }
+            }
+
+            let new_content = set_frontmatter_tags(&content, &new_tags);
+            if std::fs::write(file_path, &new_content).is_err() {
+                continue;
+            }
+
+            let modified = entry
+                .metadata()
+                .ok()
+                .and_then(|m| m.modified().ok())
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0);
+            let title = extract_title(&new_content);
+            results.push((id, title, new_content, modified));
+        }
+        results
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let count = updated.len() as u32;
+
+    // Update search index for all affected notes
+    {
+        let index = state.search_index.lock().expect("search index mutex");
+        if let Some(ref search_index) = *index {
+            for (id, title, content, modified) in &updated {
+                let _ = search_index.index_note(id, title, content, *modified);
+            }
+        }
+    }
+
+    Ok(count)
+}
+
+#[tauri::command]
 fn get_settings(state: State<AppState>) -> Settings {
     state.settings.read().expect("settings read lock").clone()
 }
@@ -1996,11 +2287,14 @@ async fn import_file_to_folder(
         .collect::<Vec<_>>()
         .join(" ");
 
+    let tags = parse_frontmatter_tags(&content);
+
     let metadata = NoteMetadata {
         id: final_id,
         title: extracted_title,
         preview,
         modified,
+        tags,
     };
 
     // Update notes cache so fallback search sees the imported note immediately
@@ -3851,6 +4145,8 @@ pub fn run() {
             rename_folder,
             move_note,
             move_folder,
+            set_note_tags,
+            rename_tag,
             get_settings,
             update_settings,
             update_git_enabled,

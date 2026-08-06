@@ -3,6 +3,9 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "../../lib/utils";
 import { Tooltip } from "./Tooltip";
 import { PinIcon } from "../icons";
+import { getTagColor, tagPillStyle } from "../../lib/tags";
+
+const MAX_VISIBLE_TAGS = 4;
 
 // Re-export components
 export {
@@ -135,6 +138,8 @@ interface ListItemProps {
   meta?: string;
   isSelected?: boolean;
   isPinned?: boolean;
+  tags?: string[];
+  tagColors?: Record<string, string>;
   onClick?: () => void;
   /** Optional status icon to display next to meta */
 }
@@ -145,6 +150,8 @@ export function ListItem({
   meta,
   isSelected = false,
   isPinned = false,
+  tags,
+  tagColors,
   onClick,
   onContextMenu,
 }: ListItemProps & { onContextMenu?: (e: React.MouseEvent) => void }) {
@@ -200,6 +207,24 @@ export function ListItem({
           {hasSubtitle ? cleanSubtitle : "\u00A0"}
         </p>
       </div>
+      {tags && tags.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap mt-1">
+          {tags.slice(0, MAX_VISIBLE_TAGS).map((tag) => (
+            <span
+              key={tag}
+              style={tagPillStyle(getTagColor(tag, tagColors))}
+              className="text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none"
+            >
+              {tag}
+            </span>
+          ))}
+          {tags.length > MAX_VISIBLE_TAGS && (
+            <span className="text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none bg-bg-muted text-text-muted">
+              +{tags.length - MAX_VISIBLE_TAGS}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

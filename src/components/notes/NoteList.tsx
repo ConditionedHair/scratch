@@ -71,6 +71,8 @@ interface NoteItemProps {
   modified: number;
   isSelected: boolean;
   isPinned: boolean;
+  tags?: string[];
+  tagColors?: Record<string, string>;
   onSelect: (id: string) => void;
   depth?: number;
   showFolderPrefix?: boolean;
@@ -83,6 +85,8 @@ export const NoteItem = memo(function NoteItem({
   modified,
   isSelected,
   isPinned,
+  tags,
+  tagColors,
   onSelect,
   depth,
   showFolderPrefix = true,
@@ -117,6 +121,8 @@ export const NoteItem = memo(function NoteItem({
         meta={formatDate(modified)}
         isSelected={isSelected}
         isPinned={isPinned}
+        tags={tags}
+        tagColors={tagColors}
         onClick={handleClick}
       />
     </div>
@@ -131,6 +137,8 @@ interface NoteItemWithMenuProps {
   modified: number;
   isSelected: boolean;
   isPinned: boolean;
+  tags?: string[];
+  tagColors?: Record<string, string>;
   onSelect: (id: string) => void;
   onPin: (id: string) => Promise<void>;
   onUnpin: (id: string) => Promise<void>;
@@ -146,6 +154,8 @@ const NoteItemWithMenu = memo(function NoteItemWithMenu({
   modified,
   isSelected,
   isPinned,
+  tags,
+  tagColors,
   onSelect,
   onPin,
   onUnpin,
@@ -185,6 +195,8 @@ const NoteItemWithMenu = memo(function NoteItemWithMenu({
             modified={modified}
             isSelected={isSelected}
             isPinned={isPinned}
+            tags={tags}
+            tagColors={tagColors}
             onSelect={onSelect}
           />
         </div>
@@ -250,6 +262,7 @@ export function NoteList({
     isLoading,
     searchQuery,
     searchResults,
+    activeTagFilter,
   } = useNotes();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -297,15 +310,22 @@ export function NoteList({
   // Memoize display items to prevent recalculation on every render
   const displayItems = useMemo(() => {
     if (searchQuery.trim()) {
-      return searchResults.map((r) => ({
+      const results = searchResults.map((r) => ({
         id: r.id,
         title: r.title,
         preview: r.preview,
         modified: r.modified,
+        tags: [] as string[],
       }));
+      if (activeTagFilter == null) return results;
+      const taggedIds = new Set(
+        notes.filter((n) => n.tags.includes(activeTagFilter)).map((n) => n.id),
+      );
+      return results.filter((r) => taggedIds.has(r.id));
     }
-    return notes;
-  }, [searchQuery, searchResults, notes]);
+    if (activeTagFilter == null) return notes;
+    return notes.filter((n) => n.tags.includes(activeTagFilter));
+  }, [searchQuery, searchResults, notes, activeTagFilter]);
 
   // Listen for focus request from editor (when Escape is pressed)
   useEffect(() => {
@@ -412,6 +432,8 @@ export function NoteList({
             modified={item.modified}
             isSelected={selectedNoteId === item.id}
             isPinned={pinnedIds.has(item.id)}
+            tags={item.tags}
+            tagColors={settings?.tagColors}
             onSelect={selectNote}
             onPin={pinNote}
             onUnpin={unpinNote}

@@ -97,3 +97,11 @@ export async function searchNotes(query: string): Promise<SearchResult[]> {
 export async function startFileWatcher(): Promise<void> {
   return invoke("start_file_watcher");
 }
+
+export async function setNoteTags(id: string, tags: string[]): Promise<Note> {
+  return invoke("set_note_tags", { id, tags });
+}
+
+export async function renameTag(oldName: string, newName: string): Promise<number> {
+  return invoke("rename_tag", { oldName, newName });
+}

@@ -36,6 +36,9 @@ import {
 } from "../icons";
 import * as notesService from "../../services/notes";
 import type { FolderNode, NoteMetadata, Settings } from "../../types/note";
+import { getTagColor, tagPillStyle } from "../../lib/tags";
+
+const MAX_VISIBLE_TAGS = 4;
 
 const STORAGE_KEY = "scratch:collapsedFolders";
 
@@ -68,6 +71,7 @@ interface FileItemProps {
   isSelected: boolean;
   isMultiSelected: boolean;
   isPinned: boolean;
+  tagColors?: Record<string, string>;
   onNoteClick: (id: string, event: React.MouseEvent) => void;
   onPin: (id: string) => Promise<void>;
   onUnpin: (id: string) => Promise<void>;
@@ -83,6 +87,7 @@ const FileItem = memo(function FileItem({
   isSelected,
   isMultiSelected,
   isPinned,
+  tagColors,
   onNoteClick,
   onPin,
   onUnpin,
@@ -155,7 +160,7 @@ const FileItem = memo(function FileItem({
           }}
           {...attributes}
           {...listeners}
-          className={`flex items-center gap-1.5 py-1.5 cursor-pointer rounded-md select-none transition-colors ${
+          className={`flex flex-col py-1.5 cursor-pointer rounded-md select-none transition-colors ${
             isDragging
               ? "opacity-40"
               : isOver
@@ -172,14 +177,34 @@ const FileItem = memo(function FileItem({
           role="button"
           tabIndex={-1}
         >
-          {isPinned ? (
-            <PinIcon className="w-4 h-4 stroke-[1.6] fill-current text-text-muted shrink-0" />
-          ) : (
-            <NoteIcon className="w-4 h-4 stroke-[1.6] opacity-50 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            {isPinned ? (
+              <PinIcon className="w-4 h-4 stroke-[1.6] fill-current text-text-muted shrink-0" />
+            ) : (
+              <NoteIcon className="w-4 h-4 stroke-[1.6] opacity-50 shrink-0" />
+            )}
+            <span className="text-sm text-text truncate">
+              {cleanTitle(note.title)}
+            </span>
+          </div>
+          {note.tags.length > 0 && (
+            <div className="flex items-center gap-1 flex-wrap mt-1 pl-5.5">
+              {note.tags.slice(0, MAX_VISIBLE_TAGS).map((tag) => (
+                <span
+                  key={tag}
+                  style={tagPillStyle(getTagColor(tag, tagColors))}
+                  className="text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none"
+                >
+                  {tag}
+                </span>
+              ))}
+              {note.tags.length > MAX_VISIBLE_TAGS && (
+                <span className="text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none bg-bg-muted text-text-muted">
+                  +{note.tags.length - MAX_VISIBLE_TAGS}
+                </span>
+              )}
+            </div>
           )}
-          <span className="text-sm text-text truncate">
-            {cleanTitle(note.title)}
-          </span>
         </div>
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
@@ -254,6 +279,7 @@ interface FolderItemProps {
   onToggleCollapse: (path: string) => void;
   selectedNoteId: string | null;
   pinnedIds: Set<string>;
+  tagColors?: Record<string, string>;
   multiSelectedNoteIds: Set<string>;
   onNoteClick: (id: string, event: React.MouseEvent) => void;
   focusedItemKey: string | null;
@@ -276,6 +302,7 @@ const FolderItemComponent = memo(function FolderItem({
   onToggleCollapse,
   selectedNoteId,
   pinnedIds,
+  tagColors,
   multiSelectedNoteIds,
   onNoteClick,
   focusedItemKey,
@@ -359,6 +386,7 @@ const FolderItemComponent = memo(function FolderItem({
                   selectedNoteId={selectedNoteId}
                   focusedItemKey={focusedItemKey}
                   pinnedIds={pinnedIds}
+                  tagColors={tagColors}
                   multiSelectedNoteIds={multiSelectedNoteIds}
                   onNoteClick={onNoteClick}
                   onCreateNoteHere={onCreateNoteHere}
@@ -381,6 +409,7 @@ const FolderItemComponent = memo(function FolderItem({
                   isSelected={selectedNoteId === note.id}
                   isMultiSelected={multiSelectedNoteIds.has(note.id)}
                   isPinned={pinnedIds.has(note.id)}
+                  tagColors={tagColors}
                   onNoteClick={onNoteClick}
                   onPin={onPinNote}
                   onUnpin={onUnpinNote}
@@ -484,7 +513,7 @@ interface FolderTreeViewProps {
 
 export function FolderTreeView({
   pinnedIds,
-  settings: _settings,
+  settings,
   multiSelectedNoteIds,
   setMultiSelectedNoteIds,
   lastClickedNoteId,
@@ -504,7 +533,9 @@ export function FolderTreeView({
     deleteNote,
     moveNote,
     moveFolder,
+    activeTagFilter,
   } = useNotes();
+  const tagColors = settings?.tagColors;
 
   const [collapsedFolders, setCollapsedFolders] =
     useState<Set<string>>(loadCollapsedFolders);
@@ -534,9 +565,17 @@ export function FolderTreeView({
     saveCollapsedFolders(collapsedFolders);
   }, [collapsedFolders]);
 
+  const filteredNotes = useMemo(
+    () =>
+      activeTagFilter == null
+        ? notes
+        : notes.filter((n) => n.tags.includes(activeTagFilter)),
+    [notes, activeTagFilter],
+  );
+
   const tree = useMemo(
-    () => buildFolderTree(notes, pinnedIds, knownFolders),
-    [notes, pinnedIds, knownFolders],
+    () => buildFolderTree(filteredNotes, pinnedIds, knownFolders),
+    [filteredNotes, pinnedIds, knownFolders],
   );
 
   const handleToggleCollapse = useCallback((path: string) => {
@@ -865,6 +904,7 @@ export function FolderTreeView({
             isSelected={selectedNoteId === note.id}
             isMultiSelected={multiSelectedNoteIds.has(note.id)}
             isPinned={true}
+            tagColors={tagColors}
             onNoteClick={handleNoteClick}
             onPin={pinNote}
             onUnpin={unpinNote}
@@ -885,6 +925,7 @@ export function FolderTreeView({
             selectedNoteId={selectedNoteId}
             focusedItemKey={focusedItemKey}
             pinnedIds={pinnedIds}
+            tagColors={tagColors}
             multiSelectedNoteIds={multiSelectedNoteIds}
             onNoteClick={handleNoteClick}
             onCreateNoteHere={createNoteInFolder}
@@ -909,6 +950,7 @@ export function FolderTreeView({
             isSelected={selectedNoteId === note.id}
             isMultiSelected={multiSelectedNoteIds.has(note.id)}
             isPinned={false}
+            tagColors={tagColors}
             onNoteClick={handleNoteClick}
             onPin={pinNote}
             onUnpin={unpinNote}

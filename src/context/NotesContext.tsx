@@ -27,6 +27,7 @@ interface NotesDataContextValue {
   isSearching: boolean;
   hasExternalChanges: boolean;
   reloadVersion: number;
+  activeTagFilter: string | null;
 }
 
 // Actions context: stable references, rarely causes re-renders
@@ -51,6 +52,7 @@ interface NotesActionsContextValue {
   renameFolder: (oldPath: string, newName: string) => Promise<void>;
   moveNote: (id: string, targetFolder: string) => Promise<void>;
   moveFolder: (path: string, targetParent: string) => Promise<void>;
+  setActiveTagFilter: (tag: string | null) => void;
 }
 
 const NotesDataContext = createContext<NotesDataContextValue | null>(null);
@@ -69,6 +71,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [hasExternalChanges, setHasExternalChanges] = useState(false);
   // Increments when user manually refreshes, so Editor knows to reload content
   const [reloadVersion, setReloadVersion] = useState(0);
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
 
   // Track recently saved note IDs to ignore file-change events from our own saves
   const recentlySavedRef = useRef<Set<string>>(new Set());
@@ -80,6 +83,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   // Ref to access notes in search callback without re-creating it on every notes change
   const notesRef = useRef<NoteMetadata[]>([]);
   notesRef.current = notes;
+  // Ref to access activeTagFilter in search callback without re-creating it on every change
+  const activeTagFilterRef = useRef<string | null>(null);
+  activeTagFilterRef.current = activeTagFilter;
   // Monotonic counter to ignore stale async note selection responses.
   const selectRequestIdRef = useRef(0);
   // Monotonic counter to ignore stale async search responses
@@ -545,12 +551,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
 
     const queryLower = trimmedQuery.toLowerCase();
+    const tagFilter = activeTagFilterRef.current;
     // Instant local results for responsive UX while full-text search runs.
     const instantResults: SearchResult[] = notesRef.current
       .filter(
         (note) =>
-          note.title.toLowerCase().includes(queryLower) ||
-          note.preview.toLowerCase().includes(queryLower),
+          (tagFilter == null || note.tags.includes(tagFilter)) &&
+          (note.title.toLowerCase().includes(queryLower) ||
+            note.preview.toLowerCase().includes(queryLower)),
       )
       .slice(0, 20)
       .map((note) => ({
@@ -694,6 +702,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isSearching,
       hasExternalChanges,
       reloadVersion,
+      activeTagFilter,
     }),
     [
       notes,
@@ -707,6 +716,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       isSearching,
       hasExternalChanges,
       reloadVersion,
+      activeTagFilter,
     ]
   );
 
@@ -733,6 +743,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       renameFolder: renameFolderAction,
       moveNote: moveNoteAction,
       moveFolder: moveFolderAction,
+      setActiveTagFilter,
     }),
     [
       selectNote,
@@ -755,6 +766,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       renameFolderAction,
       moveNoteAction,
       moveFolderAction,
+      setActiveTagFilter,
     ]
   );
 

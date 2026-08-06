@@ -3,6 +3,7 @@ export interface NoteMetadata {
   title: string;
   preview: string;
   modified: number;
+  tags: string[];
 }
 
 export interface Note {
@@ -11,6 +12,7 @@ export interface Note {
   content: string;
   path: string;
   modified: number;
+  tags: string[];
 }
 
 export interface ThemeSettings {
@@ -60,6 +62,7 @@ export interface Settings {
   ignoredPatterns?: string[];
   customColorsLight?: CustomColors;
   customColorsDark?: CustomColors;
+  tagColors?: Record<string, string>;
 }
 
 export interface FolderNode {

@@ -13,6 +13,7 @@ import { useNotes } from "../../context/NotesContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useGit } from "../../context/GitContext";
 import * as notesService from "../../services/notes";
+import { setNoteTags } from "../../services/notes";
 import * as aiService from "../../services/ai";
 import { downloadPdf, downloadMarkdown } from "../../services/pdf";
 import type { Settings } from "../../types/note";
@@ -50,6 +51,8 @@ import {
   FolderIcon,
   FolderPlusIcon,
   KeyboardIcon,
+  PlusIcon,
+  XIcon,
 } from "../icons";
 import { mod, shift } from "../../lib/platform";
 import type { AiProvider } from "../../services/ai";
@@ -90,6 +93,7 @@ export function CommandPalette({
     deleteNote,
     currentNote,
     refreshNotes,
+    reloadCurrentNote,
     pinNote,
     unpinNote,
     notesFolder,
@@ -236,6 +240,39 @@ export function CommandPalette({
             }
           },
         },
+        {
+          id: "add-tag",
+          label: "Add Tag to Current Note",
+          icon: <PlusIcon className="w-4.5 h-4.5 stroke-[1.5]" />,
+          action: () => {
+            window.dispatchEvent(new CustomEvent("focus-tag-input"));
+            onClose();
+          },
+        },
+        ...(currentNote.tags.length > 0
+          ? [
+              {
+                id: "remove-tag",
+                label: "Remove Tag from Current Note",
+                icon: <XIcon className="w-4.5 h-4.5 stroke-[1.5]" />,
+                action: () => {
+                  // Simplification: with exactly one tag, remove it directly;
+                  // with multiple, focus the tag bar rather than building a picker.
+                  if (currentNote.tags.length === 1) {
+                    setNoteTags(currentNote.id, [])
+                      .then(() => reloadCurrentNote())
+                      .catch((error) => {
+                        console.error("Failed to remove tag:", error);
+                        toast.error("Failed to remove tag");
+                      });
+                  } else {
+                    window.dispatchEvent(new CustomEvent("focus-tag-input"));
+                  }
+                  onClose();
+                },
+              },
+            ]
+          : []),
         ...aiCommands,
         {
           id: "duplicate-note",
@@ -519,6 +556,7 @@ export function CommandPalette({
     isSyncing,
     selectNote,
     refreshNotes,
+    reloadCurrentNote,
     settings,
     pinNote,
     unpinNote,

@@ -68,6 +68,7 @@ import { SlashCommand } from "./SlashCommand";
 import { Wikilink, type WikilinkStorage } from "./Wikilink";
 import { WikilinkSuggestion } from "./WikilinkSuggestion";
 import { EditorWidthHandles } from "./EditorWidthHandle";
+import { TagBar } from "./TagBar";
 import { ScratchBlockMath, normalizeBlockMath } from "./MathExtensions";
 import { cn } from "../../lib/utils";
 import { plainTextFromMarkdown } from "../../lib/plainText";
@@ -522,6 +523,7 @@ export function Editor({
           content: previewMode.content,
           path: previewMode.filePath,
           modified: previewMode.modified,
+          tags: [] as string[],
         }
       : null
     : (notesCtx?.currentNote ?? null);
@@ -2257,9 +2259,16 @@ export function Editor({
               <PanelLeftIcon className="w-4.5 h-4.5 stroke-[1.5]" />
             </IconButton>
           )}
-          <span className="text-xs text-text-muted mb-px truncate">
+          <span className="text-xs text-text-muted mb-px truncate shrink-0">
             {formatDateTime(currentNote.modified)}
           </span>
+          {!previewMode && (
+            <TagBar
+              noteId={currentNote.id}
+              tags={currentNote.tags}
+              tagColors={settings?.tagColors}
+            />
+          )}
         </div>
         <div
           className={`titlebar-no-drag flex items-center gap-px shrink-0 transition-opacity duration-400 ${needsSidebarDelay ? "delay-200" : ""} ${focusMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}

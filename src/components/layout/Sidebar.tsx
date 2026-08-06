@@ -12,6 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { useNotes } from "../../context/NotesContext";
 import { NoteList } from "../notes/NoteList";
+import { TagList } from "../notes/TagList";
 import { Footer } from "./Footer";
 import { IconButton, Input } from "../ui";
 import {
@@ -410,6 +411,9 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
             </div>
           </div>
         )}
+
+        {/* Tags */}
+        <TagList />
 
         {/* Note list */}
         <NoteList

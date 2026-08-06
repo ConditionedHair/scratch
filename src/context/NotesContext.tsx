@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { toast } from "sonner";
 import type { Note, NoteMetadata } from "../types/note";
 import * as notesService from "../services/notes";
 import type { SearchResult } from "../services/notes";
@@ -80,6 +81,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   // Ref to access selectedNoteId in file watcher without re-registering listener
   const selectedNoteIdRef = useRef<string | null>(null);
   selectedNoteIdRef.current = selectedNoteId;
+  // Ref to access currentNote in file watcher without re-registering listener
+  const currentNoteRef = useRef<Note | null>(null);
+  currentNoteRef.current = currentNote;
   // Ref to access notes in search callback without re-creating it on every notes change
   const notesRef = useRef<NoteMetadata[]>([]);
   notesRef.current = notes;
@@ -137,7 +141,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setCurrentNote(note);
     } catch (err) {
       if (requestId !== selectRequestIdRef.current) return;
-      setError(err instanceof Error ? err.message : "Failed to load note");
+      const message = err instanceof Error ? err.message : "Failed to load note";
+      if (message.includes("Downloading from iCloud")) {
+        // Not a real failure — the placeholder will materialize shortly and
+        // the file-change listener below will retry the read automatically.
+        toast.info(message);
+      } else {
+        setError(message);
+      }
     }
   }, []);
 
@@ -649,7 +660,13 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         // If the currently selected note was changed externally, set flag (don't auto-reload)
         const currentId = selectedNoteIdRef.current;
         if (currentId && externalChanges.includes(currentId)) {
-          setHasExternalChanges(true);
+          if (currentNoteRef.current?.id !== currentId) {
+            // The note wasn't loaded yet (e.g. it was an iCloud placeholder
+            // that just finished downloading) — retry the read now.
+            selectNote(currentId);
+          } else {
+            setHasExternalChanges(true);
+          }
         }
       }
     }).then((fn) => {
@@ -667,7 +684,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         unlisten();
       }
     };
-  }, [refreshNotes]);
+  }, [refreshNotes, selectNote]);
 
   // Listen for "select-note" events from the backend (CLI, drag-drop, Open With, import from preview)
   useEffect(() => {

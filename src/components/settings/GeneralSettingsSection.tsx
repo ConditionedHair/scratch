@@ -4,6 +4,13 @@ import { toast } from "sonner";
 import { useNotes } from "../../context/NotesContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useGit } from "../../context/GitContext";
+import { isMac } from "../../lib/platform";
+import {
+  getIcloudStatus,
+  isPathInIcloud,
+  ensureIcloudDefaultFolder,
+  type IcloudStatus,
+} from "../../services/icloud";
 import { Button } from "../ui";
 import { Input } from "../ui";
 import {
@@ -12,6 +19,7 @@ import {
   ExternalLinkIcon,
   SpinnerIcon,
   CloudPlusIcon,
+  CloudCheckIcon,
   ChevronRightIcon,
   XIcon,
 } from "../icons";
@@ -282,6 +290,7 @@ export function GeneralSettingsSection() {
             </Button>
           )}
         </div>
+        {isMac && <IcloudSection />}
       </section>
 
       {/* Divider */}
@@ -745,6 +754,82 @@ export function GeneralSettingsSection() {
         </p>
         <IgnoredFoldersEditor />
       </section>
+    </div>
+  );
+}
+
+// macOS-only: lets the user store the notes folder inside their iCloud Drive
+// container so macOS's iCloud daemon syncs it across their Macs. There's no
+// CloudKit entitlement here — this is folder sync, the same approach apps
+// like Obsidian use.
+function IcloudSection() {
+  const { notesFolder, setNotesFolder } = useNotes();
+  const { reloadSettings } = useTheme();
+  const [status, setStatus] = useState<IcloudStatus | null>(null);
+  const [isSynced, setIsSynced] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+
+  useEffect(() => {
+    getIcloudStatus()
+      .then(setStatus)
+      .catch(() =>
+        setStatus({ available: false, containerPath: null, defaultFolderPath: null }),
+      );
+  }, []);
+
+  useEffect(() => {
+    if (!notesFolder) {
+      setIsSynced(false);
+      return;
+    }
+    isPathInIcloud(notesFolder)
+      .then(setIsSynced)
+      .catch(() => setIsSynced(false));
+  }, [notesFolder]);
+
+  const handleUseIcloud = async () => {
+    if (isSwitching) return;
+    setIsSwitching(true);
+    try {
+      const folder = await ensureIcloudDefaultFolder();
+      await setNotesFolder(folder);
+      await reloadSettings();
+      toast.success("Notes folder moved to iCloud Drive");
+    } catch (err) {
+      console.error("Failed to switch to iCloud Drive:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to switch to iCloud Drive",
+      );
+    } finally {
+      setIsSwitching(false);
+    }
+  };
+
+  if (isSynced) {
+    return (
+      <div className="flex items-center gap-1.25 mt-2 text-sm text-green-600 dark:text-green-500 font-medium">
+        <CloudCheckIcon className="w-4 h-4 stroke-[1.7]" />
+        iCloud synced
+      </div>
+    );
+  }
+
+  if (!status?.available) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-sm text-text-muted">Local only</span>
+      <Button
+        onClick={handleUseIcloud}
+        disabled={isSwitching}
+        variant="link"
+        className="h-auto p-0 text-sm gap-1"
+      >
+        <CloudPlusIcon className="w-3.5 h-3.5 stroke-[1.7]" />
+        {isSwitching ? "Switching..." : "Use iCloud Drive"}
+      </Button>
     </div>
   );
 }

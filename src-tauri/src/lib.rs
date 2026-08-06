@@ -17,6 +17,7 @@ use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
 mod git;
+mod icloud;
 
 // Note metadata for list display
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,6 +27,9 @@ pub struct NoteMetadata {
     pub preview: String,
     pub modified: i64,
     pub tags: Vec<String>,
+    /// True when this note is an iCloud placeholder that hasn't downloaded yet.
+    #[serde(default)]
+    pub downloading: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1031,7 +1035,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
     let path_clone = path.clone();
     let discovered = tokio::task::spawn_blocking(move || {
         use walkdir::WalkDir;
-        let mut results: Vec<(String, String, String, i64, Vec<String>)> = Vec::new();
+        let mut results: Vec<(String, String, String, i64, Vec<String>, bool)> = Vec::new();
         for entry in WalkDir::new(&path_clone)
             .max_depth(10)
             .into_iter()
@@ -1054,7 +1058,27 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                     let title = extract_title(&content);
                     let preview = generate_preview(&content);
                     let tags = parse_frontmatter_tags(&content);
-                    results.push((id, title, preview, modified, tags));
+                    results.push((id, title, preview, modified, tags, false));
+                }
+            } else if icloud::is_placeholder(file_path) {
+                // Not-yet-downloaded iCloud file: synthesize a placeholder entry
+                // and kick off a background download so it materializes soon.
+                if let Some(real_name) = icloud::real_name_from_placeholder(file_path) {
+                    if let Some(parent) = file_path.parent() {
+                        let real_path = parent.join(&real_name);
+                        if let Some(id) = id_from_abs_path(&path_clone, &real_path, &ignored_dirs) {
+                            icloud::trigger_download(&real_path);
+                            let title = real_name.strip_suffix(".md").unwrap_or(&real_name).to_string();
+                            results.push((
+                                id,
+                                title,
+                                "Downloading from iCloud…".to_string(),
+                                0,
+                                Vec::new(),
+                                true,
+                            ));
+                        }
+                    }
                 }
             }
         }
@@ -1065,12 +1089,13 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
 
     let mut notes: Vec<NoteMetadata> = discovered
         .into_iter()
-        .map(|(id, title, preview, modified, tags)| NoteMetadata {
+        .map(|(id, title, preview, modified, tags, downloading)| NoteMetadata {
             id,
             title,
             preview,
             modified,
             tags,
+            downloading,
         })
         .collect();
 
@@ -1121,6 +1146,12 @@ async fn read_note(id: String, state: State<'_, AppState>) -> Result<Note, Strin
     let folder_path = PathBuf::from(&folder);
     let file_path = abs_path_from_id(&folder_path, &id)?;
     if !file_path.exists() {
+        if let Some(placeholder) = icloud::placeholder_path(&file_path) {
+            if placeholder.exists() {
+                icloud::trigger_download(&file_path);
+                return Err("Downloading from iCloud — try again in a moment".to_string());
+            }
+        }
         return Err("Note not found".to_string());
     }
 
@@ -2295,6 +2326,7 @@ async fn import_file_to_folder(
         preview,
         modified,
         tags,
+        downloading: false,
     };
 
     // Update notes cache so fallback search sees the imported note immediately
@@ -2727,6 +2759,23 @@ fn rebuild_search_index(state: State<AppState>) -> Result<(), String> {
 #[tauri::command]
 fn get_default_ignored_patterns() -> Vec<String> {
     DEFAULT_IGNORED_DIRS.iter().map(|s| s.to_string()).collect()
+}
+
+// iCloud Drive integration (macOS only; see icloud.rs)
+
+#[tauri::command]
+fn icloud_get_status() -> icloud::IcloudStatus {
+    icloud::get_status()
+}
+
+#[tauri::command]
+fn icloud_is_path_inside(path: String) -> bool {
+    icloud::is_inside_icloud(&PathBuf::from(path))
+}
+
+#[tauri::command]
+fn icloud_ensure_default_folder() -> Result<String, String> {
+    icloud::ensure_default_folder().map(|p| p.to_string_lossy().into_owned())
 }
 
 // UI helper commands - wrap Tauri plugins for consistent invoke-based API
@@ -4156,6 +4205,9 @@ pub fn run() {
             start_file_watcher,
             rebuild_search_index,
             get_default_ignored_patterns,
+            icloud_get_status,
+            icloud_is_path_inside,
+            icloud_ensure_default_folder,
             copy_to_clipboard,
             copy_image_to_assets,
             save_clipboard_image,

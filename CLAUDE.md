@@ -23,6 +23,7 @@ Runs on every push to `main` and on PRs. Validates frontend build (`tsc` + Vite)
 - `NotesContext` uses a dual context pattern (data/actions separated) for performance.
 - Settings live in two places: app config at `{APP_DATA}/config.json`, per-folder settings at `{NOTES_FOLDER}/.scratch/settings.json`.
 - Tauri v2 permissions go in `src-tauri/capabilities/default.json`.
+- iCloud Drive sync (macOS only, `src-tauri/src/icloud.rs`) is folder sync, not CloudKit — the notes folder lives inside `~/Library/Mobile Documents/com~apple~CloudDocs/` and macOS's iCloud daemon syncs it, same approach as Git sync but via the filesystem instead of a remote. Placeholder (`.icloud`) files that haven't downloaded yet are detected in `list_notes`/`read_note` and materialized on demand via `brctl download`.
 
 ## Coding Conventions
 

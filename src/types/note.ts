@@ -1,4 +1,6 @@
 export interface NoteMetadata {
+  /** True when this note is an iCloud placeholder that hasn't downloaded yet. */
+  downloading?: boolean;
   id: string;
   title: string;
   preview: string;

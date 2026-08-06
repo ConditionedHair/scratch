@@ -1,10 +1,67 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useOptionalNotes } from "../../context/NotesContext";
 import * as notesService from "../../services/notes";
 import { getTagColor, assignTagColor, tagPillStyle } from "../../lib/tags";
 import { SuggestionList } from "./SuggestionList";
 import { PlusIcon, XIcon } from "../icons";
 import { cn } from "../../lib/utils";
+
+interface SortableTagPillProps {
+  tag: string;
+  color: string;
+  onRemove: () => void;
+}
+
+function SortableTagPill({ tag, color, onRemove }: SortableTagPillProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: tag });
+
+  const style: CSSProperties = {
+    ...tagPillStyle(color),
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <span
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="flex items-center gap-1 text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none cursor-grab active:cursor-grabbing touch-none"
+    >
+      {tag}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        className="hover:opacity-70"
+        tabIndex={-1}
+        aria-label={`Remove tag ${tag}`}
+      >
+        <XIcon className="w-2.5 h-2.5 stroke-[2]" />
+      </button>
+    </span>
+  );
+}
 
 interface TagBarProps {
   noteId: string;
@@ -83,6 +140,22 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
     [tags, applyTags],
   );
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = tags.indexOf(active.id as string);
+      const newIndex = tags.indexOf(over.id as string);
+      if (oldIndex === -1 || newIndex === -1) return;
+      void applyTags(arrayMove(tags, oldIndex, newIndex));
+    },
+    [tags, applyTags],
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" || e.key === ",") {
@@ -110,24 +183,22 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
 
   return (
     <div className="relative flex items-center gap-1 flex-wrap min-w-0">
-      {tags.map((tag) => (
-        <span
-          key={tag}
-          style={tagPillStyle(getTagColor(tag, tagColors))}
-          className="flex items-center gap-1 text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none"
-        >
-          {tag}
-          <button
-            type="button"
-            onClick={() => removeTag(tag)}
-            className="hover:opacity-70"
-            tabIndex={-1}
-            aria-label={`Remove tag ${tag}`}
-          >
-            <XIcon className="w-2.5 h-2.5 stroke-[2]" />
-          </button>
-        </span>
-      ))}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={tags} strategy={horizontalListSortingStrategy}>
+          {tags.map((tag) => (
+            <SortableTagPill
+              key={tag}
+              tag={tag}
+              color={getTagColor(tag, tagColors)}
+              onRemove={() => removeTag(tag)}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
       {isEditing ? (
         <input
           ref={inputRef}

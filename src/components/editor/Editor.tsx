@@ -72,30 +72,11 @@ import { TagBar } from "./TagBar";
 import { ScratchBlockMath, normalizeBlockMath } from "./MathExtensions";
 import { cn } from "../../lib/utils";
 import { plainTextFromMarkdown } from "../../lib/plainText";
-import { Button, IconButton, ToolbarButton, Tooltip } from "../ui";
+import { IconButton, Tooltip } from "../ui";
 import * as notesService from "../../services/notes";
 import { downloadPdf, downloadMarkdown } from "../../services/pdf";
 import type { Settings } from "../../types/note";
 import {
-  BoldIcon,
-  ItalicIcon,
-  StrikethroughIcon,
-  Heading1Icon,
-  Heading2Icon,
-  Heading3Icon,
-  Heading4Icon,
-  ListIcon,
-  ListOrderedIcon,
-  CheckSquareIcon,
-  QuoteIcon,
-  CodeIcon,
-  InlineCodeIcon,
-  BlockMathIcon,
-  SeparatorIcon,
-  LinkIcon,
-  BracketsIcon,
-  ImageIcon,
-  TableIcon,
   SpinnerIcon,
   CircleCheckIcon,
   CopyIcon,
@@ -262,169 +243,266 @@ function FormatBar({
   if (!editor) return null;
 
   return (
-    <div className="flex items-center gap-1 px-3 pb-2 border-b border-border overflow-x-auto scrollbar-none">
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        isActive={editor.isActive("bold")}
-        title={`Bold (${mod}${isMac ? "" : "+"}B)`}
-      >
-        <BoldIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        isActive={editor.isActive("italic")}
-        title={`Italic (${mod}${isMac ? "" : "+"}I)`}
-      >
-        <ItalicIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        isActive={editor.isActive("strike")}
-        title={`Strikethrough (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}S)`}
-      >
-        <StrikethroughIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-
-      <div className="w-px h-4.5 border-l border-border mx-2" />
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        isActive={editor.isActive("heading", { level: 1 })}
-        title={`Heading 1 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}1)`}
-      >
-        <Heading1Icon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        isActive={editor.isActive("heading", { level: 2 })}
-        title={`Heading 2 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}2)`}
-      >
-        <Heading2Icon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        isActive={editor.isActive("heading", { level: 3 })}
-        title={`Heading 3 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}3)`}
-      >
-        <Heading3Icon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-        isActive={editor.isActive("heading", { level: 4 })}
-        title={`Heading 4 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}4)`}
-      >
-        <Heading4Icon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-
-      <div className="w-px h-4.5 border-l border-border mx-2" />
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        isActive={editor.isActive("bulletList")}
-        title={`Bullet List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}8)`}
-      >
-        <ListIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        isActive={editor.isActive("orderedList")}
-        title={`Numbered List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}7)`}
-      >
-        <ListOrderedIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleTaskList().run()}
-        isActive={editor.isActive("taskList")}
-        title="Task List"
-      >
-        <CheckSquareIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        isActive={editor.isActive("blockquote")}
-        title={`Blockquote (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}B)`}
-      >
-        <QuoteIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleCode().run()}
-        isActive={editor.isActive("code")}
-        title={`Inline Code (${mod}${isMac ? "" : "+"}E)`}
-      >
-        <InlineCodeIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        isActive={editor.isActive("codeBlock")}
-        title={`Code Block (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}C)`}
-      >
-        <CodeIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={onAddBlockMath}
-        isActive={editor.isActive("blockMath")}
-        title="Block Math"
-      >
-        <BlockMathIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        isActive={false}
-        title="Horizontal Rule"
-      >
-        <SeparatorIcon />
-      </ToolbarButton>
-
-      <div className="w-px h-4.5 border-l border-border mx-2" />
-
-      <ToolbarButton
-        onClick={onAddLink}
-        isActive={editor.isActive("link")}
-        title={`Add Link (${mod}${isMac ? "" : "+"}K)`}
-      >
-        <LinkIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton
-        onClick={() => editor.chain().focus().insertContent("[[").run()}
-        isActive={false}
-        title="Insert Wikilink"
-      >
-        <BracketsIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <ToolbarButton onClick={onAddImage} isActive={false} title="Add Image">
-        <ImageIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-      </ToolbarButton>
-      <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
-        <Tooltip content="Insert Table">
-          <DropdownMenu.Trigger asChild>
-            <ToolbarButton isActive={editor.isActive("table")}>
-              <TableIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-            </ToolbarButton>
-          </DropdownMenu.Trigger>
-        </Tooltip>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            className="p-2.5 bg-bg border border-border rounded-md shadow-lg z-50"
-            onCloseAutoFocus={(e) => e.preventDefault()}
+    <nav
+      aria-label="Editor Formatting Keycaps"
+      className="px-4 py-2 bg-[#DDD9CF] dark:bg-[#1a1c22] border-b-2 border-border flex flex-wrap items-center justify-between gap-2 shadow-inner select-none transition-colors"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Format Group: Typography */}
+        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-bold font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("bold")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Bold (${mod}${isMac ? "" : "+"}B)`}
           >
-            <GridPicker
-              onSelect={(rows, cols) => {
-                editor
-                  .chain()
-                  .focus()
-                  .insertTable({
-                    rows,
-                    cols,
-                    withHeaderRow: true,
-                  })
-                  .run();
-                setTableMenuOpen(false);
-              }}
-            />
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-    </div>
+            B
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text italic font-serif text-sm rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("italic")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Italic (${mod}${isMac ? "" : "+"}I)`}
+          >
+            I
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text line-through font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("strike")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Strikethrough (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}S)`}
+          >
+            S
+          </button>
+        </div>
+
+        {/* Format Group: Headings (Chiclet Stepped) */}
+        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={cn(
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("heading", { level: 1 })
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Heading 1 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}1)`}
+          >
+            H1
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={cn(
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("heading", { level: 2 })
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Heading 2 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}2)`}
+          >
+            H2
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={cn(
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("heading", { level: 3 })
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Heading 3 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}3)`}
+          >
+            H3
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+            className={cn(
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("heading", { level: 4 })
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Heading 4 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}4)`}
+          >
+            H4
+          </button>
+        </div>
+
+        {/* Format Group: Lists & Blocks */}
+        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("bulletList")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Bullet List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}8)`}
+          >
+            •=
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("orderedList")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Numbered List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}7)`}
+          >
+            1.
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("taskList")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title="Task List"
+          >
+            ☑
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("blockquote")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Blockquote (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}B)`}
+          >
+            ”
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("code")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Inline Code (${mod}${isMac ? "" : "+"}E)`}
+          >
+            `_`
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("codeBlock")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Code Block (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}C)`}
+          >
+            &lt;/&gt;
+          </button>
+          <button
+            onClick={onAddBlockMath}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("blockMath")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title="Block Math"
+          >
+            ∑
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            title="Horizontal Rule"
+          >
+            —
+          </button>
+        </div>
+
+        {/* Format Group: Media & Objects */}
+        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+          <button
+            onClick={onAddLink}
+            className={cn(
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              editor.isActive("link")
+                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2e313c]"
+            )}
+            title={`Add Link (${mod}${isMac ? "" : "+"}K)`}
+          >
+            🔗
+          </button>
+          <button
+            onClick={() => editor.chain().focus().insertContent("[[").run()}
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            title="Insert Wikilink"
+          >
+            [[
+          </button>
+          <button
+            onClick={onAddImage}
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            title="Add Image"
+          >
+            🖼
+          </button>
+          <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+            <Tooltip content="Insert Table">
+              <DropdownMenu.Trigger asChild>
+                <button
+                  className={cn(
+                    "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+                    editor.isActive("table")
+                      ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                      : "hover:bg-white dark:hover:bg-[#2e313c]"
+                  )}
+                >
+                  ⊞
+                </button>
+              </DropdownMenu.Trigger>
+            </Tooltip>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                className="p-2.5 bg-[#FAF8F5] dark:bg-[#1c1d23] border border-border rounded-md shadow-lg z-50 font-mono text-xs"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+              >
+                <GridPicker
+                  onSelect={(rows, cols) => {
+                    editor
+                      .chain()
+                      .focus()
+                      .insertTable({
+                        rows,
+                        cols,
+                        withHeaderRow: true,
+                      })
+                      .run();
+                    setTableMenuOpen(false);
+                  }}
+                />
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </div>
+      </div>
+    </nav>
   );
 }
 
@@ -2181,7 +2259,7 @@ export function Editor({
 
     // Folder mode: show empty state with "New Note" button
     return (
-      <div className="flex-1 flex flex-col bg-bg">
+      <div className="flex-1 flex flex-col bg-bg overflow-hidden relative">
         {/* Drag region */}
         {!isWindows && (
           <div
@@ -2189,14 +2267,27 @@ export function Editor({
             data-tauri-drag-region
           ></div>
         )}
-        <div className="flex-1 flex items-center justify-center pb-8">
-          <div className="text-center text-text-muted select-none">
+        <div className="flex-1 flex items-center justify-center p-8 bg-chassis-grain relative">
+          {/* Subtle grid backdrop */}
+          <div className="absolute inset-0 grid-guide-paper opacity-40 pointer-events-none" />
+
+          {/* Standby Module Card */}
+          <div className="relative z-10 max-w-md w-full border border-border bg-bg-card/90 rounded-2xl p-8 shadow-screen-inset text-center select-none backdrop-blur-xs">
+            {/* Header Telemetry */}
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-border/60 font-mono text-[10px] tracking-wider text-text-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500/80 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                SYSTEM // STANDBY
+              </span>
+              <span>DEV: TP-01 MARKER</span>
+            </div>
+
             <div
               role="img"
               aria-label="Note"
-              className="w-42 aspect-square mx-auto mb-1"
+              className="w-28 aspect-square mx-auto mb-4 opacity-80"
               style={{
-                backgroundColor: "var(--color-text)",
+                backgroundColor: "var(--color-primary)",
                 WebkitMaskImage: "url(/note-dark.png)",
                 WebkitMaskSize: "contain",
                 WebkitMaskRepeat: "no-repeat",
@@ -2207,26 +2298,32 @@ export function Editor({
                 maskPosition: "center",
               }}
             />
-            <h1 className="text-2xl text-text font-serif mb-1 tracking-[-0.01em] ">
-              What's on your mind?
+
+            <h1 className="text-xl text-text font-mono font-bold tracking-tight uppercase mb-1">
+              No Tape Loaded
             </h1>
-            <p className="text-sm">
-              Pick up where you left off, or start something new
+            <p className="text-xs text-text-muted font-mono leading-relaxed mb-6">
+              Pick up an existing recording from the index or initialize a new buffer
             </p>
+
             {createNote && (
-              <Button
+              <button
                 onClick={createNote}
-                variant="secondary"
-                size="md"
-                className="mt-4"
+                className="chiclet-btn w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground font-mono text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:translate-y-0.5"
               >
-                New Note{" "}
-                <span className="text-text-muted ml-1">
-                  {mod}
-                  {isMac ? "" : "+"}N
+                <span>Initialize New Tape</span>
+                <span className="opacity-70 font-normal">
+                  [{mod}{isMac ? "" : "+"}N]
                 </span>
-              </Button>
+              </button>
             )}
+
+            {/* Footer Telemetry */}
+            <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between font-mono text-[9px] text-text-muted/60 tracking-widest">
+              <span>BUFF: 0x0000</span>
+              <span>READY</span>
+              <span>CH: STEREO</span>
+            </div>
           </div>
         </div>
       </div>

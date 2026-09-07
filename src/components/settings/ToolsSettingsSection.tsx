@@ -52,18 +52,6 @@ function cliReducer(state: CliState, action: CliAction): CliState {
   }
 }
 
-function CliUsageHint() {
-  return (
-    <p className="text-sm text-text-muted font-mono">
-      scratch file.md # open note
-      <br />
-      scratch . # open folder
-      <br />
-      scratch # launch app
-    </p>
-  );
-}
-
 const AI_PROVIDER_INFO: Record<
   AiProvider,
   {
@@ -91,6 +79,25 @@ const AI_PROVIDER_INFO: Record<
     name: "Ollama",
     icon: OllamaIcon,
     installUrl: "https://ollama.com",
+  },
+};
+
+const AI_PROVIDER_DESCRIPTIONS: Record<AiProvider, { tag: string; desc: string }> = {
+  claude: {
+    tag: "ANTHROPIC API",
+    desc: "Direct CLI synthesis & fast contextual execution",
+  },
+  codex: {
+    tag: "GPT-4o / REASONING",
+    desc: "Cloud completion engine via personal authorization key",
+  },
+  opencode: {
+    tag: "LOCAL PIPELINE",
+    desc: "Autonomous local code and syntax generator",
+  },
+  ollama: {
+    tag: "DAEMON: 127.0.0.1:11434",
+    desc: "Llama 3.3, DeepSeek-R1, Mistral offline inference",
   },
 };
 
@@ -150,146 +157,232 @@ export function ToolsSettingsSection() {
   };
 
   return (
-    <div className="space-y-8 py-8">
-      {/* AI Providers */}
-      <section className="pb-2">
-        <h2 className="text-xl font-medium mb-0.5">AI Providers</h2>
-        <p className="text-sm text-text-muted mb-4">
-          Edit notes with AI from the command palette ({mod}P while editing a
-          note)
-        </p>
+    <div className="space-y-7 pb-4">
+      {/* SECTION A: AI Providers */}
+      <div className="space-y-4" data-purpose="ai-providers-section">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-border/80 pb-3 gap-2 font-mono">
+          <div>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-base font-bold text-text font-sans tracking-wide uppercase">
+                AI PROVIDERS
+              </h2>
+              <span className="text-[10px] px-1.5 py-0.5 bg-bg-muted text-text-muted rounded font-mono">
+                [ DISPATCH BUS ]
+              </span>
+            </div>
+            <p className="text-xs text-text-muted mt-1">
+              Edit notes with AI from the command palette (<kbd className="px-1.5 py-0.5 bg-bg-card border border-border rounded text-text font-mono text-[10px]">{mod}P</kbd> while editing a note)
+            </p>
+          </div>
+          <div className="text-[10px] text-emerald-500 tracking-wider font-semibold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+            <span>ROUTING ENGINE: ACTIVE</span>
+          </div>
+        </div>
 
+        {/* Provider Racks */}
         {aiProvidersLoading ? (
-          <div className="flex items-center gap-2 p-3">
+          <div className="flex items-center gap-2 p-4 rounded-xl bg-bg border border-border">
             <SpinnerIcon className="w-4 h-4 animate-spin text-text-muted" />
-            <span className="text-sm text-text-muted">
+            <span className="text-xs font-mono text-text-muted">
               Detecting installed providers...
             </span>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {AI_PROVIDER_ORDER.map((provider) => {
               const installed = aiProviders.includes(provider);
               const info = AI_PROVIDER_INFO[provider];
+              const meta = AI_PROVIDER_DESCRIPTIONS[provider];
               return (
                 <div
                   key={provider}
-                  className="flex items-center justify-between p-3 rounded-[10px] border border-border"
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-lg bg-bg border border-border hover:border-border/80 transition-all gap-3 shadow-screen-inset"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <info.icon className="w-4.5 h-4.5 text-text-muted" />
-                    <span className="text-sm font-medium">{info.name}</span>
+                  <div className="flex items-center space-x-3.5">
+                    <div className="w-8 h-8 rounded-lg bg-bg-card border border-border flex items-center justify-center text-text shadow-xs shrink-0">
+                      <info.icon className="w-4.5 h-4.5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-xs font-semibold text-text font-mono tracking-wide">
+                          {info.name}
+                        </h3>
+                        <span className="text-[9px] text-text-muted font-mono uppercase bg-bg-card px-1.5 py-0.2 rounded border border-border">
+                          {meta.tag}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-text-muted font-mono mt-0.5">
+                        {meta.desc}
+                      </p>
+                    </div>
                   </div>
-                  {installed ? (
-                    <span className="flex items-center gap-1.25 text-sm text-text-muted">
-                      Installed
-                      <span className="h-4.5 w-4.5 bg-bg-emphasis rounded-full flex items-center justify-center">
-                        <CheckIcon className="w-3 h-3 stroke-[2.2]" />
-                      </span>
-                    </span>
-                  ) : (
-                    <a
-                      href={info.installUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-text font-medium hover:text-text-muted transition-colors cursor-pointer"
-                    >
-                      Install
-                    </a>
-                  )}
+
+                  <div className="flex items-center space-x-3 self-end sm:self-auto font-mono">
+                    {installed ? (
+                      <div className="flex items-center space-x-2 bg-bg-card px-3 py-1.5 rounded-lg border border-border shadow-xs">
+                        <span className="text-xs text-text font-medium tracking-wide">
+                          Installed
+                        </span>
+                        <div className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
+                          <CheckIcon className="w-2.5 h-2.5 text-emerald-500 stroke-[2.5]" />
+                        </div>
+                      </div>
+                    ) : (
+                      <a
+                        href={info.installUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono bg-bg-card hover:bg-bg-emphasis text-text border border-border shadow-keycap active:shadow-keycap-pressed transition-all cursor-pointer"
+                      >
+                        Install
+                      </a>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
-      </section>
+      </div>
 
-      {/* CLI Tool (macOS only) */}
+      {/* SECTION B: CLI Tool Bus */}
       {(cli.loaded && cli.status?.supported) || cli.error ? (
-        <>
-          <div className="border-t border-border border-dashed" />
+        <div className="space-y-4 pt-2" data-purpose="cli-bus-section">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-border/80 pb-3 gap-2 font-mono">
+            <div>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-base font-bold text-text font-sans tracking-wide uppercase">
+                  CLI TOOL
+                </h2>
+                <span className="text-[10px] px-1.5 py-0.5 bg-bg-muted text-text-muted rounded font-mono">
+                  [ UNIX BRIDGE ]
+                </span>
+              </div>
+              <p className="text-xs text-text-muted mt-1">
+                Open notes from the terminal with the{" "}
+                <code className="px-1.5 py-0.5 bg-bg-card text-primary border border-border rounded font-mono text-[11px]">
+                  scratch
+                </code>{" "}
+                command
+              </p>
+            </div>
+            <div className="flex items-center space-x-1.5 text-[10px] text-emerald-500 font-mono font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+              <span>{cli.status?.installed ? "DAEMON READY" : "OFFLINE"}</span>
+            </div>
+          </div>
 
-          <section className="pb-2">
-            <h2 className="text-xl font-medium mb-0.5">CLI Tool</h2>
-            <p className="text-sm text-text-muted mb-4">
-              Open notes from the terminal with the{" "}
-              <code className="font-mono text-xs bg-bg-muted px-1.5 py-0.5 rounded">
-                scratch
-              </code>{" "}
-              command
-            </p>
-
+          {/* Terminal Status Card Enclosure */}
+          <div className="rounded-xl bg-bg border border-border p-4 lg:p-5 space-y-4 shadow-screen-inset">
             {cli.error ? (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3">
-                <p className="text-sm text-red-500">
-                  Failed to check CLI status. Please restart the app.
-                </p>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-md p-3 font-mono text-xs text-red-500">
+                Failed to check CLI status. Please restart the app.
               </div>
             ) : cli.status === null ? (
-              <div className="rounded-[10px] border border-border p-4 flex items-center justify-center">
+              <div className="p-4 flex items-center justify-center">
                 <SpinnerIcon className="w-4.5 h-4.5 stroke-[1.5] animate-spin text-text-muted" />
               </div>
             ) : cli.status.installed ? (
               <>
-                <div className="rounded-[10px] border border-border p-4 space-y-3 mb-2.5">
+                {/* Status and Path Rows */}
+                <div className="space-y-3 pb-3 border-b border-border/70 font-mono text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-text font-medium">
+                    <span className="text-text-muted tracking-wider uppercase font-semibold text-[11px]">
                       Status
                     </span>
-                    <span className="text-sm text-text-muted">Installed</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+                      <span className="text-text font-bold">Installed</span>
+                    </div>
                   </div>
+
                   {cli.status.path && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-text font-medium">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <span className="text-text-muted tracking-wider uppercase font-semibold text-[11px]">
                         Path
                       </span>
-                      <button
-                        type="button"
-                        className="text-xs font-mono text-text-muted bg-bg-muted px-2 py-0.5 rounded max-w-48 truncate cursor-pointer hover:bg-bg-hover transition-colors"
-                        title="Click to copy path"
-                        onClick={async () => {
-                          try {
-                            await invoke("copy_to_clipboard", { text: cli.status!.path! });
-                            toast.success("Path copied to clipboard");
-                          } catch {
-                            toast.error("Failed to copy path");
-                          }
-                        }}
-                      >
-                        {cli.status.path}
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <div className="px-3 py-1.5 bg-bg-card text-text font-mono text-xs rounded-lg border border-border flex items-center space-x-2">
+                          <span className="text-text-muted">$PATH:</span>
+                          <span className="text-text">{cli.status.path}</span>
+                        </div>
+                        <button
+                          className="px-2.5 py-1.5 bg-bg-card hover:bg-bg-emphasis text-text rounded-lg border border-border text-[11px] font-mono font-semibold transition-colors cursor-pointer shadow-xs"
+                          title="Copy binary path"
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await invoke("copy_to_clipboard", { text: cli.status!.path! });
+                              toast.success("Path copied to clipboard");
+                            } catch {
+                              toast.error("Failed to copy path");
+                            }
+                          }}
+                        >
+                          COPY
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <div className="pt-3 border-t border-border border-dashed">
-                    <CliUsageHint />
-                  </div>
                 </div>
-                <Button
-                  onClick={handleUninstallCli}
-                  disabled={cli.operating}
-                  variant="outline"
-                  size="md"
-                >
-                  {cli.operating ? (
-                    <>
-                      <SpinnerIcon className="w-3.25 h-3.25 mr-2 animate-spin" />
-                      Uninstalling...
-                    </>
-                  ) : (
-                    "Uninstall CLI Tool"
-                  )}
-                </Button>
+
+                {/* CRT Terminal Shell Preview */}
+                <div className="relative rounded-lg bg-[#0a0b0d] border border-border p-4 overflow-hidden text-neutral-300">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[10px] text-neutral-500 font-mono">
+                    <span>TERMINAL BUFFER PREVIEW</span>
+                    <span>SHELL: ZSH / BASH</span>
+                  </div>
+                  <pre className="font-mono text-xs leading-relaxed space-y-1">
+                    <span className="text-neutral-500">$</span> scratch file.md    <span className="text-neutral-500"># open note directly into hardware buffer</span>
+                    <br />
+                    <span className="text-neutral-500">$</span> scratch .          <span className="text-neutral-500"># mount working directory as active tape bank</span>
+                    <br />
+                    <span className="text-neutral-500">$</span> scratch            <span className="text-neutral-500"># launch field marker desktop interface</span>
+                  </pre>
+                </div>
+
+                {/* Action Strip */}
+                <div className="flex items-center justify-between pt-1">
+                  <Button
+                    onClick={handleUninstallCli}
+                    disabled={cli.operating}
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                  >
+                    {cli.operating ? (
+                      <>
+                        <SpinnerIcon className="w-3.25 h-3.25 mr-2 animate-spin" />
+                        Uninstalling...
+                      </>
+                    ) : (
+                      "Uninstall CLI Tool"
+                    )}
+                  </Button>
+                  <span className="text-[10px] text-text-muted/60 font-mono">
+                    BIN REV: 1.0.4 • SHA256: VALIDATED
+                  </span>
+                </div>
               </>
             ) : (
-              <>
-                <div className="flex items-center gap-2.5 p-2.5 rounded-[10px] border border-border bg-bg-secondary mb-2.5">
-                  <CliUsageHint />
+              <div className="space-y-4 font-mono">
+                <div className="relative rounded-lg bg-[#0a0b0d] border border-border p-4 overflow-hidden text-neutral-300">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[10px] text-neutral-500 font-mono">
+                    <span>UNIX BUS INTEGRATION</span>
+                  </div>
+                  <pre className="text-xs leading-relaxed text-neutral-400">
+                    Install the scratch CLI binary to ~/bin or /usr/local/bin to enable direct terminal launching.
+                  </pre>
                 </div>
+
                 <Button
                   onClick={handleInstallCli}
                   disabled={cli.operating}
-                  variant="outline"
+                  variant="primary"
                   size="md"
+                  className="font-mono text-xs"
                 >
                   {cli.operating ? (
                     <>
@@ -300,10 +393,10 @@ export function ToolsSettingsSection() {
                     "Install CLI Tool"
                   )}
                 </Button>
-              </>
+              </div>
             )}
-          </section>
-        </>
+          </div>
+        </div>
       ) : null}
     </div>
   );

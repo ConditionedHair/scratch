@@ -421,8 +421,16 @@ export function NoteList({
         ref={containerRef}
         tabIndex={0}
         data-note-list
-        className="group/notelist flex flex-col gap-1 p-1.5 outline-none"
+        className="group/notelist flex flex-col gap-2 p-2 outline-none"
       >
+        <div className="flex items-center justify-between px-1 pt-1">
+          <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">
+            STORED TAPES
+          </span>
+          <span className="text-[9px] font-mono text-text-muted/70">
+            MEM BANK A
+          </span>
+        </div>
         {displayItems.map((item) => (
           <NoteItemWithMenu
             key={item.id}

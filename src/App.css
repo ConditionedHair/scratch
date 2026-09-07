@@ -4,37 +4,50 @@
 /* Use class-based dark mode instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Theme color tokens - Light mode (default) */
+/* Theme color tokens - Light mode (Field Instrument Pebble) */
 :root {
-  --color-bg: #ffffff;
-  --color-bg-secondary: #fafaf9;
-  --color-bg-muted: rgba(28, 25, 23, 0.06);
-  --color-bg-emphasis: rgba(28, 25, 23, 0.09);
-  --color-text: #1c1917;
-  --color-text-muted: #78716c;
-  --color-text-inverse: #fafaf9;
-  --color-border: rgba(28, 25, 23, 0.08);
-  --color-accent: #1c1917;
-  --color-selection: rgba(250, 204, 21, 0.4); /* Tailwind yellow-400 */
+  --color-bg: #FAF8F4;
+  --color-bg-secondary: #E5E1D8;
+  --color-bg-sidebar: #D8D4CA;
+  --color-bg-header: #DDD9CF;
+  --color-bg-card: #FAF8F5;
+  --color-bg-card-muted: #E2DED4;
+  --color-bg-recess: #D1CCC0;
+  --color-bg-muted: rgba(43, 40, 36, 0.08);
+  --color-bg-emphasis: rgba(43, 40, 36, 0.14);
+  --color-text: #1C1B19;
+  --color-text-muted: #7E7A72;
+  --color-text-inverse: #FAF8F4;
+  --color-border: #C5C0B3;
+  --color-border-subtle: #DDD7C9;
+  --color-accent: #FF5400;
+  --color-selection: rgba(255, 84, 0, 0.25);
+
+  /* Tactical hardware colors */
+  --color-ram-orange: #FF5400;
+  --color-ram-blue: #0047FF;
+  --color-ram-cyan: #00BCD4;
+  --color-ram-amber: #F5A623;
+  --color-ram-green: #10B981;
 
   /* Editor font settings - simplified (overridden by ThemeContext) */
   --editor-font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  --editor-base-font-size: 16px;
+    "Hanken Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --editor-base-font-size: 15px;
   --editor-bold-weight: 700;
   --editor-line-height: 1.6;
   --editor-paragraph-spacing: 1em;
 
   /* Computed header sizes (set by ThemeContext based on base size) */
-  --editor-h1-size: 36px;
-  --editor-h2-size: 28px;
-  --editor-h3-size: 24px;
-  --editor-h4-size: 20px;
-  --editor-h5-size: 16px;
-  --editor-h6-size: 16px;
+  --editor-h1-size: 34px;
+  --editor-h2-size: 26px;
+  --editor-h3-size: 22px;
+  --editor-h4-size: 18px;
+  --editor-h5-size: 15px;
+  --editor-h6-size: 15px;
 
-  /* Syntax highlighting colors - Light (GitHub) */
+  /* Syntax highlighting colors - Light */
   --color-syntax-keyword: #d73a49;
   --color-syntax-string: #032f62;
   --color-syntax-number: #005cc5;
@@ -47,57 +60,88 @@
 
   /* Inline code color */
   --color-code: #d73a49;
+
+  /* Keycap & chassis shadows */
+  --shadow-keycap: 0 3px 0px #A6A092, 0 4px 4px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  --shadow-keycap-pressed: 0 1px 0px #8F8A7E, 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(0, 0, 0, 0.25);
+  --shadow-knob: 0 4px 6px -1px rgba(0, 0, 0, 0.25), inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+  --shadow-screen-inset: inset 0 3px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.6);
 }
 
-/* Theme color tokens - Dark mode */
+/* Theme color tokens - Dark mode (Field Instrument Dark) */
 .dark {
-  --color-bg: rgb(22, 20, 19);
-  --color-bg-secondary: rgb(14, 12, 11);
-  --color-bg-muted: rgba(250, 249, 249, 0.05);
-  --color-bg-emphasis: rgba(250, 249, 249, 0.08);
-  --color-text: #fafaf9;
-  --color-text-muted: #a8a29e;
-  --color-text-inverse: #0c0a09;
-  --color-border: rgba(250, 249, 249, 0.07);
-  --color-accent: #fafaf9;
-  --color-selection: rgba(253, 224, 71, 0.35); /* Tailwind yellow-300 */
+  --color-bg: #121315;
+  --color-bg-secondary: #0D0E10;
+  --color-bg-sidebar: #17181d;
+  --color-bg-header: #1a1c22;
+  --color-bg-card: #1f2128;
+  --color-bg-card-muted: #1c1d23;
+  --color-bg-recess: #121317;
+  --color-bg-muted: rgba(255, 255, 255, 0.06);
+  --color-bg-emphasis: rgba(255, 255, 255, 0.10);
+  --color-text: #EDF0F5;
+  --color-text-muted: #8E929B;
+  --color-text-inverse: #0A0B0C;
+  --color-border: #24272f;
+  --color-border-subtle: #2A2E35;
+  --color-accent: #FF5500;
+  --color-selection: rgba(255, 85, 0, 0.35);
 
-  /* Syntax highlighting colors - Dark (GitHub) */
-  --color-syntax-keyword: #ea4a5a;
-  --color-syntax-string: #79b8ff;
-  --color-syntax-number: #79b8ff;
-  --color-syntax-comment: #959da5;
-  --color-syntax-function: #b392f0;
-  --color-syntax-variable: #fb8532;
+  /* Tactical hardware colors */
+  --color-ram-orange: #FF5500;
+  --color-ram-blue: #0047FF;
+  --color-ram-cyan: #00E5FF;
+  --color-ram-amber: #FFB300;
+  --color-ram-green: #10B981;
+
+  /* Syntax highlighting colors - Dark */
+  --color-syntax-keyword: #ff5500;
+  --color-syntax-string: #00e5ff;
+  --color-syntax-number: #ffba38;
+  --color-syntax-comment: #5c6270;
+  --color-syntax-function: #bdf4ff;
+  --color-syntax-variable: #ffb59c;
   --color-syntax-type: #7bcc72;
-  --color-syntax-operator: #ea4a5a;
-  --color-syntax-attr: #79b8ff;
+  --color-syntax-operator: #ff5500;
+  --color-syntax-attr: #00e5ff;
 
   /* Inline code color */
-  --color-code: #ea4a5a;
+  --color-code: #00e5ff;
+
+  /* Keycap & chassis shadows */
+  --shadow-keycap: 0 2px 0px #0C0D0E, 0 3px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --shadow-keycap-pressed: 0 0 0px #000, 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  --shadow-knob: 0 4px 6px -1px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.2), inset 0 -2px 3px rgba(0, 0, 0, 0.6);
+  --shadow-screen-inset: inset 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.06), 0 1px 0 rgba(255,255,255,0.05);
 }
 
-/* Register theme colors with Tailwind */
+/* Register theme typography & colors with Tailwind */
 @theme {
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-serif:
-    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif,
-    "Apple Color Emoji";
+    "Hanken Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display:
+    "Space Grotesk", "Plus Jakarta Sans", sans-serif;
   --font-mono:
-    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, "Courier New",
+    "JetBrains Mono", "Space Mono", ui-monospace, "SF Mono", Menlo, Monaco,
     monospace;
 
   /* Custom font sizes */
-  --text-2xs: 0.75rem; /* 12px */
-  --text-2xs--line-height: 1rem;
-  --text-xs: 0.8125rem; /* 13px */
-  --text-xs--line-height: 1.25rem;
+  --text-2xs: 0.6875rem; /* 11px */
+  --text-2xs--line-height: 0.875rem;
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem; /* 14px */
+  --text-sm--line-height: 1.25rem;
 
   /* Background colors */
   --color-bg: var(--color-bg);
   --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-sidebar: var(--color-bg-sidebar);
+  --color-bg-header: var(--color-bg-header);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-card-muted: var(--color-bg-card-muted);
+  --color-bg-recess: var(--color-bg-recess);
   --color-bg-muted: var(--color-bg-muted);
   --color-bg-emphasis: var(--color-bg-emphasis);
 
@@ -108,9 +152,15 @@
 
   /* Border colors */
   --color-border: var(--color-border);
+  --color-border-subtle: var(--color-border-subtle);
 
   /* Accent colors */
   --color-accent: var(--color-accent);
+  --color-ram-orange: var(--color-ram-orange);
+  --color-ram-blue: var(--color-ram-blue);
+  --color-ram-cyan: var(--color-ram-cyan);
+  --color-ram-amber: var(--color-ram-amber);
+  --color-ram-green: var(--color-ram-green);
 }
 
 /* Base styles */
@@ -152,6 +202,96 @@ body {
 
 ::-moz-selection {
   background-color: var(--color-selection);
+}
+
+/* Hardware chassis texture and precision grid */
+.bg-chassis-grain {
+  background-color: var(--color-bg-secondary);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1.2px, transparent 1.2px), radial-gradient(rgba(0, 0, 0, 0.08) 1.2px, var(--color-bg-secondary) 1.2px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+.dark .bg-chassis-grain {
+  background-color: var(--color-bg-secondary);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1.2px, transparent 1.2px), radial-gradient(rgba(255, 255, 255, 0.04) 1.2px, var(--color-bg-secondary) 1.2px);
+}
+
+.grid-guide-paper {
+  background-size: 20px 20px;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+.dark .grid-guide-paper {
+  background-size: 20px 20px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Screw head decoration */
+.screw-head {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 35%, #EDEAE3 0%, #A9A497 70%, #757064 100%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.dark .screw-head {
+  background: radial-gradient(circle at 35% 35%, #464b58 0%, #262932 70%, #15171d 100%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.screw-head::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(42deg);
+  width: 6px;
+  height: 1.5px;
+  background: #4A463F;
+}
+
+.dark .screw-head::after {
+  background: #111215;
+}
+
+/* Speaker / Microphone perforation vent */
+.speaker-vent {
+  background-image: radial-gradient(#2B2824 28%, transparent 32%);
+  background-size: 5px 5px;
+}
+
+.dark .speaker-vent {
+  background-image: radial-gradient(#3a3e4a 28%, transparent 32%);
+  background-size: 5px 5px;
+}
+
+/* Tactile shadows & chiclet active states */
+.shadow-knob {
+  box-shadow: var(--shadow-knob);
+}
+
+.shadow-keycap {
+  box-shadow: var(--shadow-keycap);
+}
+
+.shadow-screen-inset {
+  box-shadow: var(--shadow-screen-inset);
+}
+
+.chiclet-btn {
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+}
+
+.chiclet-btn:active {
+  transform: translateY(1.5px);
+  box-shadow: var(--shadow-keycap-pressed) !important;
 }
 
 /* Hide scrollbar while allowing scroll */

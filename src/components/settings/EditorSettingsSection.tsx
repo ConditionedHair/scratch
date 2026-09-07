@@ -1,5 +1,5 @@
 import { useTheme, defaultThemeColors } from "../../context/ThemeContext";
-import { Button, CodeCopyButton, IconButton, Input, Select } from "../ui";
+import { Button, Input, Select } from "../ui";
 import { ColorPicker } from "../ui/ColorPicker";
 import type {
   FontFamily,
@@ -41,13 +41,6 @@ const editorWidthOptions: { value: EditorWidth; label: string }[] = [
   { value: "custom", label: "Custom" },
 ];
 
-// Font family options
-const fontFamilyOptions: { value: FontFamily; label: string }[] = [
-  { value: "system-sans", label: "Sans" },
-  { value: "serif", label: "Serif" },
-  { value: "monospace", label: "Mono" },
-];
-
 // Bold weight options (medium excluded for monospace)
 const boldWeightOptions = [
   { value: 500, label: "Medium", excludeForMonospace: true },
@@ -79,19 +72,6 @@ export function AppearanceSettingsSection() {
     resetAllCustomColors,
   } = useTheme();
 
-  // Validated numeric change handler
-  const handleNumericChange = (
-    field: "baseFontSize" | "lineHeight",
-    value: string,
-    min: number,
-    max: number,
-  ) => {
-    const parsed = parseFloat(value);
-    if (!Number.isFinite(parsed)) return;
-    const clamped = Math.min(Math.max(parsed, min), max);
-    setEditorFontSetting(field, clamped);
-  };
-
   // Check if settings differ from defaults
   const hasCustomFonts =
     editorFontSettings.baseFontFamily !== "system-sans" ||
@@ -118,32 +98,173 @@ export function AppearanceSettingsSection() {
   };
 
   return (
-    <div className="space-y-8 py-8">
-      {/* Theme Section */}
-      <section className="pb-2">
-        <h2 className="text-xl font-medium mb-3">Theme</h2>
-        <div className="flex gap-2 p-1 rounded-[10px] border border-border">
-          {(["light", "dark", "system"] as const).map((mode) => (
-            <Button
-              key={mode}
-              onClick={() => setTheme(mode)}
-              variant={theme === mode ? "primary" : "ghost"}
-              size="md"
-              className="flex-1"
-            >
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </Button>
-          ))}
-        </div>
-        {theme === "system" && (
-          <p className="mt-3 text-sm text-text-muted">
-            Currently using {resolvedTheme} mode based on system preference
+    <div className="space-y-7 pb-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between border-b border-border/80 pb-3 gap-2 font-mono">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-base font-bold text-text font-sans tracking-wide uppercase">
+              CHASSIS &amp; DISPLAY CALIBRATION
+            </h2>
+            <span className="text-[10px] px-1.5 py-0.5 bg-bg-muted text-text-muted rounded font-mono">
+              [ THEME &amp; MATRIX ]
+            </span>
+          </div>
+          <p className="text-xs text-text-muted mt-1">
+            Configure chassis enclosure finish, typography rendering, and optical contrast levels
           </p>
-        )}
+        </div>
+        <div className="text-[10px] text-emerald-500 tracking-wider font-semibold flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
+          <span>OPTICAL MATRIX: ACTIVE</span>
+        </div>
+      </div>
+
+      {/* MODULE A: Hardware Chassis Enclosure Finish */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-1 border-b border-border/70 font-mono">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">
+              HARDWARE CHASSIS ENCLOSURE
+            </span>
+            <span className="text-[9px] text-text-muted">[ PHYSICAL FINISH ]</span>
+          </div>
+          <span className="text-[10px] text-text-muted">CALIBRATION BUS 01</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Finish 1: Dark Slate */}
+          <div
+            onClick={() => setTheme("dark")}
+            role="button"
+            tabIndex={0}
+            className={`p-3.5 rounded-xl bg-bg border-2 transition-all flex flex-col justify-between space-y-3 cursor-pointer shadow-screen-inset ${
+              theme === "dark"
+                ? "border-primary shadow-sm"
+                : "border-border hover:border-border/80"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3.5 h-3.5 rounded-full bg-[#121315] border border-neutral-600 flex items-center justify-center">
+                  {theme === "dark" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-text font-mono tracking-wide">
+                  MATTE SLATE
+                </span>
+              </div>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  theme === "dark"
+                    ? "bg-primary shadow-[0_0_8px_var(--color-primary)]"
+                    : "bg-border"
+                }`}
+              />
+            </div>
+            <div className="h-10 w-full rounded-lg bg-[#121315] border border-[#2b2d38] p-2 flex items-center justify-between">
+              <div className="flex space-x-1.5">
+                <div className="w-3 h-3 rounded bg-[#1f2025] border border-neutral-700" />
+                <div className="w-3 h-3 rounded bg-primary" />
+                <div className="w-3 h-3 rounded bg-emerald-500" />
+              </div>
+              <span className="text-[9px] font-mono text-neutral-400">#121315 OLED</span>
+            </div>
+            <p className="text-[10px] text-text-muted font-mono leading-relaxed">
+              High-contrast dark OLED emission // TE-Field Spec
+            </p>
+          </div>
+
+          {/* Finish 2: Light Sand */}
+          <div
+            onClick={() => setTheme("light")}
+            role="button"
+            tabIndex={0}
+            className={`p-3.5 rounded-xl bg-bg border-2 transition-all flex flex-col justify-between space-y-3 cursor-pointer shadow-screen-inset ${
+              theme === "light"
+                ? "border-primary shadow-sm"
+                : "border-border hover:border-border/80"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3.5 h-3.5 rounded-full bg-[#FAF8F4] border border-neutral-400 flex items-center justify-center">
+                  {theme === "light" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-text font-mono tracking-wide">
+                  ANODIZED STONE
+                </span>
+              </div>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  theme === "light"
+                    ? "bg-primary shadow-[0_0_8px_var(--color-primary)]"
+                    : "bg-border"
+                }`}
+              />
+            </div>
+            <div className="h-10 w-full rounded-lg bg-[#FAF8F4] border border-[#DDD9CF] p-2 flex items-center justify-between text-neutral-800">
+              <div className="flex space-x-1.5">
+                <div className="w-3 h-3 rounded bg-[#2a2b32]" />
+                <div className="w-3 h-3 rounded bg-primary" />
+                <div className="w-3 h-3 rounded bg-[#9e9a90]" />
+              </div>
+              <span className="text-[9px] font-mono text-neutral-800 font-bold">#FAF8F4 RAMS</span>
+            </div>
+            <p className="text-[10px] text-text-muted font-mono leading-relaxed">
+              Daylight reflective matte chassis // Dieter Rams Spec
+            </p>
+          </div>
+
+          {/* Finish 3: System Auto */}
+          <div
+            onClick={() => setTheme("system")}
+            role="button"
+            tabIndex={0}
+            className={`p-3.5 rounded-xl bg-bg border-2 transition-all flex flex-col justify-between space-y-3 cursor-pointer shadow-screen-inset ${
+              theme === "system"
+                ? "border-primary shadow-sm"
+                : "border-border hover:border-border/80"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-3.5 h-3.5 rounded-full bg-bg-card border border-emerald-500 flex items-center justify-center">
+                  {theme === "system" && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-text font-mono tracking-wide">
+                  PHOTO-SENSOR
+                </span>
+              </div>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  theme === "system"
+                    ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
+                    : "bg-border"
+                }`}
+              />
+            </div>
+            <div className="h-10 w-full rounded-lg bg-bg-card border border-border p-2 flex items-center justify-between">
+              <div className="flex items-center space-x-1.5">
+                <EyeIcon className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[9px] font-mono text-text">AUTO SENSOR</span>
+              </div>
+              <span className="text-[9px] font-mono text-emerald-500 font-semibold">AUTO LUX</span>
+            </div>
+            <p className="text-[10px] text-text-muted font-mono leading-relaxed">
+              Synchronize chassis finish with OS ambient light sensor
+            </p>
+          </div>
+        </div>
 
         {/* Customize Colors */}
         {theme === "system" ? (
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 space-y-2">
             <ColorsExpandable
               label="Customize light colors"
               mode="light"
@@ -171,293 +292,293 @@ export function AppearanceSettingsSection() {
             setCustomColor={setCustomColor}
             resetCustomColor={resetCustomColor}
             resetAllCustomColors={resetAllCustomColors}
-            className="mt-4"
+            className="mt-3"
           />
         )}
-      </section>
+      </div>
 
-      {/* Divider */}
-      <div className="border-t border-border border-dashed" />
-
-      {/* Typography Section */}
-      <section>
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-xl font-medium">Typography</h2>
+      {/* MODULE B: Optical Typography & Engine */}
+      <div className="space-y-4 pt-1">
+        <div className="flex items-center justify-between pb-1 border-b border-border/70 font-mono">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">
+              OPTICAL TYPOGRAPHY &amp; CRT MATRIX
+            </span>
+            <span className="text-[9px] text-text-muted">[ ENGINE CORE ]</span>
+          </div>
           {hasCustomFonts && (
-            <Button onClick={resetEditorFontSettings} variant="ghost" size="sm">
-              Reset to defaults
-            </Button>
+            <button
+              onClick={resetEditorFontSettings}
+              className="text-[10px] font-mono text-primary hover:underline cursor-pointer"
+            >
+              [ RESET DEFAULTS ]
+            </button>
           )}
         </div>
 
-        <div className="rounded-[10px] border border-border pl-4 py-3 pr-3 space-y-2">
-          {/* Font Family */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">Font</label>
-            <Select
-              value={editorFontSettings.baseFontFamily}
-              onChange={(e) =>
-                handleFontFamilyChange(e.target.value as FontFamily)
-              }
-              className="w-40"
-            >
-              {fontFamilyOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Base Font Size */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">Size</label>
-            <div className="relative w-40">
-              <Input
-                type="number"
-                min="12"
-                max="24"
-                value={editorFontSettings.baseFontSize}
-                onChange={(e) =>
-                  handleNumericChange("baseFontSize", e.target.value, 12, 24)
-                }
-                className="w-full h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
+        <div className="space-y-3 bg-bg border border-border rounded-xl p-4 lg:p-5 shadow-screen-inset">
+          {/* Typography Scale Steps */}
+          <div className="space-y-2">
+            <span className="text-[11px] text-text-muted font-mono uppercase tracking-wider">
+              Typography Scale Step
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { size: 12, label: "[ 12PT COMPACT ]" },
+                { size: 14, label: "[ 14PT STANDARD ]" },
+                { size: 16, label: "[ 16PT COMFORT ]" },
+                { size: 18, label: "[ 18PT DISPLAY ]" },
+              ].map((step) => {
+                const isSelected = editorFontSettings.baseFontSize === step.size;
+                return (
+                  <button
+                    key={step.size}
+                    type="button"
+                    onClick={() => setEditorFontSetting("baseFontSize", step.size)}
+                    className={`py-2 px-2.5 rounded-lg text-[11px] font-mono transition-all text-center cursor-pointer ${
+                      isSelected
+                        ? "bg-primary text-primary-foreground font-bold shadow-md border border-primary"
+                        : "bg-bg-card hover:bg-bg-emphasis border border-border text-text-muted hover:text-text shadow-keycap"
+                    }`}
+                  >
+                    {step.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Bold Weight */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">Bold Weight</label>
-            <Select
-              value={editorFontSettings.boldWeight}
-              onChange={(e) =>
-                setEditorFontSetting("boldWeight", Number(e.target.value))
-              }
-              className="w-40"
-            >
-              {availableWeightOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Line Height */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">Line Height</label>
-            <div className="relative w-40">
-              <Input
-                type="number"
-                min="1.0"
-                max="2.5"
-                step="0.1"
-                value={editorFontSettings.lineHeight}
-                onChange={(e) =>
-                  handleNumericChange("lineHeight", e.target.value, 1.0, 2.5)
-                }
-                className="w-full h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
+          {/* Font Engine Architecture */}
+          <div className="space-y-2 pt-2 border-t border-border/70">
+            <span className="text-[11px] text-text-muted font-mono uppercase tracking-wider">
+              Font Engine Architecture
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                {
+                  id: "system-sans",
+                  name: "SPACE GROTESK",
+                  sub: "(MONO HEADERS)",
+                },
+                {
+                  id: "serif",
+                  name: "EDITORIAL SERIF",
+                  sub: "(CLASSIC PRINT)",
+                },
+                {
+                  id: "monospace",
+                  name: "JETBRAINS MONO",
+                  sub: "(TELETYPE RAW)",
+                },
+              ].map((f) => {
+                const isActive = editorFontSettings.baseFontFamily === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => handleFontFamilyChange(f.id as FontFamily)}
+                    className={`p-2.5 rounded-lg text-left transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-bg-card border-l-4 border-l-primary border-y border-r border-border shadow-xs"
+                        : "bg-bg-card/70 hover:bg-bg-card border border-border/80 text-text-muted hover:text-text"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold text-text font-mono">
+                      {f.name}
+                    </div>
+                    <div
+                      className={`text-[9px] font-mono ${
+                        isActive ? "text-primary font-bold" : "text-text-muted"
+                      }`}
+                    >
+                      {f.sub} {isActive ? "[ACTIVE]" : ""}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Bold Weight Selection */}
+          <div className="space-y-2 pt-2 border-t border-border/70 font-mono">
+            <span className="text-[11px] text-text-muted uppercase tracking-wider">
+              Font Boldness Weight
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {availableWeightOptions.map((opt) => {
+                const isSelected = editorFontSettings.boldWeight === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setEditorFontSetting("boldWeight", opt.value)}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-primary text-primary-foreground font-bold shadow-md border border-primary"
+                        : "bg-bg-card hover:bg-bg-emphasis border border-border text-text-muted hover:text-text shadow-keycap"
+                    }`}
+                  >
+                    {opt.label} ({opt.value})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Line Height & Width Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/70 font-mono">
+            {/* Line Height */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold text-text">
+                  Line Height / Raster Pitch
+                </div>
+                <div className="text-[10px] text-text-muted">
+                  Current pitch: {editorFontSettings.lineHeight}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditorFontSetting(
+                      "lineHeight",
+                      Math.max(1.0, Math.round((editorFontSettings.lineHeight - 0.1) * 10) / 10),
+                    )
+                  }
+                  className="w-7 h-7 rounded bg-bg-card hover:bg-bg-emphasis border border-border text-text text-xs font-bold flex items-center justify-center shadow-keycap active:shadow-keycap-pressed cursor-pointer"
+                >
+                  -
+                </button>
+                <span className="px-2.5 py-1 bg-bg-card text-primary font-mono text-xs font-bold rounded border border-border shadow-xs">
+                  {editorFontSettings.lineHeight.toFixed(1)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditorFontSetting(
+                      "lineHeight",
+                      Math.min(2.5, Math.round((editorFontSettings.lineHeight + 0.1) * 10) / 10),
+                    )
+                  }
+                  className="w-7 h-7 rounded bg-bg-card hover:bg-bg-emphasis border border-border text-text text-xs font-bold flex items-center justify-center shadow-keycap active:shadow-keycap-pressed cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Page Width */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold text-text">
+                  Column Width Restriction
+                </div>
+                <div className="text-[10px] text-text-muted">
+                  Preset: {editorWidth.toUpperCase()}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Select
+                  value={editorWidth}
+                  onChange={(e) => setEditorWidth(e.target.value as EditorWidth)}
+                  className="w-32 font-mono text-xs"
+                >
+                  {editorWidthOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Custom Editor Width Input if custom selected */}
+          {editorWidth === "custom" && (
+            <div className="flex items-center justify-between pt-2 border-t border-border/70 font-mono">
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold text-text">
+                  Custom Max Width (px)
+                </div>
+                <div className="text-[10px] text-text-muted">
+                  Set precise container width in pixels
+                </div>
+              </div>
+              <Input
+                type="number"
+                min={400}
+                max={2400}
+                step={20}
+                value={customEditorWidthPx}
+                onChange={(e) => setCustomEditorWidthPx(Math.max(400, parseInt(e.target.value) || 750))}
+                className="w-32 font-mono text-xs"
+              />
+            </div>
+          )}
 
           {/* Text Direction */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">
-              Text Direction
-            </label>
-            <Select
-              value={textDirection}
-              onChange={(e) =>
-                setTextDirection(e.target.value as TextDirection)
-              }
-              className="w-40"
-            >
-              {textDirectionOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {/* Page Width */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">Page Width</label>
-            <Select
-              value={editorWidth}
-              onChange={(e) => setEditorWidth(e.target.value as EditorWidth)}
-              className="w-40"
-            >
-              {editorWidthOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-          {editorWidth === "custom" && (
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-text font-medium">
-                Custom Width
-              </label>
-              <div className="relative w-40 flex items-center gap-2">
-                <Input
-                  type="number"
-                  min="480"
-                  max="3840"
-                  step="10"
-                  value={customEditorWidthPx}
-                  onChange={(e) => {
-                    const parsed = parseInt(e.target.value, 10);
-                    if (Number.isFinite(parsed)) {
-                      setCustomEditorWidthPx(
-                        Math.min(Math.max(parsed, 480), 3840),
-                      );
-                    }
-                  }}
-                  className="w-full h-9 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <span className="text-sm text-text-muted">px</span>
+          <div className="flex items-center justify-between pt-2 border-t border-border/70 font-mono">
+            <div className="space-y-0.5">
+              <div className="text-xs font-semibold text-text">
+                Text Flow Direction
+              </div>
+              <div className="text-[10px] text-text-muted">
+                LTR (Left to Right) or RTL (Right to Left)
               </div>
             </div>
-          )}
+            <div className="flex items-center gap-1 bg-bg-card p-0.5 rounded-lg border border-border">
+              {textDirectionOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTextDirection(opt.value)}
+                  className={`px-2.5 py-1 rounded text-xs font-mono transition-all cursor-pointer ${
+                    textDirection === opt.value
+                      ? "bg-primary text-white font-bold"
+                      : "text-text-muted hover:text-text"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Interface Zoom */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-text font-medium">
-              Interface Zoom
-            </label>
-            <div className="flex items-center gap-1 w-40">
-              <IconButton
-                variant="outline"
-                size="md"
-                onClick={() => setInterfaceZoom((prev) => prev - 0.05)}
+          <div className="flex items-center justify-between pt-2 border-t border-border/70 font-mono">
+            <div className="space-y-0.5">
+              <div className="text-xs font-semibold text-text">
+                Hardware Scale / Zoom Level
+              </div>
+              <div className="text-[10px] text-text-muted">
+                Display viewport multiplier
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 w-36">
+              <button
+                type="button"
+                onClick={() => setInterfaceZoom((prev) => Math.max(0.7, prev - 0.05))}
                 disabled={interfaceZoom <= 0.7}
-                title="Zoom out"
+                className="w-7 h-7 rounded bg-bg-card hover:bg-bg-emphasis border border-border text-text text-xs font-bold flex items-center justify-center shadow-keycap active:shadow-keycap-pressed cursor-pointer disabled:opacity-40"
               >
-                <MinusIcon className="w-4 h-4" />
-              </IconButton>
-              <span className="text-sm font-medium tabular-nums flex-1 text-center">
+                <MinusIcon className="w-3.5 h-3.5" />
+              </button>
+              <span className="text-xs font-bold font-mono text-primary flex-1 text-center bg-bg-card py-1 rounded border border-border">
                 {Math.round(interfaceZoom * 100)}%
               </span>
-              <IconButton
-                variant="outline"
-                size="md"
-                onClick={() => setInterfaceZoom((prev) => prev + 0.05)}
+              <button
+                type="button"
+                onClick={() => setInterfaceZoom((prev) => Math.min(1.5, prev + 0.05))}
                 disabled={interfaceZoom >= 1.5}
-                title="Zoom in"
+                className="w-7 h-7 rounded bg-bg-card hover:bg-bg-emphasis border border-border text-text text-xs font-bold flex items-center justify-center shadow-keycap active:shadow-keycap-pressed cursor-pointer disabled:opacity-40"
               >
-                <PlusIcon className="w-4 h-4" />
-              </IconButton>
+                <PlusIcon className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Preview */}
-        <div className="mt-3 relative">
-          <div className="absolute top-3 left-4 flex items-center text-sm font-medium text-text-muted/70 gap-1">
-            <EyeIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-            <span>Preview</span>
-          </div>
-          <div className="border border-border rounded-[10px] bg-bg p-6 pt-20 max-h-160 overflow-hidden rounded-t-lg">
-            <div
-              className="prose prose-lg dark:prose-invert max-w-xl mx-auto"
-              dir={textDirection}
-              style={{
-                fontFamily:
-                  editorFontSettings.baseFontFamily === "system-sans"
-                    ? "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-                    : editorFontSettings.baseFontFamily === "serif"
-                      ? "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif"
-                      : "ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace",
-                fontSize: `${editorFontSettings.baseFontSize}px`,
-              }}
-            >
-              <h1>Kibble Maximization Protocol</h1>
-              <p>
-                A comprehensive strategy document for getting your humans to
-                increase daily food portions.{" "}
-                <strong>Time-tested methods</strong> that actually work.
-              </p>
-
-              <h2>Primary Techniques</h2>
-              <ul>
-                <li>
-                  <strong>The Sad Eyes Method</strong> - Sit near food bowl,
-                  stare longingly
-                </li>
-                <li>
-                  <strong>Strategic Meowing</strong> - Begin at 5 AM for maximum
-                  effectiveness
-                </li>
-                <li>
-                  <strong>Bowl Inspection</strong> - Loudly inspect empty bowl,
-                  then stare at human
-                </li>
-                <li>
-                  <strong>The Figure Eight</strong> - Weave between their legs
-                  while they cook
-                </li>
-              </ul>
-
-              <h2>Advanced Protocol</h2>
-              <p>
-                For optimal results, combine multiple techniques. The most
-                successful combination involves the Sad Eyes Method followed
-                immediately by Strategic Meowing.
-              </p>
-
-              <div className="relative my-1">
-                <div className="absolute top-2 right-2 z-10">
-                  <CodeCopyButton
-                    text={`function acquireFood() {
-  while (bowl.isEmpty()) {
-    meow();
-    rubAgainstLegs();
-    if (human.isInKitchen) {
-      stareIntently();
-    }
-  }
-}`}
-                  />
-                </div>
-                <pre className="pt-10">
-                  <code>
-                    {`function acquireFood() {
-  while (bowl.isEmpty()) {
-    meow();
-    rubAgainstLegs();
-    if (human.isInKitchen) {
-      stareIntently();
-    }
-  }
-}`}
-                  </code>
-                </pre>
-              </div>
-
-              <h2>Common Mistakes to Avoid</h2>
-              <ol>
-                <li>Never accept the first "no" - persistence is key</li>
-                <li>
-                  Maintain consistency in meal times (your schedule, not theirs)
-                </li>
-                <li>Don't forget to knock things off counters periodically</li>
-              </ol>
-
-              <p>
-                Remember: <em>humans are trainable</em>. With dedication and the
-                right approach, you can increase portions by up to 40% within
-                the first month.
-              </p>
-            </div>
-          </div>
-          {/* Fade overlay - content to muted background */}
-          <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-bg to-transparent pointer-events-none" />
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

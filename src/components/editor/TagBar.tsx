@@ -44,8 +44,12 @@ function SortableTagPill({ tag, color, onRemove }: SortableTagPillProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="flex items-center gap-1 text-2xs px-1.5 py-0.5 rounded-full font-medium leading-none cursor-grab active:cursor-grabbing touch-none"
+      className="flex items-center gap-1 font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded border border-border/40 leading-none cursor-grab active:cursor-grabbing touch-none tracking-wider shadow-xs"
     >
+      <span
+        className="w-1.5 h-1.5 rounded-full shrink-0"
+        style={{ backgroundColor: color }}
+      />
       {tag}
       <button
         type="button"
@@ -53,7 +57,7 @@ function SortableTagPill({ tag, color, onRemove }: SortableTagPillProps) {
           e.stopPropagation();
           onRemove();
         }}
-        className="hover:opacity-70"
+        className="hover:opacity-70 ml-0.5 cursor-pointer"
         tabIndex={-1}
         aria-label={`Remove tag ${tag}`}
       >

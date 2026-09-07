@@ -11,11 +11,9 @@ import {
   ensureIcloudDefaultFolder,
   type IcloudStatus,
 } from "../../services/icloud";
-import { Button } from "../ui";
-import { Input } from "../ui";
+import { Button, Input } from "../ui";
 import {
   FolderIcon,
-  FoldersIcon,
   ExternalLinkIcon,
   SpinnerIcon,
   CloudPlusIcon,
@@ -28,9 +26,6 @@ import type { Settings } from "../../types/note";
 // Format remote URL for display - extract user/repo from full URL
 function formatRemoteUrl(url: string | null): string {
   if (!url) return "Connected";
-  // Extract repo path from URL
-  // SSH: git@github.com:user/repo.git
-  // HTTPS: https://github.com/user/repo.git
   const sshMatch = url.match(/:([^/]+\/[^/]+?)(?:\.git)?$/);
   const httpsMatch = url.match(/\/([^/]+\/[^/]+?)(?:\.git)?$/);
   return sshMatch?.[1] || httpsMatch?.[1] || url;
@@ -39,12 +34,10 @@ function formatRemoteUrl(url: string | null): string {
 // Convert git remote URL to a browsable web URL
 function getRemoteWebUrl(url: string | null): string | null {
   if (!url) return null;
-  // SSH: git@github.com:user/repo.git -> https://github.com/user/repo
   const sshMatch = url.match(/^git@([^:]+):(.+?)(?:\.git)?$/);
   if (sshMatch) {
     return `https://${sshMatch[1]}/${sshMatch[2]}`;
   }
-  // HTTPS: https://github.com/user/repo.git -> https://github.com/user/repo
   const httpsMatch = url.match(/^(https?:\/\/.+?)(?:\.git)?$/);
   if (httpsMatch) {
     return httpsMatch[1];
@@ -78,6 +71,7 @@ export function GeneralSettingsSection() {
   const [isEditingRemote, setIsEditingRemote] = useState(false);
   const [noteTemplate, setNoteTemplate] = useState<string>("Untitled");
   const [previewNoteName, setPreviewNoteName] = useState<string>("Untitled");
+
   // Load template from settings on mount
   useEffect(() => {
     const loadTemplate = async () => {
@@ -86,7 +80,6 @@ export function GeneralSettingsSection() {
         const template = settings.defaultNoteName || "Untitled";
         setNoteTemplate(template);
 
-        // Update preview
         const preview = await invoke<string>("preview_note_name", { template });
         setPreviewNoteName(preview);
       } catch (error) {
@@ -104,7 +97,7 @@ export function GeneralSettingsSection() {
           template: noteTemplate,
         });
         setPreviewNoteName(preview);
-      } catch (error) {
+      } catch {
         setPreviewNoteName("Invalid template");
       }
     };
@@ -122,10 +115,10 @@ export function GeneralSettingsSection() {
           defaultNoteName: noteTemplate || undefined,
         },
       });
-      toast.success("Default name saved");
+      toast.success("Default template saved");
     } catch (error) {
-      console.error("Failed to save default name:", error);
-      toast.error("Failed to save default name");
+      console.error("Failed to save default template:", error);
+      toast.error("Failed to save default template");
     }
   };
 
@@ -137,7 +130,6 @@ export function GeneralSettingsSection() {
 
       if (selected) {
         await setNotesFolder(selected);
-        // Reload theme/font settings from the new folder's .scratch/settings.json
         await reloadSettings();
       }
     } catch (err) {
@@ -165,22 +157,8 @@ export function GeneralSettingsSection() {
     }
   };
 
-  // Format path for display - truncate middle if too long
-  const formatPath = (path: string | null): string => {
-    if (!path) return "Not set";
-    const maxLength = 50;
-    if (path.length <= maxLength) return path;
-
-    // Show start and end of path
-    const start = path.slice(0, 20);
-    const end = path.slice(-25);
-    return `${start}...${end}`;
-  };
-
   const handleAddRemote = async () => {
-    // Guard against concurrent submissions
-    if (isAddingRemote) return;
-    if (!remoteUrl.trim()) return;
+    if (isAddingRemote || !remoteUrl.trim()) return;
     const success = await addRemote(remoteUrl.trim());
     if (success) {
       setRemoteUrl("");
@@ -236,13 +214,11 @@ export function GeneralSettingsSection() {
 
   const handleToggleGitEnabled = async (enabled: boolean) => {
     if (isUpdatingGitEnabled) return;
-
     const success = await setGitEnabled(enabled);
     if (!success) {
       toast.error("Failed to update version control setting");
       return;
     }
-
     if (!enabled) {
       setShowRemoteInput(false);
       setIsEditingRemote(false);
@@ -251,518 +227,455 @@ export function GeneralSettingsSection() {
   };
 
   return (
-    <div className="space-y-8 py-8">
-      {/* Folder Location */}
-      <section className="pb-2">
-        <h2 className="text-xl font-medium mb-0.5">Folder Location</h2>
-        <p className="text-sm text-text-muted mb-4">
-          Your notes are stored as markdown files in this folder
-        </p>
-        <div className="flex items-center gap-2.5 p-2.5 rounded-[10px] border border-border mb-2.5">
-          <div className="p-2 rounded-md bg-bg-muted">
-            <FolderIcon className="w-4.5 h-4.5 stroke-[1.5] text-text-muted" />
+    <div className="space-y-6">
+      {/* Module Title Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-border/80">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-primary text-xs font-mono font-bold tracking-widest uppercase">
+              MODULE 01
+            </span>
+            <span className="text-text-muted/60 font-mono text-xs">//</span>
+            <h2 className="text-base font-bold tracking-wide uppercase font-mono">
+              DIRECTORY CONFIGURATION
+            </h2>
           </div>
-          <p
-            className="text-sm text-text-muted truncate"
-            title={notesFolder || undefined}
-          >
-            {formatPath(notesFolder)}
+          <p className="text-xs text-text-muted mt-0.5">
+            Physical filesystem mount, subfolder indexing, and remote tape backup.
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          <Button
-            onClick={handleChangeFolder}
-            variant="outline"
-            size="md"
-            className="gap-1.25"
-          >
-            <FoldersIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-            Change Folder
-          </Button>
-          {notesFolder && (
-            <Button
-              onClick={handleOpenFolder}
-              variant="ghost"
-              size="md"
-              className="gap-1.25 text-text"
-            >
-              Open Folder
-            </Button>
-          )}
+        <div className="flex items-center gap-2 self-start sm:self-auto font-mono text-[10px]">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            MOUNT STATUS: ACTIVE
+          </span>
+          <span className="px-2 py-0.5 rounded bg-bg-muted text-text-muted border border-border">
+            READ / WRITE
+          </span>
         </div>
-        {isMac && <IcloudSection />}
-      </section>
+      </div>
 
-      {/* Divider */}
-      <div className="border-t border-border border-dashed" />
+      {/* Main Storage Path Instrument Card */}
+      <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 sm:p-5 relative overflow-hidden shadow-screen-inset">
+        <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div className="flex items-center gap-2">
+            <FolderIcon className="w-4 h-4 text-primary" />
+            <span className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+              PRIMARY TAPE STORAGE
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-text-muted">BANK-01</span>
+        </div>
 
-      {/* Folders Section */}
-      <section className="pb-2">
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex flex-col gap-0.75">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-medium">Enable Folders</h2>
+        <div className="mt-3.5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-bg border border-border font-mono">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] uppercase tracking-wider text-text-muted/70 block mb-0.5">
+                MOUNTED PATH
+              </span>
+              <p
+                className="text-xs text-text truncate select-all font-mono"
+                title={notesFolder || undefined}
+              >
+                {notesFolder ? notesFolder : "No folder chosen"}
+              </p>
             </div>
-            <p className="text-sm text-text-muted max-w-lg">
-              Create and view nested folders to organize your notes. When off,
-              notes are shown in a flat list sorted by date.
-            </p>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                onClick={handleChangeFolder}
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs uppercase tracking-wider chiclet-btn"
+              >
+                Change Path
+              </Button>
+              {notesFolder && (
+                <Button
+                  onClick={handleOpenFolder}
+                  variant="ghost"
+                  size="sm"
+                  className="font-mono text-xs uppercase tracking-wider"
+                >
+                  Reveal
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* iCloud Container Sync if on Mac */}
+          {isMac && <IcloudCard />}
+        </div>
+      </div>
+
+      {/* Subfolder & Indexing Hardware Rack */}
+      <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 sm:p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div>
+            <span className="text-xs font-mono font-bold tracking-wider uppercase text-text block">
+              SUBFOLDER HIERARCHY
+            </span>
+            <span className="text-[11px] text-text-muted">
+              Recursively traverse nested folders inside mounted storage bank.
+            </span>
           </div>
           <FoldersToggle />
         </div>
-      </section>
 
-      {/* Divider */}
-      <div className="border-t border-border border-dashed" />
-
-      {/* Git Section */}
-      <section className="pb-2 flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex flex-col gap-0.75">
-            <h2 className="text-xl font-medium">Version Control</h2>
-            <p className="text-sm text-text-muted max-w-lg">
-              Track changes and store backups of your notes using Git
-            </p>
+        {/* Default Note Template */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+              DEFAULT TAPE DESIGNATION
+            </label>
+            <span className="text-[10px] font-mono text-text-muted">
+              TEMPLATE ENGINE
+            </span>
           </div>
-          <div className="flex gap-1 p-1 rounded-[10px] border border-border">
-            <Button
-              onClick={() => handleToggleGitEnabled(false)}
-              variant={!gitEnabled ? "primary" : "ghost"}
-              size="xs"
-              disabled={isUpdatingGitEnabled}
-            >
-              Off
-            </Button>
-            <Button
-              onClick={() => handleToggleGitEnabled(true)}
-              variant={gitEnabled ? "primary" : "ghost"}
-              size="xs"
-              disabled={isUpdatingGitEnabled}
-            >
-              On
-            </Button>
+          <p className="text-[11px] text-text-muted mb-3">
+            Format applied when initializing new blank markdown tapes.
+          </p>
+
+          <div className="space-y-2.5">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={noteTemplate}
+                onChange={(e) => setNoteTemplate(e.target.value)}
+                onBlur={handleSaveTemplate}
+                placeholder="Untitled"
+                className="font-mono text-xs flex-1 bg-bg border-border"
+              />
+              <Button
+                onClick={handleSaveTemplate}
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs uppercase tracking-wider chiclet-btn"
+              >
+                Save
+              </Button>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-bg border border-border flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+                OUTPUT PREVIEW:
+              </span>
+              <span className="text-xs font-mono font-bold text-primary">
+                {previewNoteName}.md
+              </span>
+            </div>
+
+            <details className="text-xs group">
+              <summary className="cursor-pointer text-text-muted hover:text-text select-none flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider">
+                <ChevronRightIcon className="w-3.5 h-3.5 stroke-2 transition-transform group-open:rotate-90" />
+                <span>Available Template Variables</span>
+              </summary>
+              <div className="mt-2 p-3 rounded-lg bg-bg border border-border font-mono text-[11px] space-y-1.5">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-text-muted">
+                  <div><code>{"{timestamp}"}</code> <span className="text-text-muted/60">→ UNIX epoch</span></div>
+                  <div><code>{"{date}"}</code> <span className="text-text-muted/60">→ 2026-09-07</span></div>
+                  <div><code>{"{year}"}</code> <span className="text-text-muted/60">→ 2026</span></div>
+                  <div><code>{"{month}"}</code> <span className="text-text-muted/60">→ 09</span></div>
+                  <div><code>{"{day}"}</code> <span className="text-text-muted/60">→ 07</span></div>
+                  <div><code>{"{counter}"}</code> <span className="text-text-muted/60">→ 1, 2, 3...</span></div>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
-        {!gitEnabled ? null : !gitAvailable ? (
-          <div className="bg-bg-secondary rounded-[10px] border border-border p-4">
-            <p className="text-sm text-text-muted">
-              Git is not available on this system.{" "}
-              <a
-                href="https://git-scm.com/downloads"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text-muted border-b border-text-muted/50 hover:text-text hover:border-text cursor-pointer transition-colors"
-              >
-                Install Git
-              </a>{" "}
-              to enable version control.
-            </p>
+
+        {/* Ignored Folders */}
+        <div className="pt-3 border-t border-border/60">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+              FILTER EXCLUSIONS
+            </label>
+            <span className="text-[10px] font-mono text-text-muted">
+              IGNORE PATTERNS
+            </span>
           </div>
-        ) : isLoading ? (
-          <div className="rounded-[10px] border border-border p-4 flex items-center justify-center">
-            <SpinnerIcon className="w-4.5 h-4.5 stroke-[1.5] animate-spin text-text-muted" />
+          <p className="text-[11px] text-text-muted mb-3">
+            Directories excluded from discovery and full-text vector index.
+          </p>
+          <IgnoredFoldersEditor />
+        </div>
+      </div>
+
+      {/* Subsystem 01-B: Git Version Control & Sync */}
+      <div className="rounded-xl border border-border bg-bg-secondary/40 p-4 sm:p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-border/60">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-primary text-[10px] font-mono font-bold tracking-widest uppercase">
+                SUBSYSTEM 01-B
+              </span>
+              <span className="text-text-muted/60 font-mono text-[10px]">//</span>
+              <span className="text-xs font-mono font-bold tracking-wider uppercase text-text">
+                VERSION CONTROL & REVISION BUS (GIT)
+              </span>
+            </div>
+            <span className="text-[11px] text-text-muted block mt-0.5">
+              Automated tape commit snapshots and remote synchronization.
+            </span>
           </div>
-        ) : !status?.isRepo ? (
-          <div className="bg-bg-secondary rounded-[10px] border border-border p-4">
-            <p className="text-sm text-text-muted mb-2">
-              Enable Git to track changes to your notes with version control.
-              Your changes will be tracked automatically and you can commit and
-              push from the sidebar.
-            </p>
-            <Button
-              onClick={initRepo}
-              disabled={isLoading}
-              variant="outline"
-              size="md"
-            >
-              Initialize Git Repository
-            </Button>
+          <div className="flex items-center gap-2">
+            {gitAvailable ? (
+              <div className="flex gap-1 p-0.5 rounded-lg border border-border bg-bg shrink-0 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => handleToggleGitEnabled(false)}
+                  disabled={isUpdatingGitEnabled}
+                  className={`px-3 py-1 rounded font-bold transition-colors cursor-pointer ${
+                    !gitEnabled
+                      ? "bg-neutral-600 text-white shadow-sm"
+                      : "text-text-muted hover:text-text"
+                  }`}
+                >
+                  OFF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleGitEnabled(true)}
+                  disabled={isUpdatingGitEnabled}
+                  className={`px-3 py-1 rounded font-bold transition-colors cursor-pointer ${
+                    gitEnabled
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-text-muted hover:text-text"
+                  }`}
+                >
+                  ON
+                </button>
+              </div>
+            ) : (
+              <span className="text-[10px] font-mono text-amber-500 uppercase">
+                CLI NOT FOUND
+              </span>
+            )}
+          </div>
+        </div>
+
+        {!gitAvailable ? (
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 font-mono">
+            Git executable was not detected on system PATH. Install git via Homebrew or Xcode command line tools to enable revision control.
+          </div>
+        ) : !gitEnabled ? (
+          <div className="p-3 rounded-lg bg-bg border border-border text-xs text-text-muted font-mono">
+            Git revision bus is currently offline. Enable above to track document revisions and push to GitHub/GitLab.
           </div>
         ) : (
-          <>
-            <div className="rounded-[10px] border border-border p-4 space-y-2.5">
-              {/* Branch status */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-text font-medium">Status</span>
-                <span className="text-sm text-text-muted">
-                  {status.currentBranch
-                    ? `On branch ${status.currentBranch}`
-                    : "Git enabled"}
-                </span>
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-xs font-mono text-text-muted py-2">
+                <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
+                READING REPO TELEMETRY...
               </div>
+            ) : !status?.isRepo ? (
+              <div className="p-4 rounded-lg bg-bg border border-border space-y-3">
+                <div className="text-xs font-mono text-text-muted">
+                  No Git repository initialized in this tape folder.
+                </div>
+                <Button
+                  onClick={initRepo}
+                  variant="primary"
+                  size="sm"
+                  className="font-mono text-xs uppercase tracking-wider chiclet-btn"
+                >
+                  Initialize Repository
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3 font-mono">
+                {/* Repository Status Dashboard */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="p-3 rounded-lg bg-bg border border-border">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted block">
+                      ACTIVE BRANCH
+                    </span>
+                    <span className="text-xs font-bold text-text mt-0.5 block truncate">
+                      {status.currentBranch || "HEAD (detached)"}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-bg border border-border">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted block">
+                      MODIFIED TAPES
+                    </span>
+                    <span className="text-xs font-bold text-text mt-0.5 block">
+                      {status.changedCount} {status.changedCount === 1 ? "FILE" : "FILES"}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-bg border border-border">
+                    <span className="text-[9px] uppercase tracking-wider text-text-muted block">
+                      SYNC BUFFER
+                    </span>
+                    <span className="text-xs font-bold text-text mt-0.5 block">
+                      ↑ {status.aheadCount} / ↓ {status.behindCount}
+                    </span>
+                  </div>
+                </div>
 
-              {/* Remote configuration */}
-              {status.hasRemote ? (
-                <>
-                  {isEditingRemote ? (
-                    <div className="space-y-2">
-                      <span className="text-sm text-text font-medium">
-                        Remote
+                {/* Remote Host Configuration */}
+                <div className="p-3.5 rounded-lg bg-bg border border-border space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">
+                      REMOTE TAPE MIRROR
+                    </span>
+                    {status.remoteUrl ? (
+                      <span className="text-[10px] text-green-500 font-bold">
+                        CONNECTED
                       </span>
+                    ) : (
+                      <span className="text-[10px] text-amber-500 font-bold">
+                        UNLINKED
+                      </span>
+                    )}
+                  </div>
+
+                  {isEditingRemote || showRemoteInput ? (
+                    <div className="space-y-2">
                       <Input
                         type="text"
                         value={remoteUrl}
                         onChange={(e) => setRemoteUrl(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSaveRemoteUrl();
-                          if (e.key === "Escape") handleCancelEditRemote();
+                          if (e.key === "Enter") {
+                            if (isEditingRemote) handleSaveRemoteUrl();
+                            else handleAddRemote();
+                          }
+                          if (e.key === "Escape") {
+                            if (isEditingRemote) handleCancelEditRemote();
+                            else handleCancelRemote();
+                          }
                         }}
-                        placeholder="https://github.com/user/repo.git"
+                        placeholder="https://github.com/user/my-notes.git"
+                        className="font-mono text-xs bg-bg-secondary"
                         autoFocus
                       />
                       <div className="flex gap-2">
                         <Button
-                          onClick={handleSaveRemoteUrl}
-                          disabled={
-                            isAddingRemote ||
-                            !remoteUrl.trim() ||
-                            remoteUrl.trim() === status.remoteUrl
-                          }
+                          onClick={isEditingRemote ? handleSaveRemoteUrl : handleAddRemote}
+                          disabled={isAddingRemote || !remoteUrl.trim()}
                           size="sm"
+                          className="font-mono text-xs uppercase chiclet-btn"
                         >
                           {isAddingRemote ? (
                             <>
-                              <SpinnerIcon className="w-3 h-3 mr-2 animate-spin" />
+                              <SpinnerIcon className="w-3 h-3 mr-1.5 animate-spin" />
                               Saving...
                             </>
                           ) : (
-                            "Save"
+                            "Save Remote"
                           )}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={handleCancelEditRemote}
-                          disabled={isAddingRemote}
+                          onClick={isEditingRemote ? handleCancelEditRemote : handleCancelRemote}
+                          className="font-mono text-xs uppercase"
                         >
                           Cancel
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleRemoveRemote}
-                          disabled={isAddingRemote}
-                          className="ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                        >
-                          Remove
-                        </Button>
+                        {isEditingRemote && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRemoveRemote}
+                            className="ml-auto font-mono text-xs uppercase text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                          >
+                            Remove
+                          </Button>
+                        )}
                       </div>
-                      <RemoteInstructions />
                     </div>
-                  ) : (
+                  ) : status.remoteUrl ? (
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm text-text font-medium">
-                        Remote
-                      </span>
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="min-w-0 flex-1">
                         {getRemoteWebUrl(status.remoteUrl) ? (
                           <button
-                            onClick={() =>
-                              handleOpenUrl(getRemoteWebUrl(status.remoteUrl)!)
-                            }
-                            className="flex items-center gap-0.75 text-sm text-text-muted hover:text-text truncate max-w-50 transition-colors cursor-pointer"
-                            title={status.remoteUrl || undefined}
+                            type="button"
+                            onClick={() => handleOpenUrl(getRemoteWebUrl(status.remoteUrl)!)}
+                            className="flex items-center gap-1.5 text-xs text-primary hover:underline cursor-pointer font-bold"
                           >
-                            <span className="truncate">
-                              {formatRemoteUrl(status.remoteUrl)}
-                            </span>
-                            <ExternalLinkIcon className="w-3.25 h-3.25 shrink-0" />
+                            <span>{formatRemoteUrl(status.remoteUrl)}</span>
+                            <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                           </button>
                         ) : (
-                          <span
-                            className="text-sm text-text-muted truncate max-w-50"
-                            title={status.remoteUrl || undefined}
-                          >
+                          <span className="text-xs text-text truncate block">
                             {formatRemoteUrl(status.remoteUrl)}
                           </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={handleStartEditRemote}
-                          className="text-sm text-text font-medium hover:text-text-muted transition-colors cursor-pointer"
-                        >
-                          Change
-                        </button>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Upstream tracking status */}
-                  {status.hasUpstream ? (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-text font-medium">
-                        Tracking
-                      </span>
-                      <span className="text-sm text-text-muted">
-                        origin/{status.currentBranch}
-                      </span>
-                    </div>
-                  ) : (
-                    status.currentBranch && (
-                      <div className="pt-3 border-t border-border border-dashed space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-text font-medium">
-                            Tracking
-                          </span>
-                          <span className="text-sm font-medium text-amber-500">
-                            Not set up
-                          </span>
-                        </div>
-                        <p className="text-sm text-text-muted mb-2">
-                          Push your commits and set up tracking for the '
-                          {status.currentBranch}' branch.
-                        </p>
-                        <Button
-                          onClick={handlePushWithUpstream}
-                          disabled={isPushing}
-                          size="sm"
-                          className="mb-1.5"
-                        >
-                          {isPushing ? (
-                            <>
-                              <SpinnerIcon className="w-3.25 h-3.25 mr-2 animate-spin" />
-                              Pushing...
-                            </>
-                          ) : (
-                            `Push & track '${status.currentBranch}'`
-                          )}
-                        </Button>
-                      </div>
-                    )
-                  )}
-                </>
-              ) : (
-                <div className="pt-3 border-t border-border border-dashed space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-text font-medium">
-                      Remote
-                    </span>
-                    <span className="text-sm font-medium text-red-500">
-                      Not connected
-                    </span>
-                  </div>
-
-                  {showRemoteInput ? (
-                    <div className="space-y-2">
-                      <Input
-                        type="text"
-                        value={remoteUrl}
-                        onChange={(e) => setRemoteUrl(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleAddRemote();
-                          if (e.key === "Escape") handleCancelRemote();
-                        }}
-                        placeholder="https://github.com/user/repo.git"
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={handleAddRemote}
-                          disabled={isAddingRemote || !remoteUrl.trim()}
-                          size="sm"
-                        >
-                          {isAddingRemote ? (
-                            <>
-                              <SpinnerIcon className="w-3 h-3 mr-2 animate-spin" />
-                              Connecting...
-                            </>
-                          ) : (
-                            "Connect"
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleCancelRemote}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                      <RemoteInstructions />
-                    </div>
-                  ) : (
-                    <>
                       <Button
-                        onClick={() => setShowRemoteInput(true)}
+                        onClick={handleStartEditRemote}
                         variant="outline"
-                        size="md"
+                        size="sm"
+                        className="font-mono text-xs uppercase chiclet-btn shrink-0"
                       >
-                        <CloudPlusIcon className="w-4 h-4 stroke-[1.7] mr-1.5" />
-                        Add Remote
+                        Edit
                       </Button>
-                      <RemoteInstructions />
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Stats — hidden whenever there's an error, since counts may be stale or misleading alongside it */}
-              {lastError ? (
-                <div className="flex items-center justify-between pt-3 border-t border-border border-dashed">
-                  <span className="text-sm text-text font-medium">Status</span>
-                  <span className="text-sm text-text-muted">
-                    An error occurred
-                  </span>
-                </div>
-              ) : (
-                <>
-                  {status.changedCount > 0 && (
-                    <div className="flex items-center justify-between pt-3 border-t border-border border-dashed">
-                      <span className="text-sm text-text font-medium">
-                        Changes to commit
-                      </span>
-                      <span className="text-sm text-text-muted">
-                        {status.changedCount} file
-                        {status.changedCount === 1 ? "" : "s"} changed
-                      </span>
                     </div>
-                  )}
-
-                  {status.aheadCount > 0 && status.hasUpstream && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-text font-medium">
-                        Commits to push
-                      </span>
-                      <span className="text-sm text-text-muted">
-                        {status.aheadCount} commit
-                        {status.aheadCount === 1 ? "" : "s"}
-                      </span>
-                    </div>
-                  )}
-
-                  {status.behindCount > 0 && status.hasUpstream && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-text font-medium">
-                        Commits to pull
-                      </span>
-                      <span className="text-sm text-text-muted">
-                        {status.behindCount} commit
-                        {status.behindCount === 1 ? "" : "s"}
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Error display */}
-              {lastError && (
-                <div className="pt-3 border-t border-border">
-                  <div className="bg-red-500/10 rounded-md p-3">
-                    <p className="text-sm text-red-500 first-letter:capitalize">
-                      {lastError}
-                    </p>
-                    {(lastError.includes("Authentication") ||
-                      lastError.includes("SSH")) && (
-                      <a
-                        href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-red-500 hover:text-red-600 underline font-medium mt-1 inline-block"
-                      >
-                        Learn more about SSH authentication
-                      </a>
-                    )}
+                  ) : (
                     <Button
+                      onClick={() => setShowRemoteInput(true)}
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs uppercase chiclet-btn"
+                    >
+                      <CloudPlusIcon className="w-3.5 h-3.5 mr-1.5" />
+                      Add Remote Host
+                    </Button>
+                  )}
+
+                  {/* Upstream Push Action */}
+                  {!status.hasUpstream && status.currentBranch && status.remoteUrl && (
+                    <div className="pt-2 border-t border-border/60 flex items-center justify-between gap-2">
+                      <span className="text-[10px] text-amber-500 uppercase">
+                        UPSTREAM TRACKING REQUIRED
+                      </span>
+                      <Button
+                        onClick={handlePushWithUpstream}
+                        disabled={isPushing}
+                        variant="primary"
+                        size="sm"
+                        className="font-mono text-xs uppercase chiclet-btn"
+                      >
+                        {isPushing ? (
+                          <>
+                            <SpinnerIcon className="w-3 h-3 mr-1.5 animate-spin" />
+                            Pushing...
+                          </>
+                        ) : (
+                          `Push & Track '${status.currentBranch}'`
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Error Banner */}
+                {lastError && (
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-bold">GIT ENGINE ERROR</p>
+                      <p className="mt-0.5">{lastError}</p>
+                    </div>
+                    <button
+                      type="button"
                       onClick={clearError}
-                      variant="link"
-                      className="block text-sm h-auto p-0 mt-2 text-red-500 hover:text-red-600 font-medium"
+                      className="text-xs uppercase hover:underline cursor-pointer font-bold shrink-0"
                     >
                       Dismiss
-                    </Button>
+                    </button>
                   </div>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* Divider */}
-      <div className="border-t border-border border-dashed" />
-
-      {/* New Note Template */}
-      <section className="pb-2">
-        <h2 className="text-xl font-medium mb-0.5">Default Note Name</h2>
-        <p className="text-sm text-text-muted mb-4">
-          Customize the default name when creating a new note
-        </p>
-
-        <div className="space-y-2">
-          <div>
-            <Input
-              type="text"
-              value={noteTemplate}
-              onChange={(e) => setNoteTemplate(e.target.value)}
-              onBlur={handleSaveTemplate}
-              placeholder="Untitled"
-            />
-          </div>
-          <div className="text-2xs text-text-muted font-mono p-2 rounded-md bg-bg-muted mb-4">
-            Preview: {previewNoteName}
-          </div>
-
-          {/* Template Tags Reference */}
-          <details className="text-sm">
-            <summary className="cursor-pointer text-text-muted hover:text-text select-none flex items-center gap-1 font-medium">
-              <ChevronRightIcon className="w-3.5 h-3.5 stroke-2 transition-transform [[open]>&]:rotate-90" />
-              Add template tags to your name
-            </summary>
-            <div className="mt-2 space-y-1.5 pl-2 text-text-muted">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs">
-                <code>{"{timestamp}"}</code>
-                <span>1739586000</span>
-                <code>{"{date}"}</code>
-                <span>2026-02-15</span>
-                <code>{"{time}"}</code>
-                <span>14-30-45</span>
-                <code>{"{year}"}</code>
-                <span>2026</span>
-                <code>{"{month}"}</code>
-                <span>02</span>
-                <code>{"{day}"}</code>
-                <span>15</span>
-                <code>{"{monthName}"}</code>
-                <span>February</span>
-                <code>{"{monthShort}"}</code>
-                <span>Feb</span>
-                <code>{"{weekday}"}</code>
-                <span>Sunday</span>
-                <code>{"{weekdayShort}"}</code>
-                <span>Sun</span>
-                <code>{"{dayOrdinal}"}</code>
-                <span>15th</span>
-                <code>{"{counter}"}</code>
-                <span>1, 2, 3...</span>
+                )}
               </div>
-              <p className="text-xs mt-2 pt-2 border-t border-border">
-                Examples: <code>Note-{"{year}-{month}-{day}"}</code>
-              </p>
-            </div>
-          </details>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="border-t border-border border-dashed" />
-
-      {/* Ignored Folders */}
-      <section className="pb-2">
-        <h2 className="text-xl font-medium mb-0.5">Ignored Folders</h2>
-        <p className="text-sm text-text-muted mb-4">
-          Folders matching these names are excluded from note discovery and
-          search indexing
-        </p>
-        <IgnoredFoldersEditor />
-      </section>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// macOS-only: lets the user store the notes folder inside their iCloud Drive
-// container so macOS's iCloud daemon syncs it across their Macs. There's no
-// CloudKit entitlement here — this is folder sync, the same approach apps
-// like Obsidian use.
-function IcloudSection() {
+function IcloudCard() {
   const { notesFolder, setNotesFolder } = useNotes();
   const { reloadSettings } = useTheme();
   const [status, setStatus] = useState<IcloudStatus | null>(null);
@@ -794,7 +707,7 @@ function IcloudSection() {
       const folder = await ensureIcloudDefaultFolder();
       await setNotesFolder(folder);
       await reloadSettings();
-      toast.success("Notes folder moved to iCloud Drive");
+      toast.success("Storage moved to iCloud Drive container");
     } catch (err) {
       console.error("Failed to switch to iCloud Drive:", err);
       toast.error(
@@ -807,28 +720,39 @@ function IcloudSection() {
 
   if (isSynced) {
     return (
-      <div className="flex items-center gap-1.25 mt-2 text-sm text-green-600 dark:text-green-500 font-medium">
-        <CloudCheckIcon className="w-4 h-4 stroke-[1.7]" />
-        iCloud synced
+      <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-between font-mono">
+        <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-bold">
+          <CloudCheckIcon className="w-4 h-4 stroke-2" />
+          <span>APPLE ICLOUD SYNC CONTAINER ACTIVE</span>
+        </div>
+        <span className="text-[10px] text-green-600/70 dark:text-green-400/70">
+          AUTOMATIC DAEMON
+        </span>
       </div>
     );
   }
 
-  if (!status?.available) {
-    return null;
-  }
+  if (!status?.available) return null;
 
   return (
-    <div className="flex items-center gap-2 mt-2">
-      <span className="text-sm text-text-muted">Local only</span>
+    <div className="p-3 rounded-lg bg-bg border border-border flex items-center justify-between font-mono">
+      <div>
+        <span className="text-xs text-text-muted block">
+          LOCAL ONLY STORAGE
+        </span>
+        <span className="text-[10px] text-text-muted/60">
+          Sync across macOS devices via iCloud Drive container.
+        </span>
+      </div>
       <Button
         onClick={handleUseIcloud}
         disabled={isSwitching}
-        variant="link"
-        className="h-auto p-0 text-sm gap-1"
+        variant="outline"
+        size="sm"
+        className="font-mono text-xs uppercase chiclet-btn"
       >
-        <CloudPlusIcon className="w-3.5 h-3.5 stroke-[1.7]" />
-        {isSwitching ? "Switching..." : "Use iCloud Drive"}
+        <CloudPlusIcon className="w-3.5 h-3.5 mr-1.5" />
+        {isSwitching ? "Migrating..." : "Use iCloud"}
       </Button>
     </div>
   );
@@ -867,35 +791,43 @@ function FoldersToggle() {
 
   if (foldersEnabled === null) {
     return (
-      <div className="flex gap-1 p-1 rounded-[10px] border border-border shrink-0">
-        <Button variant="ghost" size="xs" disabled>
-          Off
-        </Button>
-        <Button variant="ghost" size="xs" disabled>
-          On
-        </Button>
+      <div className="flex gap-1 p-0.5 rounded-lg border border-border bg-bg shrink-0 font-mono text-xs">
+        <button type="button" disabled className="px-3 py-1 text-text-muted/40">
+          OFF
+        </button>
+        <button type="button" disabled className="px-3 py-1 text-text-muted/40">
+          ON
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex gap-1 p-1 rounded-[10px] border border-border shrink-0">
-      <Button
+    <div className="flex gap-1 p-0.5 rounded-lg border border-border bg-bg shrink-0 font-mono text-xs">
+      <button
+        type="button"
         onClick={() => handleToggle(false)}
-        variant={!foldersEnabled ? "primary" : "ghost"}
-        size="xs"
         disabled={isUpdating}
+        className={`px-3 py-1 rounded font-bold transition-colors cursor-pointer ${
+          !foldersEnabled
+            ? "bg-neutral-600 text-white shadow-sm"
+            : "text-text-muted hover:text-text"
+        }`}
       >
-        Off
-      </Button>
-      <Button
+        OFF
+      </button>
+      <button
+        type="button"
         onClick={() => handleToggle(true)}
-        variant={foldersEnabled ? "primary" : "ghost"}
-        size="xs"
         disabled={isUpdating}
+        className={`px-3 py-1 rounded font-bold transition-colors cursor-pointer ${
+          foldersEnabled
+            ? "bg-primary text-white shadow-sm"
+            : "text-text-muted hover:text-text"
+        }`}
       >
-        On
-      </Button>
+        ON
+      </button>
     </div>
   );
 }
@@ -938,9 +870,7 @@ function IgnoredFoldersEditor() {
       try {
         await invoke("rebuild_search_index");
       } catch {
-        toast.error(
-          "Search index rebuild failed — search results may be stale",
-        );
+        toast.error("Search index rebuild failed — results may be stale");
       }
     } catch {
       toast.error("Failed to save ignored folders");
@@ -979,18 +909,18 @@ function IgnoredFoldersEditor() {
     patterns.every((p, i) => p === defaults[i]);
 
   if (patterns === null) {
-    return <div className="text-sm text-text-muted py-2">Loading...</div>;
+    return <div className="text-xs font-mono text-text-muted py-2">LOADING EXCLUSIONS...</div>;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 font-mono">
       <div className="flex flex-wrap gap-1.5">
         {patterns.map((pattern) => (
           <span
             key={pattern}
-            className="inline-flex items-center gap-1 pl-2 pr-1 py-0.75 rounded-md bg-bg-muted text-2xs font-mono"
+            className="inline-flex items-center gap-1.5 pl-2.5 pr-1 py-1 rounded bg-bg border border-border text-[11px] text-text"
           >
-            {pattern}
+            <span>{pattern}</span>
             <button
               type="button"
               aria-label={`Remove ${pattern}`}
@@ -998,16 +928,17 @@ function IgnoredFoldersEditor() {
               disabled={isSaving}
               className="p-0.5 rounded hover:bg-bg-hover text-text-muted hover:text-text cursor-pointer"
             >
-              <XIcon className="w-3 h-3 stroke-[1.7]" />
+              <XIcon className="w-3 h-3 stroke-2" />
             </button>
           </span>
         ))}
         {patterns.length === 0 && (
-          <span className="text-sm text-text-muted">
-            No folders ignored — all markdown files will be indexed
+          <span className="text-xs text-text-muted">
+            No folders excluded — all markdown tapes indexed.
           </span>
         )}
       </div>
+
       <div className="flex gap-2">
         <Input
           type="text"
@@ -1019,46 +950,31 @@ function IgnoredFoldersEditor() {
               handleAdd();
             }
           }}
-          placeholder="Add folder name..."
-          className="flex-1"
+          placeholder="Folder name (e.g. archive, temp)..."
+          className="flex-1 font-mono text-xs bg-bg border-border"
           disabled={isSaving}
         />
         <Button
           onClick={handleAdd}
           variant="outline"
           size="sm"
-          className="h-10"
+          className="font-mono text-xs uppercase chiclet-btn"
           disabled={isSaving || !newPattern.trim()}
         >
           Add
         </Button>
       </div>
+
       {!isDefault && (
         <button
           type="button"
           onClick={handleReset}
           disabled={isSaving}
-          className="text-sm text-text-muted hover:text-text cursor-pointer font-medium"
+          className="text-xs text-text-muted hover:text-primary transition-colors cursor-pointer font-bold uppercase tracking-wider"
         >
-          Reset to defaults
+          [ RESET TO FACTORY DEFAULTS ]
         </button>
       )}
-    </div>
-  );
-}
-
-function RemoteInstructions() {
-  return (
-    <div className="text-sm text-text-muted space-y-1.5 pt-2 pb-1.5">
-      <p className="font-medium">To get your remote URL:</p>
-      <ol className="list-decimal list-inside space-y-0.5 pl-1">
-        <li>Create a repository on GitHub, GitLab, etc.</li>
-        <li>Copy the repository URL (HTTPS or SSH)</li>
-        <li>Click "Add Remote" and paste the URL</li>
-      </ol>
-      <p className="text-text-muted/70 pt-1">
-        Example: https://github.com/username/my-notes.git
-      </p>
     </div>
   );
 }

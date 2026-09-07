@@ -10,6 +10,7 @@ import { SidebarResizeHandle } from "./components/layout/SidebarResizeHandle";
 import { SIDEBAR_DEFAULT_PX } from "./lib/sidebar";
 import { Editor } from "./components/editor/Editor";
 import type { Editor as TiptapEditor } from "@tiptap/react";
+import { ChassisHeader } from "./components/layout/ChassisHeader";
 import { FolderPicker } from "./components/layout/FolderPicker";
 import { CommandPalette } from "./components/command-palette/CommandPalette";
 import { SettingsPage } from "./components/settings";
@@ -468,29 +469,43 @@ function AppContent() {
 
   return (
     <>
-      <div className="h-full min-h-0 flex bg-bg text-text overflow-hidden">
-        {view === "settings" ? (
-          <SettingsPage onBack={closeSettings} />
-        ) : (
-          <>
-            <div
-              data-sidebar
-              style={{ width: (!sidebarVisible || focusMode) ? 0 : `var(--sidebar-width, ${SIDEBAR_DEFAULT_PX}px)` }}
-              className={`relative transition-all duration-500 ease-out overflow-hidden ${!sidebarVisible || focusMode ? "opacity-0 -translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"}`}
-            >
-              <Sidebar onOpenSettings={toggleSettings} />
-              {sidebarVisible && !focusMode && <SidebarResizeHandle />}
-            </div>
-            <Editor
-              onToggleSidebar={toggleSidebar}
-              sidebarVisible={sidebarVisible}
-              focusMode={focusMode}
-              onEditorReady={(editor) => {
-                editorRef.current = editor;
-              }}
-            />
-          </>
+      <div className="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden bg-chassis-grain">
+        {/* Retro Field Chassis Header Bar */}
+        {!focusMode && view === "notes" && (
+          <ChassisHeader
+            onToggleSidebar={toggleSidebar}
+            sidebarVisible={sidebarVisible}
+            onOpenSettings={toggleSettings}
+            onOpenCommandPalette={() => setPaletteOpen(true)}
+            focusMode={focusMode}
+            onToggleFocusMode={toggleFocusMode}
+          />
         )}
+
+        <div className="flex-1 min-h-0 flex overflow-hidden relative">
+          {view === "settings" ? (
+            <SettingsPage onBack={closeSettings} />
+          ) : (
+            <>
+              <div
+                data-sidebar
+                style={{ width: (!sidebarVisible || focusMode) ? 0 : `var(--sidebar-width, ${SIDEBAR_DEFAULT_PX}px)` }}
+                className={`relative transition-all duration-500 ease-out overflow-hidden shrink-0 ${!sidebarVisible || focusMode ? "opacity-0 -translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"}`}
+              >
+                <Sidebar onOpenSettings={toggleSettings} />
+                {sidebarVisible && !focusMode && <SidebarResizeHandle />}
+              </div>
+              <Editor
+                onToggleSidebar={toggleSidebar}
+                sidebarVisible={sidebarVisible}
+                focusMode={focusMode}
+                onEditorReady={(editor) => {
+                  editorRef.current = editor;
+                }}
+              />
+            </>
+          )}
+        </div>
       </div>
 
       {/* Shared backdrop for command palette and AI modal */}

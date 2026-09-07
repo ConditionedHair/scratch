@@ -132,22 +132,30 @@ export function TagList() {
   }
 
   return (
-    <div className="px-1.5 pt-1.5">
+    <div className="px-2.5 pt-2 pb-1">
       <div
         onClick={handleToggleCollapse}
         role="button"
         tabIndex={-1}
-        className="flex items-center gap-1 px-1 py-1 cursor-pointer select-none rounded-md hover:bg-bg-muted"
+        className="flex items-center justify-between mb-1 px-1 py-1 cursor-pointer select-none rounded hover:bg-bg-muted transition-colors group"
       >
-        {collapsed ? (
-          <ChevronRightIcon className="w-4 h-4 stroke-[1.6] text-text-muted/60 shrink-0" />
-        ) : (
-          <ChevronDownIcon className="w-4 h-4 stroke-[1.6] text-text-muted/60 shrink-0" />
-        )}
-        <span className="text-sm text-text-muted truncate">Tags</span>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-1.5 h-1.5 bg-ram-orange rounded-full shadow-[0_0_4px_#FF5400]" />
+          <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider group-hover:text-text">
+            CHANNEL TAGS
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[9px] font-mono text-text-muted/70">
+          <span>SELECTOR</span>
+          {collapsed ? (
+            <ChevronRightIcon className="w-3 h-3 stroke-[2] text-text-muted" />
+          ) : (
+            <ChevronDownIcon className="w-3 h-3 stroke-[2] text-text-muted" />
+          )}
+        </div>
       </div>
       {!collapsed && (
-        <div className="flex flex-col gap-0.5 pb-1">
+        <div className="space-y-1 font-mono text-xs pb-1">
           {tagCounts.map(({ tag, count }) => {
             const isActive = activeTagFilter === tag;
             const tagColor = getTagColor(tag, settings?.tagColors);
@@ -159,22 +167,35 @@ export function TagList() {
                     role="button"
                     tabIndex={-1}
                     className={cn(
-                      "flex items-center gap-2 py-1.5 pl-6 pr-2 cursor-pointer rounded-md select-none transition-colors",
-                      isActive ? "bg-bg-muted" : "hover:bg-bg-muted",
+                      "flex items-center justify-between px-2 py-1 rounded cursor-pointer select-none transition-colors group border",
+                      isActive
+                        ? "bg-[#C7C1B2] dark:bg-[#262832] border-ram-amber/50 text-text font-bold shadow-xs"
+                        : "border-transparent hover:bg-[#CBC6BA] dark:hover:bg-[#21232b] text-text-muted hover:text-text",
                     )}
                   >
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: tagColor }}
-                    />
-                    <span className="text-sm text-text truncate flex-1">{tag}</span>
-                    <div className="text-text-muted font-medium text-2xs min-w-4.75 h-4.75 flex items-center justify-center px-1 bg-bg-muted rounded-sm">
-                      {count}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_5px_currentColor]"
+                        style={{ backgroundColor: tagColor, color: tagColor }}
+                      />
+                      <span className="text-[11px] font-medium truncate group-hover:text-text">
+                        {tag}
+                      </span>
                     </div>
+                    <span
+                      className={cn(
+                        "text-[10px] px-1.5 py-0.2 rounded font-mono font-bold",
+                        isActive
+                          ? "bg-ram-amber text-black"
+                          : "text-text-muted bg-[#DDD8CC] dark:bg-[#22242c] border border-border/40",
+                      )}
+                    >
+                      {count}
+                    </span>
                   </div>
                 </ContextMenu.Trigger>
                 <ContextMenu.Portal>
-                  <ContextMenu.Content className="min-w-44 bg-bg border border-border rounded-md shadow-lg py-1 z-50">
+                  <ContextMenu.Content className="min-w-44 bg-[#FAF8F5] dark:bg-[#1c1d23] border border-border rounded-md shadow-lg py-1 z-50 font-mono text-xs">
                     <ContextMenu.Item
                       className={menuItemClass}
                       onSelect={() => openRenameDialog(tag)}
@@ -189,7 +210,7 @@ export function TagList() {
                       </ContextMenu.SubTrigger>
                       <ContextMenu.Portal>
                         <ContextMenu.SubContent
-                          className="bg-bg border border-border rounded-md shadow-lg p-2 z-50"
+                          className="bg-[#FAF8F5] dark:bg-[#1c1d23] border border-border rounded-md shadow-lg p-2 z-50"
                           sideOffset={4}
                         >
                           <div className="grid grid-cols-4 gap-1.5">
@@ -200,8 +221,8 @@ export function TagList() {
                                 onClick={() => handleColorSelect(tag, color)}
                                 title={color}
                                 className={cn(
-                                  "w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110",
-                                  color === tagColor && "ring-2 ring-offset-2 ring-offset-bg ring-text-muted",
+                                  "w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-xs",
+                                  color === tagColor && "ring-2 ring-offset-2 ring-offset-bg ring-text",
                                 )}
                                 style={{ backgroundColor: color }}
                               />

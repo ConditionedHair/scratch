@@ -719,37 +719,52 @@ export function CommandPalette({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center py-11 px-4 pointer-events-none">
       {/* Palette */}
-      <div className="relative w-full h-full max-h-108 max-w-2xl bg-bg rounded-xl shadow-2xl overflow-hidden border border-border animate-slide-down flex flex-col pointer-events-auto">
-        {/* Search input */}
-        <div className="border-b border-border flex-none">
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search notes or type a command..."
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            className="w-full px-4.5 py-3.5 text-[17px] bg-transparent outline-none text-text placeholder-text-muted/50"
-          />
+      <div className="relative w-full h-full max-h-115 max-w-2xl bg-bg-card/95 rounded-2xl shadow-2xl overflow-hidden border border-border animate-slide-down flex flex-col pointer-events-auto backdrop-blur-md">
+        {/* Instrument Silkscreen Bar */}
+        <div className="px-4 py-2 bg-bg-muted/80 border-b border-border/80 flex items-center justify-between text-[10px] font-mono tracking-wider text-text-muted select-none">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+            <span className="font-bold text-text uppercase">TERMINAL // DISPATCH BUS</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span>MOD: {mod}</span>
+            <span>ESC: ABORT</span>
+          </div>
+        </div>
+
+        {/* Search input (OLED recessed style) */}
+        <div className="p-3 border-b border-border/80 bg-bg/50">
+          <div className="relative flex items-center bg-bg rounded-lg border border-border/80 shadow-screen-inset px-3">
+            <span className="text-primary font-mono text-xs font-bold mr-2 select-none">&gt;</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search index or type system instruction..."
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              className="w-full py-2.5 text-xs font-mono bg-transparent outline-none text-text placeholder-text-muted/50"
+            />
+          </div>
         </div>
 
         {/* Results */}
         <div ref={listRef} className="overflow-y-auto h-full p-2.5 flex-1">
           {allItems.length === 0 ? (
-            <div className="text-sm font-medium opacity-50 text-text-muted p-2">
-              No results found
+            <div className="text-xs font-mono text-text-muted/60 p-4 text-center">
+              // NO MATCHING BUFFER OR COMMAND
             </div>
           ) : (
             <>
               {/* Commands section */}
               {filteredCommands.length > 0 && (
-                <div className="space-y-0.5 mb-5">
-                  <div className="text-sm font-medium text-text-muted px-2.5 py-1.5">
-                    Commands
+                <div className="space-y-0.5 mb-4">
+                  <div className="text-[10px] font-mono font-bold tracking-widest text-text-muted uppercase px-2.5 py-1">
+                    // SYSTEM OPERATIONS
                   </div>
                   {filteredCommands.map((cmd, i) => {
                     return (
@@ -770,8 +785,8 @@ export function CommandPalette({
               {/* Notes section */}
               {filteredNotes.length > 0 && (
                 <div className="space-y-0.5">
-                  <div className="text-sm font-medium text-text-muted px-2.5 py-1.5">
-                    Notes
+                  <div className="text-[10px] font-mono font-bold tracking-widest text-text-muted uppercase px-2.5 py-1">
+                    // STORED TAPES [{filteredNotes.length}]
                   </div>
                   {filteredNotes.slice(0, 10).map((note, i) => {
                     const title = cleanTitle(note.title);

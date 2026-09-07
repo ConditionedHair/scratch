@@ -522,6 +522,7 @@ interface EditorProps {
   onToggleSidebar?: () => void;
   sidebarVisible?: boolean;
   focusMode?: boolean;
+  onSourceModeChange?: (sourceMode: boolean) => void;
   previewMode?: PreviewModeData;
   onEditorReady?: (editor: TiptapEditor | null) => void;
   onSaveToFolder?: () => void;
@@ -585,6 +586,7 @@ export function Editor({
   onToggleSidebar,
   sidebarVisible,
   focusMode,
+  onSourceModeChange,
   onEditorReady,
   previewMode,
   onSaveToFolder,
@@ -646,6 +648,9 @@ export function Editor({
   const isSidebarActive = sidebarVisible && !focusMode;
   // Source mode state
   const [sourceMode, setSourceMode] = useState(false);
+  useEffect(() => {
+    onSourceModeChange?.(sourceMode);
+  }, [sourceMode, onSourceModeChange]);
   const [sourceContent, setSourceContent] = useState("");
   const sourceTimeoutRef = useRef<number | null>(null);
   const sourceModeTransitionRef = useRef<{
@@ -2563,7 +2568,7 @@ export function Editor({
         >
           {sourceMode ? (
             /* Markdown source textarea */
-            <div className="h-full">
+            <div key={`source-${currentNote?.id || "preview"}`} className="h-full animate-note-settle">
               <textarea
                 value={sourceContent}
                 onChange={(e) => handleSourceChange(e.target.value)}
@@ -2620,7 +2625,8 @@ export function Editor({
                 </div>
               )}
               <div
-                className="h-full"
+                key={`doc-${currentNote?.id || "empty"}`}
+                className="h-full animate-note-settle"
                 onContextMenu={async (e) => {
                   if (!editor) return;
 

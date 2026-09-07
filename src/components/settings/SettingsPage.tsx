@@ -80,16 +80,12 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   }, [onBack]);
 
   return (
-    <div className="h-full w-full flex flex-col bg-bg text-text select-none overflow-hidden bg-chassis-grain">
+    <div className="h-full w-full flex flex-col bg-bg text-text select-none overflow-hidden bg-chassis-grain animate-chassis-enter">
       {/* Top Instrument Control Header */}
       <header
         className="w-full px-4 py-2.5 border-b border-border bg-[#DDD9CF] dark:bg-[#1a1c22] flex items-center justify-between gap-3 shrink-0 z-30 shadow-xs"
         data-tauri-drag-region
       >
-        {/* Hardware Corner Screws */}
-        <div className="absolute top-2.5 left-2 screw-head pointer-events-none opacity-80" />
-        <div className="absolute top-2.5 right-2 screw-head pointer-events-none opacity-80" />
-
         {/* Left: Brand / Status Diode */}
         <div className={`titlebar-no-drag flex items-center gap-3 ${isMac && !isWindows ? "pl-16 sm:pl-18" : "pl-2"}`}>
           <div className="w-3.5 h-3.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)] ring-2 ring-primary/40 flex items-center justify-center shrink-0">
@@ -113,7 +109,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
         {/* Center: Audio / Clock / Context chips */}
         <div className="hidden lg:flex items-center gap-5">
           <div className="flex items-center gap-2 bg-bg-card px-2.5 py-1 rounded border border-border">
-            <div className="w-10 h-3.5 speaker-vent opacity-60" />
             <span className="text-[9px] font-mono text-text-muted tracking-widest">BUS//IO</span>
           </div>
 
@@ -182,7 +177,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg font-mono text-xs transition-all duration-150 active:scale-[0.985] cursor-pointer ${
                       isActive
                         ? "bg-bg-emphasis text-text border-l-4 border-l-primary border-y border-r border-border shadow-xs font-bold"
                         : "text-text-muted hover:text-text hover:bg-bg-muted/70 border border-transparent"
@@ -190,7 +185,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   >
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`text-[11px] font-bold ${
+                        className={`text-[11px] font-bold transition-colors ${
                           isActive ? "text-primary" : "text-text-muted/60"
                         }`}
                       >
@@ -199,14 +194,14 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                       <Icon
                         className={`w-4 h-4 ${
                           isActive ? "text-primary" : "text-text-muted"
-                        } stroke-[1.8]`}
+                        } stroke-[1.8] transition-colors`}
                       />
                       <span className="tracking-wider text-[11px] uppercase">
                         {tab.label}
                       </span>
                     </div>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded border font-mono transition-colors ${
                         isActive
                           ? "text-primary bg-primary/10 border-primary/30 font-bold"
                           : "text-text-muted/60 bg-bg border-border/60"
@@ -242,7 +237,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           className="flex-1 bg-bg-card rounded-xl border border-border p-5 lg:p-7 overflow-y-auto shadow-screen-inset flex flex-col justify-between"
           data-purpose="settings-rack-panel"
         >
-          <div ref={scrollContainerRef} className="max-w-4xl space-y-6">
+          <div key={activeTab} ref={scrollContainerRef} className="max-w-4xl space-y-6 animate-tab-enter">
             {activeTab === "general" && <GeneralSettingsSection />}
             {activeTab === "tools" && <ToolsSettingsSection />}
             {activeTab === "editor" && <AppearanceSettingsSection />}

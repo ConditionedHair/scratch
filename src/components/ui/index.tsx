@@ -50,11 +50,11 @@ export function ToolbarButton({
   const button = (
     <button
       className={cn(
-        "h-7 w-7 flex items-center justify-center text-sm rounded transition-colors shrink-0",
+        "h-7 w-7 flex items-center justify-center text-sm rounded transition-all duration-150 active:scale-90 shrink-0 cursor-pointer",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
         isActive
-          ? "bg-bg-muted text-text"
-          : "hover:bg-bg-muted text-text-muted",
+          ? "bg-bg-muted text-text font-bold"
+          : "hover:bg-bg-muted text-text-muted hover:text-text",
         className
       )}
       tabIndex={-1}
@@ -107,7 +107,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "flex items-center justify-center rounded-md transition-colors",
+          "flex items-center justify-center rounded-md transition-all duration-150 active:scale-90",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
           "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
           iconButtonSizes[size],
@@ -169,7 +169,7 @@ export function ListItem({
       role="button"
       tabIndex={-1}
       className={cn(
-        "relative w-full text-left p-2.5 transition-all cursor-pointer select-none rounded-lg font-sans",
+        "relative w-full text-left p-2.5 transition-all duration-150 active:scale-[0.99] cursor-pointer select-none rounded-lg font-sans",
         "focus:outline-none",
         isSelected
           ? "bg-[#FAF8F5] dark:bg-[#1f2128] border-2 border-ram-blue shadow-[0_3px_10px_rgba(0,71,255,0.18)]"
@@ -178,7 +178,7 @@ export function ListItem({
     >
       {/* Physical active tab indicator */}
       {isSelected && (
-        <div className="absolute -left-1 top-2.5 w-1.5 h-6 bg-ram-blue rounded-r shadow-[0_0_6px_#0047FF]" />
+        <div className="absolute -left-1 top-2.5 w-1.5 h-6 bg-ram-blue rounded-r shadow-[0_0_6px_#0047FF] transition-all duration-150" />
       )}
 
       {/* Title & Status indicator */}
@@ -271,9 +271,9 @@ export function CommandItem({
       role="button"
       tabIndex={-1}
       className={cn(
-        "w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-all cursor-pointer border",
+        "w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-all duration-100 cursor-pointer border",
         isSelected
-          ? "bg-bg-emphasis/90 border-border text-text shadow-xs"
+          ? "bg-bg-emphasis/90 border-border text-text shadow-xs translate-x-0.5"
           : "border-transparent text-text hover:bg-bg-muted/70"
       )}
     >

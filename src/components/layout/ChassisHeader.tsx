@@ -45,11 +45,7 @@ export const ChassisHeader = memo(function ChassisHeader({
       className="relative px-4 py-2 border-b-2 border-border bg-[#DDD9CF] dark:bg-[#1a1c22] flex flex-wrap items-center justify-between gap-3 z-30 shrink-0 select-none shadow-sm transition-colors"
       data-tauri-drag-region
     >
-      {/* Hardware corner screw heads */}
-      <div className="absolute top-2.5 left-2 screw-head pointer-events-none opacity-80" />
-      <div className="absolute top-2.5 right-2 screw-head pointer-events-none opacity-80" />
-
-      {/* Left group: Silkscreen branding, toggle sidebar & perforation grille */}
+      {/* Left group: Silkscreen branding & toggle sidebar */}
       <div className={`titlebar-no-drag flex items-center gap-3 md:gap-5 ${isMac && !isWindows ? "pl-16 sm:pl-18" : "pl-3"}`}>
         {onToggleSidebar && (
           <button
@@ -84,16 +80,6 @@ export const ChassisHeader = memo(function ChassisHeader({
             </p>
           </div>
         </div>
-
-        <div className="hidden lg:block h-5 w-px bg-border opacity-70" />
-
-        {/* Speaker / Microphone Perforation Grille */}
-        <div className="hidden xl:flex items-center gap-2">
-          <div className="w-12 h-4 speaker-vent opacity-75 rounded-xs border border-border bg-bg-secondary" />
-          <span className="text-[8px] font-mono tracking-widest text-text-muted">
-            MIC/SPKR
-          </span>
-        </div>
       </div>
 
       {/* Middle: Analog Potentiometer & Mode Selector */}
@@ -104,13 +90,13 @@ export const ChassisHeader = memo(function ChassisHeader({
           className="flex items-center gap-2 cursor-pointer group"
           title="Click to cycle text scale"
         >
-          <span className="text-[9px] font-mono font-bold text-text-muted tracking-wider uppercase">
+          <span className="text-[9px] font-mono font-bold text-text-muted group-hover:text-text tracking-wider uppercase transition-colors">
             SCALE
           </span>
-          <div className="relative w-7 h-7 rounded-full bg-[#EFECE6] dark:bg-[#23252d] border border-border shadow-knob flex items-center justify-center transition-all group-hover:scale-105">
+          <div className="relative w-7 h-7 rounded-full bg-[#EFECE6] dark:bg-[#23252d] border border-border shadow-knob flex items-center justify-center transition-all duration-150 group-hover:scale-105 group-active:scale-95">
             <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#D6D0C2] to-[#F5F3ED] dark:from-[#1b1d23] dark:to-[#2b2e38] border border-border/60 flex items-center justify-center">
               <div
-                className="w-0.75 h-2.5 bg-ram-orange rounded-full shadow-[0_0_4px_#FF5400] transition-transform duration-200"
+                className="w-0.75 h-2.5 bg-ram-orange rounded-full shadow-[0_0_4px_#FF5400] transition-transform duration-300 ease-out"
                 style={{
                   transform: `rotate(${Math.round((interfaceZoom - 1.0) * 120 + 45)}deg)`,
                 }}
@@ -123,38 +109,44 @@ export const ChassisHeader = memo(function ChassisHeader({
         </div>
 
         {/* Mode Selector Switch */}
-        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-md border border-border">
+        <div className="flex items-center gap-0.5 bg-bg-secondary dark:bg-[#121317] p-1 rounded-md border border-border shadow-inner">
           <button
             onClick={() => {
               if (sourceMode && onToggleSourceMode) onToggleSourceMode();
               if (focusMode && onToggleFocusMode) onToggleFocusMode();
             }}
-            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-colors ${
+            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-all duration-150 active:scale-95 cursor-pointer ${
               !sourceMode && !focusMode
-                ? "bg-ram-orange text-white shadow-xs"
-                : "text-text-muted hover:text-text"
+                ? "bg-ram-orange text-white shadow-xs font-extrabold"
+                : "text-text-muted hover:text-text hover:bg-bg-card/40"
             }`}
           >
             WRITE
           </button>
           <button
-            onClick={onToggleSourceMode}
+            onClick={() => {
+              if (focusMode && onToggleFocusMode) onToggleFocusMode();
+              if (onToggleSourceMode) onToggleSourceMode();
+            }}
             title={`Toggle Markdown Source (${mod}${isMac ? "" : "+"}${isMac ? "Shift+" : "Shift+"}M)`}
-            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-colors ${
+            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-all duration-150 active:scale-95 cursor-pointer ${
               sourceMode
-                ? "bg-ram-orange text-white shadow-xs"
-                : "text-text-muted hover:text-text"
+                ? "bg-ram-orange text-white shadow-xs font-extrabold"
+                : "text-text-muted hover:text-text hover:bg-bg-card/40"
             }`}
           >
             SRC
           </button>
           <button
-            onClick={onToggleFocusMode}
+            onClick={() => {
+              if (sourceMode && onToggleSourceMode) onToggleSourceMode();
+              if (onToggleFocusMode) onToggleFocusMode();
+            }}
             title={`Toggle Focus Mode (${mod}${isMac ? "" : "+"}Shift+Enter)`}
-            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-colors ${
+            className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-xs transition-all duration-150 active:scale-95 cursor-pointer ${
               focusMode
-                ? "bg-ram-orange text-white shadow-xs"
-                : "text-text-muted hover:text-text"
+                ? "bg-ram-orange text-white shadow-xs font-extrabold"
+                : "text-text-muted hover:text-text hover:bg-bg-card/40"
             }`}
           >
             FOCUS

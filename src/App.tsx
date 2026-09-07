@@ -77,8 +77,13 @@ function AppContent() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [aiEditing, setAiEditing] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [sourceMode, setSourceMode] = useState(false);
   const [aiProvider, setAiProvider] = useState<AiProvider>("claude");
   const editorRef = useRef<TiptapEditor | null>(null);
+
+  const toggleSourceMode = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("toggle-source-mode"));
+  }, []);
 
   // Listen for set-notes-folder event from CLI (scratch .)
   // Placed here in AppContent where both NotesContext and ThemeContext are available
@@ -479,6 +484,8 @@ function AppContent() {
             onOpenCommandPalette={() => setPaletteOpen(true)}
             focusMode={focusMode}
             onToggleFocusMode={toggleFocusMode}
+            sourceMode={sourceMode}
+            onToggleSourceMode={toggleSourceMode}
           />
         )}
 
@@ -499,6 +506,7 @@ function AppContent() {
                 onToggleSidebar={toggleSidebar}
                 sidebarVisible={sidebarVisible}
                 focusMode={focusMode}
+                onSourceModeChange={setSourceMode}
                 onEditorReady={(editor) => {
                   editorRef.current = editor;
                 }}

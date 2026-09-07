@@ -167,7 +167,7 @@ export function TagList() {
                     role="button"
                     tabIndex={-1}
                     className={cn(
-                      "flex items-center justify-between px-2 py-1 rounded cursor-pointer select-none transition-colors group border",
+                      "flex items-center justify-between px-2 py-1 rounded cursor-pointer select-none transition-all duration-100 active:scale-[0.99] group border",
                       isActive
                         ? "bg-[#C7C1B2] dark:bg-[#262832] border-ram-amber/50 text-text font-bold shadow-xs"
                         : "border-transparent hover:bg-[#CBC6BA] dark:hover:bg-[#21232b] text-text-muted hover:text-text",

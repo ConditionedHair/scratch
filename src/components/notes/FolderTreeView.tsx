@@ -892,7 +892,7 @@ export function FolderTreeView({
         tabIndex={0}
         data-note-list
         data-folder-tree
-        className="group/notelist flex flex-col gap-0.5 p-1.5 outline-none"
+        className="group/notelist flex flex-col gap-0.5 p-1.5 outline-none stagger-items"
         onKeyDown={handleKeyDown}
       >
         {/* Pinned root notes */}

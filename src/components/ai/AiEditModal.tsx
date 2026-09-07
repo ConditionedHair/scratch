@@ -165,7 +165,7 @@ export function AiEditModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center py-11 px-4 pointer-events-none">
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-bg rounded-xl shadow-2xl overflow-hidden border border-border animate-slide-down pointer-events-auto">
+      <div className="relative w-full max-w-2xl bg-bg rounded-xl shadow-2xl overflow-hidden border border-border animate-modal-pop pointer-events-auto">
         {/* Input */}
         <div className="border-b border-border">
           <div className="flex items-center gap-3 px-4.5 py-3.5">

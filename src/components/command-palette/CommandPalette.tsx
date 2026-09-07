@@ -719,7 +719,7 @@ export function CommandPalette({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center py-11 px-4 pointer-events-none">
       {/* Palette */}
-      <div className="relative w-full h-full max-h-115 max-w-2xl bg-bg-card/95 rounded-2xl shadow-2xl overflow-hidden border border-border animate-slide-down flex flex-col pointer-events-auto backdrop-blur-md">
+      <div className="relative w-full h-full max-h-115 max-w-2xl bg-bg-card/95 rounded-2xl shadow-2xl overflow-hidden border border-border animate-modal-pop flex flex-col pointer-events-auto backdrop-blur-md">
         {/* Instrument Silkscreen Bar */}
         <div className="px-4 py-2 bg-bg-muted/80 border-b border-border/80 flex items-center justify-between text-[10px] font-mono tracking-wider text-text-muted select-none">
           <div className="flex items-center gap-2">

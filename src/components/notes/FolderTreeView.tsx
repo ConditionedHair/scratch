@@ -160,17 +160,17 @@ const FileItem = memo(function FileItem({
           }}
           {...attributes}
           {...listeners}
-          className={`flex flex-col py-1.5 cursor-pointer rounded-md select-none transition-colors ${
+          className={`flex flex-col py-1.5 cursor-pointer rounded-md select-none transition-colors border ${
             isDragging
               ? "opacity-40"
               : isOver
                 ? "bg-accent/10 ring-1 ring-accent"
                 : isSelected &&
                     (!focusedItemKey || focusedItemKey === `note:${note.id}`)
-                  ? "bg-bg-muted group-focus/notelist:ring-1 group-focus/notelist:ring-text-muted"
+                  ? "bg-bg-card border-l-2 border-l-ram-orange border-y border-r border-border text-text font-semibold shadow-xs"
                   : isMultiSelected
-                    ? "bg-bg-muted"
-                    : "hover:bg-bg-muted"
+                    ? "bg-bg-card border-border"
+                    : "hover:bg-bg-card/70 border-transparent text-text-muted hover:text-text"
           }`}
           style={{ paddingLeft: `${depth * 12 + 8}px`, paddingRight: "8px" }}
           onClick={handleClick}
@@ -892,9 +892,17 @@ export function FolderTreeView({
         tabIndex={0}
         data-note-list
         data-folder-tree
-        className="group/notelist flex flex-col gap-0.5 p-1.5 outline-none stagger-items"
+        className="group/notelist space-y-1.5 pt-3 border-t border-border outline-none stagger-items"
         onKeyDown={handleKeyDown}
       >
+        <div className="flex items-center justify-between px-1 mb-1">
+          <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">
+            STORED TAPES
+          </span>
+          <span className="text-[9px] font-mono text-text-muted/60">
+            BANK A
+          </span>
+        </div>
         {/* Pinned root notes */}
         {pinnedRootNotes.map((note) => (
           <FileItem

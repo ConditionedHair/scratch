@@ -72,6 +72,10 @@ import { TagBar } from "./TagBar";
 import { ScratchBlockMath, normalizeBlockMath } from "./MathExtensions";
 import { cn } from "../../lib/utils";
 import { plainTextFromMarkdown } from "../../lib/plainText";
+import {
+  normalizeMarkdownSpacing,
+  cleanSerializedMarkdown,
+} from "../../lib/markdownSpacing";
 import { IconButton, Tooltip } from "../ui";
 import * as notesService from "../../services/notes";
 import { downloadPdf, downloadMarkdown } from "../../services/pdf";
@@ -245,18 +249,18 @@ function FormatBar({
   return (
     <nav
       aria-label="Editor Formatting Keycaps"
-      className="px-4 py-2 bg-[#DDD9CF] dark:bg-[#1a1c22] border-b-2 border-border flex flex-wrap items-center justify-between gap-2 shadow-inner select-none transition-colors"
+      className="px-3 py-1.5 bg-[#DCD8CE] dark:bg-[#16171b] border-b border-border flex flex-wrap items-center justify-between gap-2 select-none transition-colors"
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1.5">
         {/* Format Group: Typography */}
-        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-bold font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-bold font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("bold")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Bold (${mod}${isMac ? "" : "+"}B)`}
           >
@@ -265,10 +269,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text italic font-serif text-sm rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text italic font-serif text-sm rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("italic")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Italic (${mod}${isMac ? "" : "+"}I)`}
           >
@@ -277,10 +281,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text line-through font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text line-through font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("strike")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Strikethrough (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}S)`}
           >
@@ -289,14 +293,14 @@ function FormatBar({
         </div>
 
         {/* Format Group: Headings (Chiclet Stepped) */}
-        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("heading", { level: 1 })
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Heading 1 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}1)`}
           >
@@ -305,10 +309,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("heading", { level: 2 })
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Heading 2 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}2)`}
           >
@@ -317,10 +321,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("heading", { level: 3 })
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Heading 3 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}3)`}
           >
@@ -329,10 +333,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
             className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("heading", { level: 4 })
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Heading 4 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}4)`}
           >
@@ -341,14 +345,14 @@ function FormatBar({
         </div>
 
         {/* Format Group: Lists & Blocks */}
-        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
           <button
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("bulletList")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Bullet List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}8)`}
           >
@@ -357,10 +361,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("orderedList")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Numbered List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}7)`}
           >
@@ -369,10 +373,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleTaskList().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("taskList")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title="Task List"
           >
@@ -381,10 +385,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("blockquote")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Blockquote (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}B)`}
           >
@@ -393,10 +397,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleCode().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("code")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Inline Code (${mod}${isMac ? "" : "+"}E)`}
           >
@@ -405,10 +409,10 @@ function FormatBar({
           <button
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("codeBlock")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Code Block (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}C)`}
           >
@@ -417,10 +421,10 @@ function FormatBar({
           <button
             onClick={onAddBlockMath}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("blockMath")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title="Block Math"
           >
@@ -428,7 +432,7 @@ function FormatBar({
           </button>
           <button
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
             title="Horizontal Rule"
           >
             —
@@ -436,14 +440,14 @@ function FormatBar({
         </div>
 
         {/* Format Group: Media & Objects */}
-        <div className="flex items-center gap-1 bg-bg-secondary dark:bg-[#121317] p-1 rounded-lg border border-border shadow-inner">
+        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
           <button
             onClick={onAddLink}
             className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
               editor.isActive("link")
-                ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2e313c]"
+                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
             )}
             title={`Add Link (${mod}${isMac ? "" : "+"}K)`}
           >
@@ -451,14 +455,14 @@ function FormatBar({
           </button>
           <button
             onClick={() => editor.chain().focus().insertContent("[[").run()}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
             title="Insert Wikilink"
           >
             [[
           </button>
           <button
             onClick={onAddImage}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] hover:bg-white dark:hover:bg-[#2e313c] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0"
+            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
             title="Add Image"
           >
             🖼
@@ -468,10 +472,10 @@ function FormatBar({
               <DropdownMenu.Trigger asChild>
                 <button
                   className={cn(
-                    "w-7 h-7 bg-[#F7F5F0] dark:bg-[#24262f] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0",
+                    "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
                     editor.isActive("table")
-                      ? "!bg-ram-orange !text-white !border-ram-orange/90 shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                      : "hover:bg-white dark:hover:bg-[#2e313c]"
+                      ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
+                      : "hover:bg-white dark:hover:bg-[#2c2f3a]"
                   )}
                 >
                   ⊞
@@ -692,10 +696,8 @@ export function Editor({
       if (!editorInstance) return "";
       const manager = editorInstance.storage.markdown?.manager;
       if (manager) {
-        let markdown = manager.serialize(editorInstance.getJSON());
-        // Clean up nbsp entities that TipTap inserts (especially in table cells)
-        markdown = markdown.replace(/&nbsp;|&#160;/g, " ");
-        return markdown;
+        const markdown = manager.serialize(editorInstance.getJSON());
+        return cleanSerializedMarkdown(markdown);
       }
       // Fallback to plain text
       return editorInstance.getText();
@@ -1238,18 +1240,39 @@ export function Editor({
             null,
             slice.content,
           );
-          return manager.serialize(doc.toJSON());
+          return cleanSerializedMarkdown(manager.serialize(doc.toJSON()));
         } catch {
           return fallback;
         }
       },
-      // Trap Tab key inside the editor
+      // Trap Tab key inside the editor and prevent stacking empty paragraphs on Enter
       handleKeyDown: (_view, event) => {
         if (event.key === "Tab") {
           // Allow default tab behavior (indent in lists, etc.)
           // but prevent focus from leaving the editor
           return false;
         }
+
+        // Prevent creating multiple consecutive empty paragraphs on Enter
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.altKey
+        ) {
+          const { state } = _view;
+          const { $from, empty } = state.selection;
+          if (empty && $from.depth === 1) {
+            const parent = $from.parent;
+            if (parent.type.name === "paragraph" && parent.content.size === 0) {
+              // User is already sitting on an empty paragraph at root level.
+              // Suppress additional Enters so extra empty paragraph blocks do not accumulate.
+              return true;
+            }
+          }
+        }
+
         return false;
       },
       // Handle markdown and image paste
@@ -1322,7 +1345,7 @@ export function Editor({
         const manager = currentEditor.storage.markdown?.manager;
         if (manager && typeof manager.parse === "function") {
           try {
-            const parsed = manager.parse(text);
+            const parsed = manager.parse(normalizeMarkdownSpacing(text));
             if (parsed) {
               currentEditor.commands.insertContent(parsed);
               return true;
@@ -1574,7 +1597,9 @@ export function Editor({
         const manager = editor.storage.markdown?.manager;
         if (manager) {
           try {
-            const parsed = manager.parse(currentNote.content);
+            const parsed = manager.parse(
+              normalizeMarkdownSpacing(currentNote.content),
+            );
             editor.commands.setContent(parsed);
           } catch {
             editor.commands.setContent(currentNote.content);
@@ -1606,7 +1631,9 @@ export function Editor({
     const manager = editor.storage.markdown?.manager;
     if (manager) {
       try {
-        const parsed = manager.parse(currentNote.content);
+        const parsed = manager.parse(
+          normalizeMarkdownSpacing(currentNote.content),
+        );
         editor.commands.setContent(parsed);
       } catch {
         // Fallback to plain text if parsing fails
@@ -1675,7 +1702,9 @@ export function Editor({
         needsSaveRef.current = false;
         const manager = editorRef.current.storage.markdown?.manager;
         const markdown = manager
-          ? manager.serialize(editorRef.current.getJSON())
+          ? cleanSerializedMarkdown(
+              manager.serialize(editorRef.current.getJSON()),
+            )
           : editorRef.current.getText();
         // Fire and forget - save will complete in background
         saveNote(markdown);
@@ -2112,7 +2141,9 @@ export function Editor({
       const manager = editor.storage.markdown?.manager;
       if (manager) {
         try {
-          const parsed = manager.parse(sourceContent);
+          const parsed = manager.parse(
+            normalizeMarkdownSpacing(sourceContent),
+          );
           editor.commands.setContent(parsed);
         } catch {
           editor.commands.setContent(sourceContent);

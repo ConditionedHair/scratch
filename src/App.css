@@ -13,18 +13,18 @@
   --color-bg-card: #FAF8F5;
   --color-bg-card-muted: #E2DED4;
   --color-bg-recess: #D1CCC0;
-  --color-bg-muted: rgba(43, 40, 36, 0.08);
-  --color-bg-emphasis: rgba(43, 40, 36, 0.14);
+  --color-bg-muted: rgba(43, 40, 36, 0.06);
+  --color-bg-emphasis: rgba(43, 40, 36, 0.12);
   --color-text: #1C1B19;
   --color-text-muted: #7E7A72;
   --color-text-inverse: #FAF8F4;
   --color-border: #C5C0B3;
   --color-border-subtle: #DDD7C9;
-  --color-accent: #FF5400;
-  --color-selection: rgba(255, 84, 0, 0.25);
+  --color-accent: #FF5500;
+  --color-selection: rgba(255, 85, 0, 0.25);
 
   /* Tactical hardware colors */
-  --color-ram-orange: #FF5400;
+  --color-ram-orange: #FF5500;
   --color-ram-blue: #0047FF;
   --color-ram-cyan: #00BCD4;
   --color-ram-amber: #F5A623;
@@ -61,29 +61,29 @@
   /* Inline code color */
   --color-code: #d73a49;
 
-  /* Keycap & chassis shadows */
-  --shadow-keycap: 0 3px 0px #A6A092, 0 4px 4px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.7);
-  --shadow-keycap-pressed: 0 1px 0px #8F8A7E, 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 2px 2px rgba(0, 0, 0, 0.25);
-  --shadow-knob: 0 4px 6px -1px rgba(0, 0, 0, 0.25), inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
-  --shadow-screen-inset: inset 0 3px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.6);
+  /* Flat keycap & chassis shadows */
+  --shadow-keycap: 0 1px 0px #B8B2A4, 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0px rgba(255, 255, 255, 0.8);
+  --shadow-keycap-pressed: 0 0 0px transparent, inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-knob: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  --shadow-screen-inset: inset 0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 
 /* Theme color tokens - Dark mode (Field Instrument Dark) */
 .dark {
   --color-bg: #121315;
-  --color-bg-secondary: #0D0E10;
-  --color-bg-sidebar: #17181d;
-  --color-bg-header: #1a1c22;
-  --color-bg-card: #1f2128;
-  --color-bg-card-muted: #1c1d23;
-  --color-bg-recess: #121317;
-  --color-bg-muted: rgba(255, 255, 255, 0.06);
-  --color-bg-emphasis: rgba(255, 255, 255, 0.10);
-  --color-text: #EDF0F5;
+  --color-bg-secondary: #141518;
+  --color-bg-sidebar: #141518;
+  --color-bg-header: #16171b;
+  --color-bg-card: #16171b;
+  --color-bg-card-muted: #18191d;
+  --color-bg-recess: #0d0e10;
+  --color-bg-muted: rgba(255, 255, 255, 0.05);
+  --color-bg-emphasis: rgba(255, 255, 255, 0.08);
+  --color-text: #E3E2E4;
   --color-text-muted: #8E929B;
   --color-text-inverse: #0A0B0C;
-  --color-border: #24272f;
-  --color-border-subtle: #2A2E35;
+  --color-border: #22242a;
+  --color-border-subtle: #1c1e24;
   --color-accent: #FF5500;
   --color-selection: rgba(255, 85, 0, 0.35);
 
@@ -108,11 +108,11 @@
   /* Inline code color */
   --color-code: #00e5ff;
 
-  /* Keycap & chassis shadows */
-  --shadow-keycap: 0 2px 0px #0C0D0E, 0 3px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  --shadow-keycap-pressed: 0 0 0px #000, 0 1px 2px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.7);
-  --shadow-knob: 0 4px 6px -1px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.2), inset 0 -2px 3px rgba(0, 0, 0, 0.6);
-  --shadow-screen-inset: inset 0 3px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.06), 0 1px 0 rgba(255,255,255,0.05);
+  /* Flat keycap & chassis shadows */
+  --shadow-keycap: 0 1px 0px #090a0c, 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-keycap-pressed: 0 0 0px #000, inset 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-knob: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  --shadow-screen-inset: inset 0 1px 3px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.04);
 }
 
 /* Register theme typography & colors with Tailwind */
@@ -262,6 +262,37 @@ body {
 .chiclet-btn:active {
   transform: translateY(1.5px) scale(0.985);
   box-shadow: var(--shadow-keycap-pressed) !important;
+}
+
+/* Clean custom minimalist scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 140, 0.25);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 140, 0.45);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #2b2e37;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3e424f;
+}
+
+/* Flashing cursor animation */
+@keyframes cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.caret-blink {
+  animation: cursor-blink 1.06s infinite steps(1);
 }
 
 /* Hide scrollbar while allowing scroll */
@@ -895,6 +926,13 @@ html.dark {
 .prose p {
   margin-top: 0;
   margin-bottom: var(--editor-paragraph-spacing);
+}
+
+/* Prevent empty paragraphs from inflating vertical spacing */
+.prose p:empty,
+.prose p:has(> br.ProseMirror-trailingBreak:only-child) {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .prose ul,

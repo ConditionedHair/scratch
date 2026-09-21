@@ -18,6 +18,7 @@ import * as aiService from "../../services/ai";
 import { downloadPdf, downloadMarkdown } from "../../services/pdf";
 import type { Settings } from "../../types/note";
 import type { Editor } from "@tiptap/react";
+import { cleanSerializedMarkdown } from "../../lib/markdownSpacing";
 import {
   CommandItem,
   AlertDialog,
@@ -385,8 +386,9 @@ export function CommandPalette({
               if (editorInstance) {
                 const manager = editorInstance.storage.markdown?.manager;
                 if (manager) {
-                  markdown = manager.serialize(editorInstance.getJSON());
-                  markdown = markdown.replace(/&nbsp;|&#160;/g, " ");
+                  markdown = cleanSerializedMarkdown(
+                    manager.serialize(editorInstance.getJSON()),
+                  );
                 } else {
                   markdown = editorInstance.getText();
                 }

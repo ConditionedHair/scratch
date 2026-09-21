@@ -1,7 +1,7 @@
 import { useCallback, memo } from "react";
 import { toast } from "sonner";
 import { useGit } from "../../context/GitContext";
-import { Button, IconButton, Tooltip } from "../ui";
+import { Button, Tooltip } from "../ui";
 import {
   GitBranchIcon,
   GitBranchDeletedIcon,
@@ -153,93 +153,90 @@ export const Footer = memo(function Footer({ onOpenSettings }: FooterProps) {
           ? `${aheadCount} commit${aheadCount === 1 ? "" : "s"} to push`
           : "Synced with remote";
 
-  const hasGitFooterContent =
-    showCommitButton || showSyncButton || renderGitStatus() !== null;
-
-  // When there's no git content, show a floating settings button
-  if (!hasGitFooterContent) {
-    return (
-      <div className="absolute bottom-3 right-3">
-        <IconButton
-          onClick={onOpenSettings}
-          title={`Settings (${mod}${isMac ? "" : "+"}, to toggle)`}
-          className="rounded-lg bg-bg-secondary border border-border hover:bg-bg-muted backdrop-blur-sm w-8 h-8"
-        >
-          <SettingsIcon className="w-4.5 h-4.5 stroke-[1.5]" />
-        </IconButton>
-      </div>
-    );
-  }
-
   return (
-    <div className="shrink-0 border-t-2 border-border bg-[#CDC8BC] dark:bg-[#141519] font-mono text-xs transition-colors">
-      {/* Footer bar with git status and action buttons */}
-      <div className="px-3 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-xs bg-ram-orange shadow-[0_0_4px_#FF5400] shrink-0" />
-          {renderGitStatus() || (
-            <span className="text-[10px] font-bold text-text-muted truncate">
-              BUFFER: READY
-            </span>
+    <footer className="h-7 px-2.5 shrink-0 border-t border-border bg-[#D8D4CA] dark:bg-[#141518] font-mono text-[10px] text-text-muted flex items-center justify-between select-none transition-colors">
+      {/* Left: Status / Git Telemetry */}
+      <div className="flex items-center gap-2 min-w-0">
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full shrink-0",
+            isSyncing || isCommitting
+              ? "bg-ram-orange animate-pulse shadow-[0_0_6px_rgba(255,85,0,0.6)]"
+              : hasChanges
+                ? "bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.5)]"
+                : "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"
           )}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Sync button — pulls then pushes */}
-          {showSyncButton && (
-            <Tooltip content={syncTooltip}>
-              <button
-                onClick={handleSync}
-                disabled={isSyncing}
-                aria-label="Sync"
-                className="w-7 h-7 rounded bg-[#E4E0D6] dark:bg-[#22242c] border border-border shadow-keycap chiclet-btn flex items-center justify-center text-text-muted hover:text-text hover:bg-white dark:hover:bg-[#2c2f3a]"
-              >
-                {isSyncing ? (
-                  <SpinnerIcon className="w-3.5 h-3.5 stroke-[1.8] animate-spin" />
-                ) : (
-                  <span className="relative flex items-center">
-                    <RefreshCwIcon
-                      className={cn(
-                        "w-3.5 h-3.5 stroke-[1.8]",
-                        syncCount === 0 && "opacity-50",
-                      )}
-                    />
-                    {syncCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-ram-orange text-white text-[8px] font-bold leading-none px-0.5 shadow-xs">
-                        {syncCount}
-                      </span>
+        />
+        {renderGitStatus() || (
+          <span className="text-[9px] font-bold text-text-muted/80 tracking-wider truncate">
+            BUFFER: 0x00 • 0.8MS
+          </span>
+        )}
+      </div>
+
+      {/* Right: Action Buttons */}
+      <div className="flex items-center gap-1 shrink-0">
+        {/* Sync button */}
+        {showSyncButton && (
+          <Tooltip content={syncTooltip}>
+            <button
+              onClick={handleSync}
+              disabled={isSyncing}
+              aria-label="Sync"
+              className="w-5 h-5 rounded bg-bg-card hover:bg-bg-emphasis active:bg-bg-card border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors cursor-pointer"
+            >
+              {isSyncing ? (
+                <SpinnerIcon className="w-3 h-3 stroke-[1.8] animate-spin" />
+              ) : (
+                <span className="relative flex items-center">
+                  <RefreshCwIcon
+                    className={cn(
+                      "w-3 h-3 stroke-[1.8]",
+                      syncCount === 0 && "opacity-60",
                     )}
-                  </span>
-                )}
-              </button>
-            </Tooltip>
-          )}
-          {showCommitButton && (
-            <Tooltip content="Quick Commit">
-              <button
-                onClick={handleCommit}
-                disabled={isCommitting}
-                title="Quick commit"
-                className="w-7 h-7 rounded bg-[#E4E0D6] dark:bg-[#22242c] border border-border shadow-keycap chiclet-btn flex items-center justify-center text-text-muted hover:text-text hover:bg-white dark:hover:bg-[#2c2f3a]"
-              >
-                {isCommitting ? (
-                  <SpinnerIcon className="w-3.5 h-3.5 stroke-[1.8] animate-spin" />
-                ) : (
-                  <GitCommitIcon className="w-3.5 h-3.5 stroke-[1.8]" />
-                )}
-              </button>
-            </Tooltip>
-          )}
-          {onOpenSettings && (
+                  />
+                  {syncCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-3 h-3 flex items-center justify-center rounded-full bg-ram-orange text-white text-[7px] font-bold px-0.5">
+                      {syncCount}
+                    </span>
+                  )}
+                </span>
+              )}
+            </button>
+          </Tooltip>
+        )}
+
+        {/* Quick Commit button */}
+        {showCommitButton && (
+          <Tooltip content="Quick Commit">
+            <button
+              onClick={handleCommit}
+              disabled={isCommitting}
+              title="Quick commit"
+              className="w-5 h-5 rounded bg-bg-card hover:bg-bg-emphasis active:bg-bg-card border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors cursor-pointer"
+            >
+              {isCommitting ? (
+                <SpinnerIcon className="w-3 h-3 stroke-[1.8] animate-spin" />
+              ) : (
+                <GitCommitIcon className="w-3 h-3 stroke-[1.8]" />
+              )}
+            </button>
+          </Tooltip>
+        )}
+
+        {/* Settings button */}
+        {onOpenSettings && (
+          <Tooltip content={`Settings (${mod}${isMac ? "" : "+"},)`}>
             <button
               onClick={onOpenSettings}
               title={`Settings (${mod}${isMac ? "" : "+"}, to toggle)`}
-              className="w-7 h-7 rounded bg-[#E4E0D6] dark:bg-[#22242c] border border-border shadow-keycap chiclet-btn flex items-center justify-center text-text-muted hover:text-text hover:bg-white dark:hover:bg-[#2c2f3a]"
+              className="w-5 h-5 rounded bg-bg-card hover:bg-bg-emphasis active:bg-bg-card border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors cursor-pointer"
             >
-              <SettingsIcon className="w-3.5 h-3.5 stroke-[1.8]" />
+              <SettingsIcon className="w-3 h-3 stroke-[1.8]" />
             </button>
-          )}
-        </div>
+          </Tooltip>
+        )}
       </div>
-    </div>
+    </footer>
   );
 });

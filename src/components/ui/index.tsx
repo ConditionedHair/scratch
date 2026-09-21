@@ -172,33 +172,28 @@ export function ListItem({
         "relative w-full text-left p-2.5 transition-all duration-150 active:scale-[0.99] cursor-pointer select-none rounded-lg font-sans",
         "focus:outline-none",
         isSelected
-          ? "bg-[#FAF8F5] dark:bg-[#1f2128] border-2 border-ram-blue shadow-[0_3px_10px_rgba(0,71,255,0.18)]"
-          : "bg-[#E2DED4]/70 dark:bg-[#1c1d23] border border-border/80 hover:bg-[#EAE6DD] dark:hover:bg-[#22242c] text-text"
+          ? "bg-[#FAF8F5] dark:bg-[#1a1c22] border-l-2 border-l-ram-orange border-y border-r border-border dark:border-[#2a2c35] shadow-xs"
+          : "bg-[#E2DED4]/60 dark:bg-[#16171b] border border-border/80 dark:border-[#22242a] hover:bg-[#EAE6DD] dark:hover:bg-[#1a1c22] dark:hover:border-[#2b2e37] text-text"
       )}
     >
-      {/* Physical active tab indicator */}
-      {isSelected && (
-        <div className="absolute -left-1 top-2.5 w-1.5 h-6 bg-ram-blue rounded-r shadow-[0_0_6px_#0047FF] transition-all duration-150" />
-      )}
-
       {/* Title & Status indicator */}
-      <div className="flex items-baseline justify-between gap-1.5 mb-0.5 pl-0.5">
+      <div className="flex items-baseline justify-between gap-1.5 mb-0.5">
         <div className="flex items-center gap-1.5 min-w-0">
           {isPinned && (
             <PinIcon className="w-3.5 h-3.5 stroke-[1.6] fill-current text-ram-orange shrink-0" />
           )}
           <h4
             className={cn(
-              "text-xs font-bold tracking-tight truncate",
-              isSelected ? "text-text" : "text-text/90"
+              "text-xs truncate",
+              isSelected ? "font-semibold text-text" : "font-medium text-text/90"
             )}
           >
             {title}
           </h4>
         </div>
         {isSelected ? (
-          <span className="text-[9px] font-mono font-bold text-ram-blue dark:text-ram-cyan uppercase tracking-tighter shrink-0">
-            REC • ACTIVE
+          <span className="text-[9px] font-mono font-bold text-ram-orange dark:text-ram-cyan uppercase tracking-tighter shrink-0">
+            ACTIVE
           </span>
         ) : meta ? (
           <span className="text-[9px] font-mono text-text-muted shrink-0">
@@ -209,31 +204,31 @@ export function ListItem({
 
       {/* Subtitle / Preview / Meta info in Monospace */}
       {hasSubtitle && (
-        <p className="text-[10px] font-mono text-text-muted pl-0.5 line-clamp-1 mb-1.5">
+        <p className="text-[10px] font-mono text-text-muted line-clamp-1 mb-1.5">
           {cleanSubtitle}
         </p>
       )}
 
       {/* Tag badges */}
       {tags && tags.length > 0 && (
-        <div className="flex items-center gap-1 flex-wrap pl-0.5 mt-1">
+        <div className="flex items-center gap-1.5 flex-wrap mt-1">
           {tags.slice(0, MAX_VISIBLE_TAGS).map((tag) => {
             const color = getTagColor(tag, tagColors);
             return (
               <span
                 key={tag}
-                className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded border border-border/60 bg-bg-muted/60 text-text"
-                style={{
-                  borderLeftColor: color,
-                  borderLeftWidth: "3px",
-                }}
+                className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded border border-border/60 bg-bg-card text-text flex items-center gap-1"
               >
-                {tag}
+                <span
+                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <span>{tag}</span>
               </span>
             );
           })}
           {tags.length > MAX_VISIBLE_TAGS && (
-            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-bg-muted text-text-muted">
+            <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-bg-card text-text-muted border border-border">
               +{tags.length - MAX_VISIBLE_TAGS}
             </span>
           )}

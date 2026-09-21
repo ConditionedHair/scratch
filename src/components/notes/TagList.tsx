@@ -132,30 +132,30 @@ export function TagList() {
   }
 
   return (
-    <div className="px-2.5 pt-2 pb-1">
+    <div>
       <div
         onClick={handleToggleCollapse}
         role="button"
         tabIndex={-1}
-        className="flex items-center justify-between mb-1 px-1 py-1 cursor-pointer select-none rounded hover:bg-bg-muted transition-colors group"
+        className="flex items-center justify-between mb-1.5 px-1 py-1 cursor-pointer select-none rounded hover:bg-bg-muted transition-colors group"
       >
         <div className="flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 bg-ram-orange rounded-full shadow-[0_0_4px_#FF5400]" />
+          <span className="w-1.5 h-1.5 bg-ram-orange rounded-full shadow-[0_0_4px_#FF5500]" />
           <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider group-hover:text-text">
             CHANNEL TAGS
           </span>
         </div>
-        <div className="flex items-center gap-1 text-[9px] font-mono text-text-muted/70">
-          <span>SELECTOR</span>
+        <div className="flex items-center gap-1 text-[9px] font-mono text-text-muted/60">
+          <span>CH-REG</span>
           {collapsed ? (
-            <ChevronRightIcon className="w-3 h-3 stroke-[2] text-text-muted" />
+            <ChevronRightIcon className="w-3 h-3 stroke-[2]" />
           ) : (
-            <ChevronDownIcon className="w-3 h-3 stroke-[2] text-text-muted" />
+            <ChevronDownIcon className="w-3 h-3 stroke-[2]" />
           )}
         </div>
       </div>
       {!collapsed && (
-        <div className="space-y-1 font-mono text-xs pb-1">
+        <div className="space-y-0.5 font-mono text-xs">
           {tagCounts.map(({ tag, count }) => {
             const isActive = activeTagFilter === tag;
             const tagColor = getTagColor(tag, settings?.tagColors);
@@ -167,27 +167,27 @@ export function TagList() {
                     role="button"
                     tabIndex={-1}
                     className={cn(
-                      "flex items-center justify-between px-2 py-1 rounded cursor-pointer select-none transition-all duration-100 active:scale-[0.99] group border",
+                      "flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer select-none transition-colors group",
                       isActive
-                        ? "bg-[#C7C1B2] dark:bg-[#262832] border-ram-amber/50 text-text font-bold shadow-xs"
-                        : "border-transparent hover:bg-[#CBC6BA] dark:hover:bg-[#21232b] text-text-muted hover:text-text",
+                        ? "bg-bg-card border-l-2 border-l-ram-orange border-y border-r border-border text-text font-semibold shadow-xs"
+                        : "hover:bg-bg-card/70 border border-transparent text-text-muted hover:text-text",
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_5px_currentColor]"
+                        className="w-2 h-2 rounded-full shrink-0 shadow-[0_0_5px_currentColor]"
                         style={{ backgroundColor: tagColor, color: tagColor }}
                       />
-                      <span className="text-[11px] font-medium truncate group-hover:text-text">
+                      <span className="text-[11px] truncate">
                         {tag}
                       </span>
                     </div>
                     <span
                       className={cn(
-                        "text-[10px] px-1.5 py-0.2 rounded font-mono font-bold",
+                        "text-[10px] px-1.5 py-0.5 rounded font-mono font-bold border",
                         isActive
-                          ? "bg-ram-amber text-black"
-                          : "text-text-muted bg-[#DDD8CC] dark:bg-[#22242c] border border-border/40",
+                          ? "bg-ram-yellow/20 text-ram-yellow border-ram-yellow/40"
+                          : "text-text-muted bg-bg-card border-border",
                       )}
                     >
                       {count}
@@ -221,7 +221,7 @@ export function TagList() {
                                 onClick={() => handleColorSelect(tag, color)}
                                 title={color}
                                 className={cn(
-                                  "w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-xs",
+                                  "w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-xs cursor-pointer",
                                   color === tagColor && "ring-2 ring-offset-2 ring-offset-bg ring-text",
                                 )}
                                 style={{ backgroundColor: color }}

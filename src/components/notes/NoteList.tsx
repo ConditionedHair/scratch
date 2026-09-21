@@ -421,14 +421,14 @@ export function NoteList({
         ref={containerRef}
         tabIndex={0}
         data-note-list
-        className="group/notelist flex flex-col gap-2 p-2 outline-none stagger-items"
+        className="group/notelist space-y-1.5 pt-3 border-t border-border outline-none stagger-items"
       >
-        <div className="flex items-center justify-between px-1 pt-1">
+        <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider">
             STORED TAPES
           </span>
-          <span className="text-[9px] font-mono text-text-muted/70">
-            MEM BANK A
+          <span className="text-[9px] font-mono text-text-muted/60">
+            BANK A
           </span>
         </div>
         {displayItems.map((item) => (

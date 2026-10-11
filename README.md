@@ -30,14 +30,6 @@ Your notes live as plain `.md` files directly on your filesystem. No account req
 
 ---
 
-## Screenshot
-
-<div align="center">
-  <img src="docs/screenshot.png" alt="Scratch Application Screenshot" style="border-radius: 12px; max-width: 100%; box-shadow: 0 12px 36px rgba(0,0,0,0.25);" />
-</div>
-
----
-
 ## Key Features
 
 * **Offline-First & Local Storage**: Notes are plain `.md` files in a folder you choose. You retain complete ownership and portability of your data.

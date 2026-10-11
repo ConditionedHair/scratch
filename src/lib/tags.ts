@@ -1,15 +1,38 @@
 import type { CSSProperties } from "react";
 
-// Fixed palette of saturated, distinguishable colors for auto-assigned tag colors.
+// Rich palette of 24 saturated, distinguishable, and Braun-inspired colors for tags.
 export const TAG_PALETTE: string[] = [
-  "#ef4444", // red-500
-  "#f97316", // orange-500
-  "#f59e0b", // amber-500
-  "#84cc16", // lime-500
-  "#14b8a6", // teal-500
-  "#3b82f6", // blue-500
-  "#6366f1", // indigo-500
-  "#ec4899", // pink-500
+  // Reds & Corals
+  "#ef4444", // Red
+  "#f43f5e", // Rose
+  "#e11d48", // Crimson
+  // Oranges & Braun Accents
+  "#f97316", // Orange
+  "#e65100", // Braun Signal Orange
+  "#f5a623", // Braun Signal Yellow
+  "#f59e0b", // Amber
+  "#eab308", // Yellow
+  // Greens & Mints
+  "#84cc16", // Lime
+  "#22c55e", // Green
+  "#2e7d32", // Braun Functional Green
+  "#10b981", // Emerald
+  // Cyans & Teals
+  "#14b8a6", // Teal
+  "#06b6d4", // Cyan
+  "#0ea5e9", // Sky Blue
+  // Blues & Indigos
+  "#0066cc", // Braun Dial Blue
+  "#3b82f6", // Blue
+  "#6366f1", // Indigo
+  // Purples & Pinks
+  "#8b5cf6", // Violet
+  "#a855f7", // Purple
+  "#d946ef", // Fuchsia
+  "#ec4899", // Pink
+  // Neutrals & Earth tones
+  "#64748b", // Slate
+  "#78716c", // Stone
 ];
 
 // Simple deterministic string hash (djb2-ish) so a tag always maps to the same
@@ -45,8 +68,10 @@ export function assignTagColor(
 }
 
 export function tagPillStyle(hex: string): CSSProperties {
+  const cleanHex = hex.replace("#", "").slice(0, 6);
   return {
-    backgroundColor: hex + "26",
-    color: hex,
+    backgroundColor: `#${cleanHex}20`,
+    borderColor: `#${cleanHex}40`,
+    color: `#${cleanHex}`,
   };
 }

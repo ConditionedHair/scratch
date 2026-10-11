@@ -24,10 +24,10 @@ type ThemeMode = "light" | "dark" | "system";
 // Font family CSS values
 const fontFamilyMap: Record<FontFamily, string> = {
   "system-sans":
-    '"Hanken Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
   monospace:
-    '"JetBrains Mono", "Space Mono", ui-monospace, "SF Mono", Menlo, monospace',
+    "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, 'Courier New', monospace",
 };
 
 // Editor width CSS values for presets
@@ -49,29 +49,29 @@ const defaultEditorFontSettings: Required<EditorFontSettings> = {
   lineHeight: 1.6,
 };
 
-// Default theme colors (must match App.css :root / .dark values)
+// Default theme colors (Braun-inspired: Alabaster / Anodized Graphite with Signal Yellow)
 const defaultThemeColors: Record<"light" | "dark", Record<ThemeColorKey, string>> = {
   light: {
-    bg: "#FAF8F4",
-    "bg-secondary": "#E5E1D8",
-    "bg-muted": "rgba(43, 40, 36, 0.08)",
-    "bg-emphasis": "rgba(43, 40, 36, 0.14)",
-    text: "#1C1B19",
-    "text-muted": "#7E7A72",
-    border: "#C5C0B3",
-    accent: "#FF5400",
-    selection: "rgba(255, 84, 0, 0.25)",
+    bg: "#F4F3EE",
+    "bg-secondary": "#EBEAE4",
+    "bg-muted": "rgba(29, 29, 31, 0.05)",
+    "bg-emphasis": "rgba(29, 29, 31, 0.08)",
+    text: "#1D1D1F",
+    "text-muted": "#6E6D70",
+    border: "#D8D6CE",
+    accent: "#F5A623",
+    selection: "rgba(245, 166, 35, 0.25)",
   },
   dark: {
-    bg: "#121315",
-    "bg-secondary": "#17181d",
-    "bg-muted": "rgba(255, 255, 255, 0.06)",
-    "bg-emphasis": "rgba(255, 255, 255, 0.10)",
-    text: "#EDF0F5",
-    "text-muted": "#8E929B",
-    border: "#24272f",
-    accent: "#FF5500",
-    selection: "rgba(255, 85, 0, 0.35)",
+    bg: "#18191B",
+    "bg-secondary": "#202225",
+    "bg-muted": "rgba(238, 238, 240, 0.06)",
+    "bg-emphasis": "rgba(238, 238, 240, 0.10)",
+    text: "#EEEEF0",
+    "text-muted": "#9FA0A5",
+    border: "#2E3137",
+    accent: "#F5A623",
+    selection: "rgba(245, 166, 35, 0.35)",
   },
 };
 

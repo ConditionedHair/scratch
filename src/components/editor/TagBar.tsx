@@ -17,9 +17,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { useOptionalNotes } from "../../context/NotesContext";
 import * as notesService from "../../services/notes";
 import { getTagColor, assignTagColor, tagPillStyle } from "../../lib/tags";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { SuggestionList } from "./SuggestionList";
 import { PlusIcon, XIcon } from "../icons";
-import { cn } from "../../lib/utils";
 
 interface SortableTagPillProps {
   tag: string;
@@ -44,24 +44,22 @@ function SortableTagPill({ tag, color, onRemove }: SortableTagPillProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="flex items-center gap-1 font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded border border-border/40 leading-none cursor-grab active:cursor-grabbing touch-none tracking-wider shadow-xs"
+      title={`#${tag}`}
+      className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full font-medium leading-none cursor-grab active:cursor-grabbing touch-none border shadow-2xs group shrink min-w-0 max-w-[130px] sm:max-w-[170px]"
     >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: color }}
-      />
-      {tag}
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      <span className="truncate">#{tag}</span>
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
         }}
-        className="hover:opacity-70 ml-0.5 cursor-pointer"
+        className="opacity-50 hover:opacity-100 hover:scale-115 transition-all ml-0.5 cursor-pointer shrink-0"
         tabIndex={-1}
         aria-label={`Remove tag ${tag}`}
       >
-        <XIcon className="w-2.5 h-2.5 stroke-[2]" />
+        <XIcon className="w-2.5 h-2.5 stroke-[2.2]" />
       </button>
     </span>
   );
@@ -92,10 +90,9 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
 
   const suggestions = useMemo(() => {
     const query = inputValue.trim().toLowerCase();
-    if (!query) return [];
-    return allTagNames.filter(
-      (t) => t.toLowerCase().includes(query) && !tags.includes(t),
-    );
+    const available = allTagNames.filter((t) => !tags.includes(t));
+    if (!query) return available;
+    return available.filter((t) => t.toLowerCase().includes(query));
   }, [inputValue, allTagNames, tags]);
 
   const applyTags = useCallback(
@@ -127,7 +124,7 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
 
   const commitTag = useCallback(
     (rawTag: string) => {
-      const tag = rawTag.trim();
+      const tag = rawTag.trim().replace(/^#/, "");
       setInputValue("");
       if (!tag || tags.includes(tag)) return;
       const newTags = [...tags, tag];
@@ -162,13 +159,18 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" || e.key === ",") {
+      if (
+        e.key === "Enter" ||
+        e.key === "," ||
+        (e.key === " " && inputValue.trim().length > 0)
+      ) {
         e.preventDefault();
         commitTag(inputValue);
       } else if (e.key === "Backspace" && inputValue === "" && tags.length > 0) {
         removeTag(tags[tags.length - 1]);
       } else if (e.key === "Escape") {
         setInputValue("");
+        setIsEditing(false);
         inputRef.current?.blur();
       }
     },
@@ -185,15 +187,19 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
     return () => window.removeEventListener("focus-tag-input", handler);
   }, []);
 
+  const maxDirectVisible = 2;
+  const visibleTags = tags.slice(0, maxDirectVisible);
+  const hiddenTags = tags.slice(maxDirectVisible);
+
   return (
-    <div className="relative flex items-center gap-1 flex-wrap min-w-0">
+    <div className="relative flex items-center gap-1.5 flex-nowrap min-w-0 shrink">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={tags} strategy={horizontalListSortingStrategy}>
-          {tags.map((tag) => (
+        <SortableContext items={visibleTags} strategy={horizontalListSortingStrategy}>
+          {visibleTags.map((tag) => (
             <SortableTagPill
               key={tag}
               tag={tag}
@@ -203,6 +209,62 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
           ))}
         </SortableContext>
       </DndContext>
+
+      {hiddenTags.length > 0 && (
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full border border-border bg-bg hover:bg-bg-emphasis text-text-muted hover:text-text transition-colors cursor-pointer shrink-0 shadow-2xs"
+              title={`${hiddenTags.length} more tag${hiddenTags.length > 1 ? "s" : ""}: ${hiddenTags.map((t) => `#${t}`).join(", ")}`}
+            >
+              +{hiddenTags.length}
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className="p-1.5 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 min-w-44 animate-in fade-in zoom-in-95 duration-150"
+              sideOffset={6}
+              align="start"
+            >
+              <div className="px-2 py-1 text-[10px] font-bold font-mono tracking-wider uppercase text-text-muted border-b border-border/60 mb-1">
+                Additional Tags ({hiddenTags.length})
+              </div>
+              <div className="space-y-0.5 max-h-48 overflow-y-auto">
+                {hiddenTags.map((tag) => {
+                  const color = getTagColor(tag, tagColors);
+                  return (
+                    <div
+                      key={tag}
+                      className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg hover:bg-bg-emphasis/70 transition-colors text-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0 shadow-xs"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span className="truncate font-medium text-text">#{tag}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeTag(tag);
+                        }}
+                        className="opacity-50 hover:opacity-100 p-0.5 hover:bg-bg-muted rounded text-text-muted hover:text-text cursor-pointer shrink-0"
+                        title={`Remove #${tag}`}
+                      >
+                        <XIcon className="w-3 h-3 stroke-[2]" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      )}
+
       {isEditing ? (
         <input
           ref={inputRef}
@@ -211,14 +273,19 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={() => {
-            if (!inputValue) setIsEditing(false);
+            setTimeout(() => {
+              if (inputValue.trim()) {
+                commitTag(inputValue);
+              }
+              setIsEditing(false);
+            }, 180);
           }}
           placeholder="Add tag..."
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
-          className="text-xs bg-transparent outline-none text-text placeholder-text-muted/50 min-w-16 w-24"
+          className="text-xs bg-bg border border-border rounded-md px-2 py-0.5 outline-none text-text placeholder-text-muted/50 min-w-16 w-24 shrink-0 shadow-2xs"
         />
       ) : (
         <button
@@ -227,13 +294,11 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
             setIsEditing(true);
             requestAnimationFrame(() => inputRef.current?.focus());
           }}
-          className={cn(
-            "flex items-center gap-0.5 text-2xs text-text-muted hover:text-text px-1 py-0.5 rounded transition-colors",
-          )}
+          className="flex items-center gap-1 text-[11px] text-text-muted hover:text-text px-1.5 py-0.5 rounded-md hover:bg-bg-muted/70 transition-colors border border-dashed border-border/70 hover:border-border cursor-pointer shrink-0"
           title="Add tag"
         >
-          <PlusIcon className="w-3 h-3 stroke-[1.6]" />
-          {tags.length === 0 && <span>Tag</span>}
+          <PlusIcon className="w-3 h-3 stroke-[2]" />
+          <span>{tags.length === 0 ? "Add tag" : "Tag"}</span>
         </button>
       )}
       {isEditing && suggestions.length > 0 && (
@@ -245,7 +310,18 @@ export function TagBar({ noteId, tags, tagColors }: TagBarProps) {
               requestAnimationFrame(() => inputRef.current?.focus());
             }}
             itemKey={(t) => t}
-            renderItem={(t) => <span className="text-sm">{t}</span>}
+            renderItem={(t) => {
+              const color = getTagColor(t, tagColors);
+              return (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0 shadow-xs"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="text-xs font-medium">#{t}</span>
+                </div>
+              );
+            }}
             width="w-48"
             emptyText="No matching tags"
           />

@@ -76,11 +76,29 @@ import {
   normalizeMarkdownSpacing,
   cleanSerializedMarkdown,
 } from "../../lib/markdownSpacing";
-import { IconButton, Tooltip } from "../ui";
+import { Button, IconButton, Tooltip } from "../ui";
 import * as notesService from "../../services/notes";
 import { downloadPdf, downloadMarkdown } from "../../services/pdf";
 import type { Settings } from "../../types/note";
 import {
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  ListIcon,
+  ListOrderedIcon,
+  CheckSquareIcon,
+  QuoteIcon,
+  CodeIcon,
+  InlineCodeIcon,
+  BlockMathIcon,
+  SeparatorIcon,
+  LinkIcon,
+  BracketsIcon,
+  ImageIcon,
+  TableIcon,
   SpinnerIcon,
   CircleCheckIcon,
   CopyIcon,
@@ -93,18 +111,16 @@ import {
   MarkdownIcon,
   MarkdownOffIcon,
   FolderPlusIcon,
+  ZenIcon,
 } from "../icons";
 
-function formatDateTime(timestamp: number): string {
+function formatBraunDate(timestamp: number): string {
   const date = new Date(timestamp * 1000);
   return date.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
+    month: "long",
     day: "numeric",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  }).toUpperCase();
 }
 
 function focusAndSelectTitle(editor: TiptapEditor): boolean {
@@ -227,288 +243,341 @@ function GridPicker({ onSelect }: GridPickerProps) {
   );
 }
 
-interface FormatBarProps {
-  editor: TiptapEditor | null;
-  onAddLink: () => void;
-  onAddBlockMath: () => void;
-  onAddImage: () => void;
-}
-
-// FormatBar must re-render with parent to reflect editor.isActive() state changes
-// (editor instance is mutable, so memo would cause stale active states)
-function FormatBar({
+function FloatingFormatBar({
   editor,
   onAddLink,
   onAddBlockMath,
   onAddImage,
-}: FormatBarProps) {
+}: {
+  editor: TiptapEditor;
+  onAddLink: () => void;
+  onAddBlockMath: () => void;
+  onAddImage: () => void;
+}) {
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
 
-  if (!editor) return null;
-
   return (
-    <nav
-      aria-label="Editor Formatting Keycaps"
-      className="px-3 py-1.5 bg-[#DCD8CE] dark:bg-[#16171b] border-b border-border flex flex-wrap items-center justify-between gap-2 select-none transition-colors"
+    <div
+      className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full border border-border bg-bg-secondary/92 dark:bg-bg-secondary/95 backdrop-blur-md shadow-xl select-none max-w-[calc(100%-2.5rem)] overflow-x-auto scrollbar-none transition-all duration-200"
+      role="toolbar"
+      aria-label="Editor Formatting Toolbar"
     >
-      <div className="flex flex-wrap items-center gap-1.5">
-        {/* Format Group: Typography */}
-        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-bold font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("bold")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Bold (${mod}${isMac ? "" : "+"}B)`}
-          >
-            B
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text italic font-serif text-sm rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("italic")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Italic (${mod}${isMac ? "" : "+"}I)`}
-          >
-            I
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text line-through font-mono text-xs rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("strike")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Strikethrough (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}S)`}
-          >
-            S
-          </button>
-        </div>
+      {/* Text Styles */}
+      <Tooltip content={`Bold (${mod}+B)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("bold")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Bold"
+        >
+          <BoldIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Italic (${mod}+I)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("italic")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Italic"
+        >
+          <ItalicIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Strikethrough (${mod}+${shift}+S)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("strike")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Strikethrough"
+        >
+          <StrikethroughIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
 
-        {/* Format Group: Headings (Chiclet Stepped) */}
-        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("heading", { level: 1 })
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Heading 1 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}1)`}
-          >
-            H1
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("heading", { level: 2 })
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Heading 2 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}2)`}
-          >
-            H2
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("heading", { level: 3 })
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Heading 3 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}3)`}
-          >
-            H3
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-            className={cn(
-              "px-2 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text font-mono text-[11px] font-bold rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("heading", { level: 4 })
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Heading 4 (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}4)`}
-          >
-            H4
-          </button>
-        </div>
+      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
 
-        {/* Format Group: Lists & Blocks */}
-        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
-          <button
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("bulletList")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Bullet List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}8)`}
-          >
-            •=
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("orderedList")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Numbered List (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}7)`}
-          >
-            1.
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleTaskList().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("taskList")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title="Task List"
-          >
-            ☑
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("blockquote")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Blockquote (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}B)`}
-          >
-            ”
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("code")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Inline Code (${mod}${isMac ? "" : "+"}E)`}
-          >
-            `_`
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("codeBlock")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Code Block (${mod}${isMac ? "" : "+"}${alt}${isMac ? "" : "+"}C)`}
-          >
-            &lt;/&gt;
-          </button>
-          <button
-            onClick={onAddBlockMath}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("blockMath")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title="Block Math"
-          >
-            ∑
-          </button>
-          <button
-            onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
-            title="Horizontal Rule"
-          >
-            —
-          </button>
-        </div>
+      {/* Headings */}
+      <Tooltip content={`Heading 1 (${mod}+${alt}+1)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("heading", { level: 1 })
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Heading 1"
+        >
+          <Heading1Icon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Heading 2 (${mod}+${alt}+2)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("heading", { level: 2 })
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Heading 2"
+        >
+          <Heading2Icon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Heading 3 (${mod}+${alt}+3)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("heading", { level: 3 })
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Heading 3"
+        >
+          <Heading3Icon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
 
-        {/* Format Group: Media & Objects */}
-        <div className="flex items-center gap-0.5 bg-bg-secondary/70 dark:bg-[#121315] p-0.5 rounded border border-border">
-          <button
-            onClick={onAddLink}
-            className={cn(
-              "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-              editor.isActive("link")
-                ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-            )}
-            title={`Add Link (${mod}${isMac ? "" : "+"}K)`}
+      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+      {/* Lists & Quotes */}
+      <Tooltip content={`Bullet List (${mod}+${shift}+8)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("bulletList")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Bullet List"
+        >
+          <ListIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Numbered List (${mod}+${shift}+7)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("orderedList")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Numbered List"
+        >
+          <ListOrderedIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content="Task List">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("taskList")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Task List"
+        >
+          <CheckSquareIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Blockquote (${mod}+${shift}+B)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("blockquote")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Blockquote"
+        >
+          <QuoteIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+
+      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+      {/* Code & Math */}
+      <Tooltip content={`Inline Code (${mod}+E)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("code")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Inline Code"
+        >
+          <InlineCodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content={`Code Block (${mod}+${alt}+C)`}>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("codeBlock")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Code Block"
+        >
+          <CodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content="Block Math">
+        <button
+          type="button"
+          onClick={onAddBlockMath}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("blockMath")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Block Math"
+        >
+          <BlockMathIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content="Horizontal Rule">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+          aria-label="Horizontal Rule"
+        >
+          <SeparatorIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+
+      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+      {/* Inserts: Link, Wikilink, Image, Table */}
+      <Tooltip content={`Add Link (${mod}+K)`}>
+        <button
+          type="button"
+          onClick={onAddLink}
+          className={cn(
+            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+            editor.isActive("link")
+              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+          )}
+          aria-label="Add Link"
+        >
+          <LinkIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content="Insert Wikilink ([[])">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().insertContent("[[").run()}
+          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+          aria-label="Insert Wikilink"
+        >
+          <BracketsIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <Tooltip content="Add Image">
+        <button
+          type="button"
+          onClick={onAddImage}
+          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+          aria-label="Add Image"
+        >
+          <ImageIcon className="w-3.5 h-3.5 stroke-[2]" />
+        </button>
+      </Tooltip>
+      <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+        <Tooltip content="Insert Table">
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                editor.isActive("table")
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="Insert Table"
+            >
+              <TableIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </DropdownMenu.Trigger>
+        </Tooltip>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="p-2.5 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150"
+            side="top"
+            sideOffset={10}
+            onCloseAutoFocus={(e) => e.preventDefault()}
           >
-            🔗
-          </button>
-          <button
-            onClick={() => editor.chain().focus().insertContent("[[").run()}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-[11px] font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
-            title="Insert Wikilink"
-          >
-            [[
-          </button>
-          <button
-            onClick={onAddImage}
-            className="w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] hover:bg-white dark:hover:bg-[#2c2f3a] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer"
-            title="Add Image"
-          >
-            🖼
-          </button>
-          <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
-            <Tooltip content="Insert Table">
-              <DropdownMenu.Trigger asChild>
-                <button
-                  className={cn(
-                    "w-7 h-7 bg-[#F7F5F0] dark:bg-[#202229] text-text text-xs font-mono rounded border border-border shadow-keycap chiclet-btn flex items-center justify-center shrink-0 cursor-pointer",
-                    editor.isActive("table")
-                      ? "!bg-ram-orange !text-white !border-ram-orange shadow-[0_0_8px_rgba(255,84,0,0.4)]"
-                      : "hover:bg-white dark:hover:bg-[#2c2f3a]"
-                  )}
-                >
-                  ⊞
-                </button>
-              </DropdownMenu.Trigger>
-            </Tooltip>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="p-2.5 bg-[#FAF8F5] dark:bg-[#1c1d23] border border-border rounded-md shadow-lg z-50 font-mono text-xs"
-                onCloseAutoFocus={(e) => e.preventDefault()}
-              >
-                <GridPicker
-                  onSelect={(rows, cols) => {
-                    editor
-                      .chain()
-                      .focus()
-                      .insertTable({
-                        rows,
-                        cols,
-                        withHeaderRow: true,
-                      })
-                      .run();
-                    setTableMenuOpen(false);
-                  }}
-                />
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-        </div>
-      </div>
-    </nav>
+            <GridPicker
+              onSelect={(rows, cols) => {
+                editor
+                  .chain()
+                  .focus()
+                  .insertTable({
+                    rows,
+                    cols,
+                    withHeaderRow: true,
+                  })
+                  .run();
+                setTableMenuOpen(false);
+              }}
+            />
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+
+      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+      {/* Signal Yellow Return Key */}
+      <Tooltip content="New Paragraph (↵)">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().splitBlock().run()}
+          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-bold text-slate-950 bg-accent hover:brightness-110 active:scale-95 transition-all shadow-xs cursor-pointer shrink-0"
+          aria-label="New Paragraph"
+        >
+          ↵
+        </button>
+      </Tooltip>
+    </div>
   );
 }
+
 
 // Data source for preview mode — bypasses NotesContext
 export interface PreviewModeData {
@@ -526,7 +595,7 @@ interface EditorProps {
   onToggleSidebar?: () => void;
   sidebarVisible?: boolean;
   focusMode?: boolean;
-  onSourceModeChange?: (sourceMode: boolean) => void;
+  onToggleFocusMode?: () => void;
   previewMode?: PreviewModeData;
   onEditorReady?: (editor: TiptapEditor | null) => void;
   onSaveToFolder?: () => void;
@@ -590,7 +659,7 @@ export function Editor({
   onToggleSidebar,
   sidebarVisible,
   focusMode,
-  onSourceModeChange,
+  onToggleFocusMode,
   onEditorReady,
   previewMode,
   onSaveToFolder,
@@ -647,14 +716,8 @@ export function Editor({
     }
   }, [hasTransitioned, currentNote]);
 
-  // Delay format bar / header transitions only when the sidebar needs to animate closed
-  const needsSidebarDelay = focusMode && sidebarVisible;
-  const isSidebarActive = sidebarVisible && !focusMode;
   // Source mode state
   const [sourceMode, setSourceMode] = useState(false);
-  useEffect(() => {
-    onSourceModeChange?.(sourceMode);
-  }, [sourceMode, onSourceModeChange]);
   const [sourceContent, setSourceContent] = useState("");
   const sourceTimeoutRef = useRef<number | null>(null);
   const sourceModeTransitionRef = useRef<{
@@ -1220,7 +1283,7 @@ export function Editor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-lg dark:prose-invert max-w-3xl mx-auto focus:outline-none min-h-full px-6 pt-8 pb-24",
+          "prose prose-lg dark:prose-invert max-w-3xl mx-auto focus:outline-none min-h-full px-6 pt-8 pb-32",
         spellcheck: "true",
         autocorrect: "on",
         autocapitalize: "sentences",
@@ -2295,7 +2358,7 @@ export function Editor({
 
     // Folder mode: show empty state with "New Note" button
     return (
-      <div className="flex-1 flex flex-col bg-bg overflow-hidden relative">
+      <div className="flex-1 flex flex-col bg-bg">
         {/* Drag region */}
         {!isWindows && (
           <div
@@ -2303,27 +2366,14 @@ export function Editor({
             data-tauri-drag-region
           ></div>
         )}
-        <div className="flex-1 flex items-center justify-center p-8 bg-chassis-grain relative">
-          {/* Subtle grid backdrop */}
-          <div className="absolute inset-0 grid-guide-paper opacity-40 pointer-events-none" />
-
-          {/* Standby Module Card */}
-          <div className="relative z-10 max-w-md w-full border border-border bg-bg-card/90 rounded-2xl p-8 shadow-screen-inset text-center select-none backdrop-blur-xs">
-            {/* Header Telemetry */}
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-border/60 font-mono text-[10px] tracking-wider text-text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500/80 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-                SYSTEM // STANDBY
-              </span>
-              <span>DEV: TP-01 MARKER</span>
-            </div>
-
+        <div className="flex-1 flex items-center justify-center pb-8">
+          <div className="text-center text-text-muted select-none">
             <div
               role="img"
               aria-label="Note"
-              className="w-28 aspect-square mx-auto mb-4 opacity-80"
+              className="w-42 aspect-square mx-auto mb-1"
               style={{
-                backgroundColor: "var(--color-primary)",
+                backgroundColor: "var(--color-text)",
                 WebkitMaskImage: "url(/note-dark.png)",
                 WebkitMaskSize: "contain",
                 WebkitMaskRepeat: "no-repeat",
@@ -2334,103 +2384,178 @@ export function Editor({
                 maskPosition: "center",
               }}
             />
-
-            <h1 className="text-xl text-text font-mono font-bold tracking-tight uppercase mb-1">
-              No Tape Loaded
+            <h1 className="text-2xl text-text font-serif mb-1 tracking-[-0.01em] ">
+              What's on your mind?
             </h1>
-            <p className="text-xs text-text-muted font-mono leading-relaxed mb-6">
-              Pick up an existing recording from the index or initialize a new buffer
+            <p className="text-sm">
+              Pick up where you left off, or start something new
             </p>
-
             {createNote && (
-              <button
+              <Button
                 onClick={createNote}
-                className="chiclet-btn w-full py-2.5 px-4 rounded-lg bg-primary text-primary-foreground font-mono text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:translate-y-0.5"
+                variant="secondary"
+                size="md"
+                className="mt-4"
               >
-                <span>Initialize New Tape</span>
-                <span className="opacity-70 font-normal">
-                  [{mod}{isMac ? "" : "+"}N]
+                New Note{" "}
+                <span className="text-text-muted ml-1">
+                  {mod}
+                  {isMac ? "" : "+"}N
                 </span>
-              </button>
+              </Button>
             )}
-
-            {/* Footer Telemetry */}
-            <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between font-mono text-[9px] text-text-muted/60 tracking-widest">
-              <span>BUFF: 0x0000</span>
-              <span>READY</span>
-              <span>CH: STEREO</span>
-            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  const noteText = editor ? editor.getText() : currentNote.content || "";
+  const charCount = noteText.length;
+  const wordCount = noteText.trim() ? noteText.trim().split(/\s+/).length : 0;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
   return (
-    <div className="flex-1 flex flex-col bg-bg overflow-hidden">
-      {/* Drag region with sidebar toggle, date and save status */}
+    <div className="flex-1 flex flex-col bg-bg overflow-hidden relative">
+      {/* Braun Sub-header Tooling Strip */}
       <div
         className={cn(
-          "h-11 shrink-0 flex items-center justify-between px-3",
-          !isSidebarActive && !isWindows && "pl-22",
+          "h-10 px-6 border-b shrink-0 flex items-center justify-between select-none bg-bg-secondary border-border transition-all duration-300",
+          focusMode && "opacity-0 pointer-events-none !h-0 !p-0 overflow-hidden border-b-0",
         )}
         data-tauri-drag-region
       >
-        <div
-          className={`titlebar-no-drag flex items-center gap-1 min-w-0 transition-opacity duration-400 ${needsSidebarDelay ? "delay-200" : ""} ${focusMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
+        <div className="flex items-center gap-2 text-xs text-text-muted min-w-0 flex-1 mr-3" data-tauri-drag-region>
           {onToggleSidebar && (
             <IconButton
               onClick={onToggleSidebar}
               title={
-                isSidebarActive
-                  ? `Hide sidebar (${mod}${isMac ? "" : "+"}\\)`
-                  : `Show sidebar (${mod}${isMac ? "" : "+"}\\)`
+                sidebarVisible
+                  ? `Hide library (${mod}${isMac ? "" : "+"}\\)`
+                  : `Show library (${mod}${isMac ? "" : "+"}\\)`
               }
-              className="shrink-0"
+              className="shrink-0 -ml-1 mr-0.5"
             >
-              <PanelLeftIcon className="w-4.5 h-4.5 stroke-[1.5]" />
+              <PanelLeftIcon className="w-4 h-4 stroke-[1.5]" />
             </IconButton>
           )}
-          <span className="text-xs text-text-muted mb-px truncate shrink-0">
-            {formatDateTime(currentNote.modified)}
+          <span className="font-mono text-[11px] font-medium tracking-wide shrink-0 hidden sm:inline">
+            {formatBraunDate(currentNote.modified)}
           </span>
-          {!previewMode && (
-            <TagBar
-              noteId={currentNote.id}
-              tags={currentNote.tags}
-              tagColors={settings?.tagColors}
-            />
-          )}
+          <span className="text-border shrink-0 hidden sm:inline">•</span>
+          <TagBar
+            noteId={currentNote.id}
+            tags={currentNote.tags || []}
+            tagColors={settings?.tagColors}
+          />
+
+          {/* Saving / Sync status */}
+          <div className="flex items-center ml-1">
+            {hasExternalChanges ? (
+              <Tooltip content={`External changes detected (${mod}${isMac ? "" : "+"}R to refresh)`}>
+                <button
+                  onClick={reloadCurrentNote}
+                  className="h-6 px-1.5 flex items-center gap-1 text-[11px] text-text-muted hover:bg-bg-emphasis rounded transition-colors font-medium"
+                >
+                  <RefreshCwIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  <span>Refresh</span>
+                </button>
+              </Tooltip>
+            ) : isSaving ? (
+              <Tooltip content="Saving...">
+                <div className="h-6 w-6 flex items-center justify-center">
+                  <SpinnerIcon className="w-3.5 h-3.5 text-text-muted/50 stroke-[1.5] animate-spin" />
+                </div>
+              </Tooltip>
+            ) : (
+              <Tooltip content="All changes saved">
+                <div className="h-6 w-6 flex items-center justify-center">
+                  <CircleCheckIcon className="w-3.5 h-3.5 stroke-[1.5] text-text-muted/40" />
+                </div>
+              </Tooltip>
+            )}
+          </div>
         </div>
-        <div
-          className={`titlebar-no-drag flex items-center gap-px shrink-0 transition-opacity duration-400 ${needsSidebarDelay ? "delay-200" : ""} ${focusMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
-          {hasExternalChanges ? (
-            <Tooltip
-              content={`External changes detected (${mod}${isMac ? "" : "+"}R to refresh)`}
+
+        <div className="titlebar-no-drag flex items-center gap-2 shrink-0">
+          {/* Zen Focus Button */}
+          {onToggleFocusMode && (
+            <button
+              onClick={onToggleFocusMode}
+              className="text-xs px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 bg-bg border border-border text-text hover:bg-bg-muted font-medium cursor-pointer shadow-2xs group"
+              title="Enter Fullscreen Zen Focus Mode"
             >
-              <button
-                onClick={reloadCurrentNote}
-                className="h-7 px-2 flex items-center gap-1 text-xs text-text-muted hover:bg-bg-emphasis rounded transition-colors font-medium"
-              >
-                <RefreshCwIcon className="w-4 h-4 stroke-[1.6]" />
-                <span>Refresh</span>
-              </button>
-            </Tooltip>
-          ) : isSaving ? (
-            <Tooltip content="Saving...">
-              <div className="h-7 w-7 flex items-center justify-center">
-                <SpinnerIcon className="w-4.5 h-4.5 text-text-muted/40 stroke-[1.5] animate-spin" />
-              </div>
-            </Tooltip>
-          ) : (
-            <Tooltip content="All changes saved">
-              <div className="h-7 w-7 flex items-center justify-center rounded-full">
-                <CircleCheckIcon className="w-4.5 h-4.5 mt-px stroke-[1.5] text-text-muted/40" />
-              </div>
-            </Tooltip>
+              <ZenIcon className="w-3.5 h-3.5 stroke-[1.8] text-text-muted group-hover:text-text transition-colors" />
+              <span>Focus</span>
+            </button>
           )}
+
+          {/* Export Dropdown */}
+          <DropdownMenu.Root open={copyMenuOpen} onOpenChange={setCopyMenuOpen}>
+            <Tooltip content={`Export (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}C)`}>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  className="text-xs px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 bg-bg border border-border text-text hover:bg-bg-muted font-medium cursor-pointer shadow-2xs group"
+                  title="Export"
+                >
+                  <ShareIcon className="w-3.5 h-3.5 stroke-[1.8] text-text-muted group-hover:text-text transition-colors" />
+                  <span>Export</span>
+                </button>
+              </DropdownMenu.Trigger>
+            </Tooltip>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                className="min-w-40 bg-bg border border-border rounded-xl shadow-xl py-1 z-50 text-xs text-text"
+                sideOffset={5}
+                align="end"
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                <DropdownMenu.Item
+                  className="px-3 py-1.5 cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                  onSelect={handleCopyMarkdown}
+                >
+                  <CopyIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  Copy Markdown
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className="px-3 py-1.5 cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                  onSelect={handleCopyPlainText}
+                >
+                  <CopyIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  Copy Plain Text
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className="px-3 py-1.5 cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                  onSelect={handleCopyHtml}
+                >
+                  <CopyIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  Copy HTML
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator className="h-px bg-border my-1" />
+                <DropdownMenu.Item
+                  className="px-3 py-1.5 cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                  onSelect={handleDownloadPdf}
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  Print as PDF
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className="px-3 py-1.5 cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                  onSelect={handleDownloadMarkdown}
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                  Export Markdown
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+
+          {/* Pin / Unpin Note */}
           {currentNote && pinNote && unpinNote && (
             <Tooltip content={isPinned ? "Unpin note" : "Pin note"}>
               <IconButton
@@ -2444,7 +2569,6 @@ export function Editor({
                       await pinNote(currentNote.id);
                       toast.success("Note pinned");
                     }
-                    // Reload settings to update isPinned state
                     const updatedSettings = await notesService.getSettings();
                     setSettings(updatedSettings);
                   } catch (error) {
@@ -2459,20 +2583,41 @@ export function Editor({
               >
                 <PinIcon
                   className={cn(
-                    "w-5 h-5 stroke-[1.3]",
-                    isPinned && "fill-current",
+                    "w-4 h-4 stroke-[1.4]",
+                    isPinned && "fill-accent text-accent",
                   )}
                 />
               </IconButton>
             </Tooltip>
           )}
-          {currentNote && (
-            <Tooltip content={`Find in note (${mod}${isMac ? "" : "+"}F)`}>
-              <IconButton onClick={openEditorSearch}>
-                <SearchIcon className="w-4.25 h-4.25 stroke-[1.6]" />
+
+          {/* Save to Folder */}
+          {onSaveToFolder && (
+            <Tooltip content="Save in Folder">
+              <IconButton
+                onClick={onSaveToFolder}
+                aria-label="Save in Folder"
+                disabled={saveToFolderDisabled}
+              >
+                {saveToFolderDisabled ? (
+                  <SpinnerIcon className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FolderPlusIcon className="w-4 h-4 stroke-[1.6]" />
+                )}
               </IconButton>
             </Tooltip>
           )}
+
+          {/* Find in Note */}
+          {currentNote && (
+            <Tooltip content={`Find in note (${mod}${isMac ? "" : "+"}F)`}>
+              <IconButton onClick={openEditorSearch}>
+                <SearchIcon className="w-4 h-4 stroke-[1.6]" />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          {/* Toggle Markdown Source Mode */}
           {currentNote && (
             <Tooltip
               content={
@@ -2483,107 +2628,14 @@ export function Editor({
             >
               <IconButton onClick={toggleSourceMode}>
                 {sourceMode ? (
-                  <MarkdownOffIcon className="w-4.75 h-4.75 stroke-[1.4]" />
+                  <MarkdownOffIcon className="w-4 h-4 stroke-[1.4]" />
                 ) : (
-                  <MarkdownIcon className="w-4.75 h-4.75 stroke-[1.4]" />
-                )}
-              </IconButton>
-            </Tooltip>
-          )}
-          <DropdownMenu.Root open={copyMenuOpen} onOpenChange={setCopyMenuOpen}>
-            <Tooltip
-              content={`Export (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}C)`}
-            >
-              <DropdownMenu.Trigger asChild>
-                <IconButton>
-                  <ShareIcon className="w-4.25 h-4.25 stroke-[1.6]" />
-                </IconButton>
-              </DropdownMenu.Trigger>
-            </Tooltip>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="min-w-35 bg-bg border border-border rounded-md shadow-lg py-1 z-50"
-                sideOffset={5}
-                align="end"
-                onCloseAutoFocus={(e) => {
-                  // Prevent focus returning to trigger button
-                  e.preventDefault();
-                }}
-                onKeyDown={(e) => {
-                  // Stop arrow keys from bubbling to note list navigation
-                  if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                    e.stopPropagation();
-                  }
-                }}
-              >
-                <DropdownMenu.Item
-                  className="px-3 py-1.5 text-sm text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                  onSelect={handleCopyMarkdown}
-                >
-                  <CopyIcon className="w-4 h-4 stroke-[1.6]" />
-                  Copy Markdown
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  className="px-3 py-1.5 text-sm text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                  onSelect={handleCopyPlainText}
-                >
-                  <CopyIcon className="w-4 h-4 stroke-[1.6]" />
-                  Copy Plain Text
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  className="px-3 py-1.5 text-sm text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                  onSelect={handleCopyHtml}
-                >
-                  <CopyIcon className="w-4 h-4 stroke-[1.6]" />
-                  Copy HTML
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator className="h-px bg-border my-1" />
-                <DropdownMenu.Item
-                  className="px-3 py-1.5 text-sm text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                  onSelect={handleDownloadPdf}
-                >
-                  <DownloadIcon className="w-4 h-4 stroke-[1.6]" />
-                  Print as PDF
-                </DropdownMenu.Item>
-                <DropdownMenu.Item
-                  className="px-3 py-1.5 text-sm text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                  onSelect={handleDownloadMarkdown}
-                >
-                  <DownloadIcon className="w-4 h-4 stroke-[1.6]" />
-                  Export Markdown
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
-          {onSaveToFolder && (
-            <Tooltip content="Save in Folder">
-              <IconButton
-                onClick={onSaveToFolder}
-                aria-label="Save in Folder"
-                disabled={saveToFolderDisabled}
-              >
-                {saveToFolderDisabled ? (
-                  <SpinnerIcon className="w-4.25 h-4.25 animate-spin" />
-                ) : (
-                  <FolderPlusIcon className="w-4.25 h-4.25 stroke-[1.6]" />
+                  <MarkdownIcon className="w-4 h-4 stroke-[1.4]" />
                 )}
               </IconButton>
             </Tooltip>
           )}
         </div>
-      </div>
-
-      {/* Format Bar – transition only after initial mount to avoid height animation on note load */}
-      <div
-        data-format-bar
-        className={`${focusMode || sourceMode ? "opacity-0 max-h-0 overflow-hidden pointer-events-none" : "opacity-100 max-h-20"} ${hasTransitioned ? `transition-all duration-400 ${needsSidebarDelay ? "delay-200" : ""}` : ""}`}
-      >
-        <FormatBar
-          editor={editor}
-          onAddLink={handleAddLink}
-          onAddBlockMath={handleAddBlockMath}
-          onAddImage={handleAddImage}
-        />
       </div>
 
       {/* Editor content area with resize handles overlay */}
@@ -2599,7 +2651,7 @@ export function Editor({
         >
           {sourceMode ? (
             /* Markdown source textarea */
-            <div key={`source-${currentNote?.id || "preview"}`} className="h-full animate-note-settle">
+            <div className="h-full">
               <textarea
                 value={sourceContent}
                 onChange={(e) => handleSourceChange(e.target.value)}
@@ -2656,8 +2708,7 @@ export function Editor({
                 </div>
               )}
               <div
-                key={`doc-${currentNote?.id || "empty"}`}
-                className="h-full animate-note-settle"
+                className="h-full"
                 onContextMenu={async (e) => {
                   if (!editor) return;
 
@@ -2837,7 +2888,44 @@ export function Editor({
             </>
           )}
         </div>
+
+        {/* Floating Braun Spanned Tool Deck */}
+        {!sourceMode && !focusMode && editor && (
+          <FloatingFormatBar
+            editor={editor}
+            onAddLink={handleAddLink}
+            onAddBlockMath={handleAddBlockMath}
+            onAddImage={handleAddImage}
+          />
+        )}
       </div>
+
+      {/* Exit Zen Focus Floating Button */}
+      {focusMode && onToggleFocusMode && (
+        <button
+          onClick={onToggleFocusMode}
+          className="fixed top-4 right-4 z-50 px-2.5 py-1 rounded-md bg-bg-secondary/90 hover:bg-bg-secondary border border-border text-text-muted hover:text-text text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+          title="Exit Focus Mode (Esc)"
+        >
+          <ZenIcon className="w-3.5 h-3.5 stroke-[1.8]" />
+          <span>Exit Focus</span>
+        </button>
+      )}
+
+      {/* Bottom Telemetry Footer */}
+      {!focusMode && (
+        <footer className="h-7 px-6 border-t border-border bg-bg-secondary flex items-center justify-between text-[11px] font-mono select-none text-text-muted shrink-0 z-10">
+          <div className="flex items-center gap-3">
+            <span>CHARACTERS: {charCount.toLocaleString()}</span>
+            <span className="text-border">•</span>
+            <span>READ TIME: {readTime} MIN</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
+            <span>BRAUN TYPOGRAPHIC GRID // 8PX BASE</span>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

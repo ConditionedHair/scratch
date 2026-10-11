@@ -5,12 +5,11 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { listen } from "@tauri-apps/api/event";
 import { GitProvider } from "./context/GitContext";
 import { TooltipProvider, Toaster } from "./components/ui";
-import { Sidebar } from "./components/layout/Sidebar";
-import { SidebarResizeHandle } from "./components/layout/SidebarResizeHandle";
-import { SIDEBAR_DEFAULT_PX } from "./lib/sidebar";
+import { BraunHeader } from "./components/layout/BraunHeader";
+import { BraunLibrary } from "./components/layout/BraunLibrary";
+import { BraunNoteList } from "./components/notes/BraunNoteList";
 import { Editor } from "./components/editor/Editor";
 import type { Editor as TiptapEditor } from "@tiptap/react";
-import { ChassisHeader } from "./components/layout/ChassisHeader";
 import { FolderPicker } from "./components/layout/FolderPicker";
 import { CommandPalette } from "./components/command-palette/CommandPalette";
 import { SettingsPage } from "./components/settings";
@@ -77,13 +76,8 @@ function AppContent() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [aiEditing, setAiEditing] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [sourceMode, setSourceMode] = useState(false);
   const [aiProvider, setAiProvider] = useState<AiProvider>("claude");
   const editorRef = useRef<TiptapEditor | null>(null);
-
-  const toggleSourceMode = useCallback(() => {
-    window.dispatchEvent(new CustomEvent("toggle-source-mode"));
-  }, []);
 
   // Listen for set-notes-folder event from CLI (scratch .)
   // Placed here in AppContent where both NotesContext and ThemeContext are available
@@ -474,39 +468,50 @@ function AppContent() {
 
   return (
     <>
-      <div className="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden bg-chassis-grain">
-        {/* Retro Field Chassis Header Bar */}
+      <div className="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden">
+        {/* Braun System Header Bar */}
         {!focusMode && view === "notes" && (
-          <ChassisHeader
-            onToggleSidebar={toggleSidebar}
-            sidebarVisible={sidebarVisible}
-            onOpenSettings={toggleSettings}
+          <BraunHeader
             onOpenCommandPalette={() => setPaletteOpen(true)}
-            focusMode={focusMode}
-            onToggleFocusMode={toggleFocusMode}
-            sourceMode={sourceMode}
-            onToggleSourceMode={toggleSourceMode}
+            onOpenSettings={toggleSettings}
           />
         )}
 
-        <div className="flex-1 min-h-0 flex overflow-hidden relative">
+        <div className="flex-1 min-h-0 flex overflow-hidden">
           {view === "settings" ? (
             <SettingsPage onBack={closeSettings} />
           ) : (
             <>
+              {/* Column 1: Library (Folders, Pinned, Tags, New Note) */}
               <div
                 data-sidebar
-                style={{ width: (!sidebarVisible || focusMode) ? 0 : `var(--sidebar-width, ${SIDEBAR_DEFAULT_PX}px)` }}
-                className={`relative transition-all duration-500 ease-out overflow-hidden shrink-0 ${!sidebarVisible || focusMode ? "opacity-0 -translate-x-4 pointer-events-none" : "opacity-100 translate-x-0"}`}
+                className={`w-48 shrink-0 border-r border-border bg-bg-secondary flex flex-col transition-all duration-300 ease-out overflow-hidden ${
+                  !sidebarVisible || focusMode
+                    ? "!w-0 opacity-0 pointer-events-none border-r-0"
+                    : "opacity-100"
+                }`}
               >
-                <Sidebar onOpenSettings={toggleSettings} />
-                {sidebarVisible && !focusMode && <SidebarResizeHandle />}
+                <BraunLibrary onOpenSettings={toggleSettings} />
               </div>
+
+              {/* Column 2: Note Cards List */}
+              <div
+                data-note-list
+                className={`w-64 shrink-0 border-r border-border bg-bg flex flex-col transition-all duration-300 ease-out overflow-hidden ${
+                  !sidebarVisible || focusMode
+                    ? "!w-0 opacity-0 pointer-events-none border-r-0"
+                    : "opacity-100"
+                }`}
+              >
+                <BraunNoteList />
+              </div>
+
+              {/* Column 3: Main Editor Canvas */}
               <Editor
                 onToggleSidebar={toggleSidebar}
                 sidebarVisible={sidebarVisible}
                 focusMode={focusMode}
-                onSourceModeChange={setSourceMode}
+                onToggleFocusMode={toggleFocusMode}
                 onEditorReady={(editor) => {
                   editorRef.current = editor;
                 }}

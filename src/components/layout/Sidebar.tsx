@@ -14,7 +14,9 @@ import { useNotes } from "../../context/NotesContext";
 import { NoteList } from "../notes/NoteList";
 import { TagList } from "../notes/TagList";
 import { Footer } from "./Footer";
+import { IconButton, Input } from "../ui";
 import {
+  PlusIcon,
   XIcon,
   SearchIcon,
   SearchOffIcon,
@@ -22,7 +24,7 @@ import {
   FolderPlusIcon,
   NoteIcon,
 } from "../icons";
-import { mod, shift, isMac } from "../../lib/platform";
+import { mod, shift, isMac, isWindows } from "../../lib/platform";
 import * as notesService from "../../services/notes";
 import { FolderNameDialog } from "../notes/FolderNameDialog";
 
@@ -309,110 +311,104 @@ export function Sidebar({ onOpenSettings }: SidebarProps) {
       onDragEnd={handleDragEnd}
       onDragCancel={() => setDragLabel(null)}
     >
-    <div className="relative w-full h-full bg-[#D8D4CA] dark:bg-[#141518] border-r border-border flex flex-col select-none transition-colors">
-      {/* Sidebar Header: Index Selector & Action Keys */}
-      <div className="p-3 border-b border-border space-y-2.5 bg-[#D8D4CA] dark:bg-[#141518]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-bold tracking-wider uppercase text-text">
-              INDEX SELECTOR
-            </span>
-            <span className="px-1.5 py-0.5 bg-bg-card text-ram-cyan font-mono text-[9px] rounded font-bold border border-ram-cyan/20">
-              {notes.length} ENTRIES
-            </span>
-          </div>
-          {/* Physical Action Keys */}
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={toggleSearch}
-              title={`Search Notes (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}F)`}
-              className={`w-6 h-6 rounded border border-border flex items-center justify-center font-bold text-xs text-text-muted hover:text-text hover:bg-bg-emphasis transition-colors cursor-pointer ${
-                searchOpen ? "bg-bg-card text-text border-ram-cyan/50" : "bg-bg-card"
-              }`}
-            >
-              {searchOpen ? (
-                <SearchOffIcon className="w-3.5 h-3.5 stroke-[2]" />
-              ) : (
-                <SearchIcon className="w-3.5 h-3.5 stroke-[2]" />
-              )}
-            </button>
-            {foldersEnabled ? (
-              <DropdownMenu.Root
-                open={plusMenuOpen}
-                onOpenChange={setPlusMenuOpen}
-              >
-                <DropdownMenu.Trigger asChild>
-                  <button
-                    className="w-6 h-6 rounded bg-ram-orange text-white font-bold text-sm flex items-center justify-center hover:brightness-110 shadow-[0_0_8px_rgba(255,85,0,0.35)] transition-all cursor-pointer"
-                    title="New Note or Folder"
-                  >
-                    +
-                  </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content
-                    className="min-w-40 bg-[#FAF8F5] dark:bg-[#1c1d23] border border-border rounded-md shadow-lg py-1 z-50 font-mono text-xs"
-                    sideOffset={5}
-                    align="end"
-                    onCloseAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <DropdownMenu.Item
-                      className="px-3 py-1.5 text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                      onSelect={() => createNote()}
-                    >
-                      <AddNoteIcon className="w-4 h-4 stroke-[1.6]" />
-                      <span className="flex-1 font-medium">New Note</span>
-                      <kbd className="text-[10px] text-text-muted ml-2">
-                        {mod}
-                        {isMac ? "" : "+"}N
-                      </kbd>
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item
-                      className="px-3 py-1.5 text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
-                      onSelect={handleNewFolder}
-                    >
-                      <FolderPlusIcon className="w-4 h-4 stroke-[1.6]" />
-                      <span className="font-medium">New Folder</span>
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Root>
-            ) : (
-              <button
-                onClick={() => createNote()}
-                title={`New Note (${mod}${isMac ? "" : "+"}N)`}
-                className="w-6 h-6 rounded bg-ram-orange text-white font-bold text-sm flex items-center justify-center hover:brightness-110 shadow-[0_0_8px_rgba(255,85,0,0.35)] transition-all cursor-pointer"
-              >
-                +
-              </button>
-            )}
+    <div className="relative w-full h-full bg-bg-secondary border-r border-border flex flex-col select-none">
+      {/* Drag region */}
+      {!isWindows && <div className="h-11 shrink-0" data-tauri-drag-region></div>}
+      <div className={`flex items-center justify-between pl-4 pr-3 pb-2.5 border-b border-border shrink-0${isWindows ? " pt-2" : ""}`}>
+        <div className="flex items-center gap-2">
+          <div className="font-semibold text-sm tracking-tight text-text">Notes</div>
+          <div className="text-text-muted font-mono text-[11px] px-1.5 py-0.2 bg-bg-muted rounded-full font-medium">
+            {notes.length}
           </div>
         </div>
+        <div className="flex items-center gap-1">
+          <IconButton
+            onClick={toggleSearch}
+            title={`Search Notes (${mod}${isMac ? "" : "+"}${shift}${isMac ? "" : "+"}F)`}
+            className="w-7 h-7 rounded-lg"
+          >
+            {searchOpen ? (
+              <SearchOffIcon className="w-4 h-4 stroke-[1.6]" />
+            ) : (
+              <SearchIcon className="w-4 h-4 stroke-[1.6]" />
+            )}
+          </IconButton>
+          {foldersEnabled ? (
+            <DropdownMenu.Root
+              open={plusMenuOpen}
+              onOpenChange={setPlusMenuOpen}
+            >
+              <DropdownMenu.Trigger asChild>
+                <IconButton
+                  variant="primary"
+                  title="New Note or Folder"
+                  className="w-6 h-6 rounded-full !p-0 ml-0.5"
+                >
+                  <PlusIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+                </IconButton>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  className="min-w-40 bg-bg border border-border rounded-xl shadow-lg py-1 z-50"
+                  sideOffset={5}
+                  align="end"
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
+                  <DropdownMenu.Item
+                    className="px-3 py-1.5 text-xs text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                    onSelect={() => createNote()}
+                  >
+                    <AddNoteIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                    <span className="flex-1 font-medium">New Note</span>
+                    <kbd className="text-[10px] text-text-muted font-mono ml-2">
+                      {mod}
+                      {isMac ? "" : "+"}N
+                    </kbd>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="px-3 py-1.5 text-xs text-text cursor-pointer outline-none hover:bg-bg-muted focus:bg-bg-muted flex items-center gap-2"
+                    onSelect={handleNewFolder}
+                  >
+                    <FolderPlusIcon className="w-3.5 h-3.5 stroke-[1.6]" />
+                    <span className="font-medium">New Folder</span>
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          ) : (
+            <IconButton
+              variant="primary"
+              onClick={() => createNote()}
+              title={`New Note (${mod}${isMac ? "" : "+"}N)`}
+              className="w-6 h-6 rounded-full !p-0 ml-0.5"
+            >
+              <PlusIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+            </IconButton>
+          )}
+        </div>
       </div>
-
       {/* Scrollable area with search and notes */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-4">
+      <div className="flex-1 overflow-y-auto">
         {/* Search - sticky at top */}
         {searchOpen && (
-          <div className="sticky top-0 z-10 pb-1">
+          <div className="sticky top-0 z-10 px-2 pt-2 bg-bg-secondary">
             <div className="relative">
-              <SearchIcon className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-text-muted/60 pointer-events-none stroke-[2]" />
-              <input
+              <Input
                 ref={searchInputRef}
                 type="text"
                 value={inputValue}
                 onChange={handleSearchChange}
                 onKeyDown={handleSearchKeyDown}
-                placeholder="Filter tapes or tags..."
-                className="w-full pl-8 pr-8 py-1.5 text-xs font-mono bg-bg-card text-text placeholder:text-text-muted/60 rounded-md border border-border focus:border-ram-orange focus:outline-none transition-colors"
+                placeholder="Search notes..."
+                className="h-9 pr-8 text-sm"
               />
               {inputValue && (
                 <button
                   onClick={handleClearSearch}
                   tabIndex={-1}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"
                 >
-                  <XIcon className="w-3.5 h-3.5 stroke-[2]" />
+                  <XIcon className="w-4.5 h-4.5 stroke-[1.5]" />
                 </button>
               )}
             </div>

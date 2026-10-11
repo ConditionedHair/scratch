@@ -7,13 +7,13 @@ import {
   InfoIcon,
   IntegrationsIcon,
 } from "../icons";
+import { Button, IconButton } from "../ui";
 import { GeneralSettingsSection } from "./GeneralSettingsSection";
 import { AppearanceSettingsSection } from "./EditorSettingsSection";
 import { ShortcutsSettingsSection } from "./ShortcutsSettingsSection";
 import { AboutSettingsSection } from "./AboutSettingsSection";
 import { ToolsSettingsSection } from "./ToolsSettingsSection";
 import { mod, isMac, isWindows } from "../../lib/platform";
-import { useGit } from "../../context/GitContext";
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -23,22 +23,20 @@ type SettingsTab = "general" | "tools" | "editor" | "shortcuts" | "about";
 
 const tabs: {
   id: SettingsTab;
-  num: string;
   label: string;
   icon: typeof FolderIcon;
   shortcut: string;
 }[] = [
-  { id: "general", num: "01", label: "FOLDER", icon: FolderIcon, shortcut: "1" },
-  { id: "tools", num: "02", label: "INTEGRATIONS", icon: IntegrationsIcon, shortcut: "2" },
-  { id: "editor", num: "03", label: "APPEARANCE", icon: SwatchIcon, shortcut: "3" },
-  { id: "shortcuts", num: "04", label: "SHORTCUTS", icon: KeyboardIcon, shortcut: "4" },
-  { id: "about", num: "05", label: "ABOUT", icon: InfoIcon, shortcut: "5" },
+  { id: "general", label: "Folder", icon: FolderIcon, shortcut: "1" },
+  { id: "tools", label: "Integrations", icon: IntegrationsIcon, shortcut: "2" },
+  { id: "editor", label: "Appearance", icon: SwatchIcon, shortcut: "3" },
+  { id: "shortcuts", label: "Shortcuts", icon: KeyboardIcon, shortcut: "4" },
+  { id: "about", label: "About", icon: InfoIcon, shortcut: "5" },
 ];
 
 export function SettingsPage({ onBack }: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { status, isSyncing } = useGit();
 
   // Reset scroll position when tab changes
   useEffect(() => {
@@ -47,14 +45,9 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     }
   }, [activeTab]);
 
-  // Keyboard shortcuts (Cmd/Ctrl + 1-5, ESC to exit)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onBack();
-        return;
-      }
       if (e.metaKey || e.ctrlKey) {
         if (e.key === "1") {
           e.preventDefault();
@@ -77,180 +70,78 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onBack]);
+  }, []);
 
   return (
-    <div className="h-full w-full flex flex-col bg-bg text-text select-none overflow-hidden bg-chassis-grain animate-chassis-enter">
-      {/* Top Instrument Control Header */}
-      <header
-        className="h-12 w-full px-4 border-b border-border bg-[#DDD9CF] dark:bg-[#16171b] flex items-center justify-between gap-3 shrink-0 z-30 transition-colors"
-        data-tauri-drag-region
-      >
-        {/* Left: Brand / Status Diode */}
-        <div className={`titlebar-no-drag flex items-center gap-3 ${isMac && !isWindows ? "pl-16 sm:pl-18" : "pl-1"}`}>
-          <div className="w-3 h-3 rounded-full bg-ram-orange shadow-[0_0_8px_rgba(255,85,0,0.6)] flex items-center justify-center shrink-0">
-            <div className="w-1 h-1 rounded-full bg-white opacity-90 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold tracking-widest text-text uppercase">
-                TP-01 FIELD MARKER
-              </span>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-bg-card text-text-muted border border-border font-semibold">
-                REV. 2026
-              </span>
-            </div>
-            <p className="text-[9px] font-mono text-text-muted/80 tracking-wider uppercase">
-              SYSTEM CONFIG &amp; INTEGRATION BUS // BANK A-09
-            </p>
+    <div className="h-full flex bg-bg w-full">
+      {/* Sidebar - matches main Notes sidebar */}
+      <div className="w-64 h-full bg-bg-secondary border-r border-border flex flex-col select-none">
+        {/* Drag region */}
+        {!isWindows && <div className="h-11 shrink-0" data-tauri-drag-region></div>}
+
+        {/* Header with back button and Settings title */}
+        <div className={`flex items-center justify-between px-3 pb-2 border-b border-border shrink-0${isWindows ? " pt-2" : ""}`}>
+          <div className="flex items-center gap-1">
+            <IconButton
+              onClick={onBack}
+              title={`Back (${mod}${isMac ? "" : "+"},)`}
+            >
+              <ArrowLeftIcon className="w-4.5 h-4.5 stroke-[1.5]" />
+            </IconButton>
+            <div className="font-medium text-base">Settings</div>
           </div>
         </div>
 
-        {/* Center: Audio / Clock / Context chips */}
-        <div className="hidden lg:flex items-center gap-4">
-          <div className="flex items-center gap-1.5 bg-bg-card px-2 py-0.5 rounded border border-border text-[10px] font-mono text-text-muted">
-            <span className="tracking-widest">BUS // IO</span>
-          </div>
+        {/* Navigation tabs */}
+        <nav className="flex-1 p-2 flex flex-col gap-1">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <Button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                variant={isActive ? "secondary" : "ghost"}
+                size="sm"
+                className="justify-between gap-2.5 h-10 pr-3.5"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon className="w-4.5 h-4.5 stroke-[1.5]" />
+                  <span>{tab.label}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent shadow-xs" />
+                  )}
+                  <div className="text-xs text-text-muted font-mono">
+                    <span className="mr-0.5">{mod}</span>
+                    {tab.shortcut}
+                  </div>
+                </div>
+              </Button>
+            );
+          })}
+        </nav>
+      </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs text-text-muted">
-            <span className="text-[10px] tracking-widest">CLOCK</span>
-            <div className="w-4 h-4 rounded-full shadow-knob relative flex items-center justify-center border border-border">
-              <div className="w-0.5 h-1 bg-primary rounded-full -translate-y-0.5" />
-            </div>
-            <span className="text-[10px] font-bold text-text">2.4GHz</span>
-          </div>
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col bg-bg overflow-hidden">
+        {/* Drag region */}
+        {!isWindows && <div className="h-11 shrink-0" data-tauri-drag-region></div>}
 
-          <div className="flex items-center bg-bg-card p-0.5 rounded border border-border font-mono text-[10px]">
-            <span className="px-2 py-0.5 text-text-muted">WRITE</span>
-            <span className="px-2 py-0.5 text-text-muted">SPLIT</span>
-            <span className="px-2 py-0.5 font-bold bg-ram-orange text-white rounded shadow-xs">
-              CONFIG
-            </span>
-          </div>
-        </div>
-
-        {/* Right: Telemetry & Exit Button */}
-        <div className="titlebar-no-drag flex items-center gap-2.5">
-          <div className="hidden sm:flex items-center gap-2 bg-bg-card px-2.5 py-1 rounded border border-border text-[10px] font-mono">
-            <span className="flex items-center gap-1.5 text-emerald-500 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
-              <span>{isSyncing ? "SYNCING" : status?.hasRemote ? "SYNC OK" : "LOCAL"}</span>
-            </span>
-            <span className="text-border">|</span>
-            <span className="text-text-muted">PWR: 98%</span>
-          </div>
-
-          <button
-            onClick={onBack}
-            className="chiclet-btn flex items-center gap-1.5 bg-bg-card hover:bg-bg-emphasis active:bg-bg-card text-text px-3 py-1.5 rounded border border-border shadow-keycap text-xs font-mono font-bold tracking-wider cursor-pointer"
-            type="button"
-            title={`Exit Settings (${mod}${isMac ? "" : "+"}, or Esc)`}
-          >
-            <ArrowLeftIcon className="w-3.5 h-3.5 stroke-[2]" />
-            <span>EXIT [ESC]</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Master Chassis Interior */}
-      <div className="flex-1 w-full flex min-h-0 relative overflow-hidden">
-        {/* Module Navigation Dock */}
-        <aside
-          className="w-56 sm:w-60 flex flex-col justify-between bg-[#D8D4CA] dark:bg-[#141518] border-r border-border p-3 shrink-0 select-none transition-colors"
-          data-purpose="settings-module-dock"
+        {/* Content - centered with max width */}
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-auto scrollbar-gutter-stable"
         >
-          <div className="space-y-3">
-            {/* Dock Label */}
-            <div className="flex items-center justify-between px-2 pt-0.5 pb-2 border-b border-border font-mono">
-              <span className="text-[10px] tracking-widest text-text-muted font-bold uppercase">
-                SYSTEM BUS ROUTING
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
-            </div>
-
-            {/* Navigation Modules Rack */}
-            <nav className="space-y-1">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded font-mono text-xs transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-[#E4E0D6] dark:bg-[#1e2026] text-text border-l-2 border-l-ram-orange border-y border-r border-border shadow-xs font-bold"
-                        : "text-text-muted hover:text-text hover:bg-bg-muted/60 border border-transparent"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={`text-[10px] font-bold shrink-0 transition-colors ${
-                          isActive ? "text-ram-orange" : "text-text-muted/60"
-                        }`}
-                      >
-                        {tab.num}
-                      </span>
-                      <Icon
-                        className={`w-4 h-4 shrink-0 ${
-                          isActive ? "text-ram-orange" : "text-text-muted"
-                        } stroke-[1.8] transition-colors`}
-                      />
-                      <span className="tracking-wider text-[11px] uppercase truncate">
-                        {tab.label}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[9px] px-1.5 py-0.2 rounded border font-mono shrink-0 transition-colors ${
-                        isActive
-                          ? "text-ram-orange bg-ram-orange/10 border-ram-orange/30 font-bold"
-                          : "text-text-muted/60 bg-bg-card border-border/60"
-                      }`}
-                    >
-                      {mod}{tab.shortcut}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Sub-telemetry dock footer */}
-          <div className="p-2.5 rounded bg-bg-card border border-border space-y-1 text-[9px] font-mono text-text-muted">
-            <div className="flex justify-between">
-              <span>BUS ADDR</span>
-              <span className="text-text font-bold">0x7F::880</span>
-            </div>
-            <div className="flex justify-between">
-              <span>BUFFER ALLOC</span>
-              <span className="text-text font-bold">42.8 KB</span>
-            </div>
-            <div className="flex justify-between">
-              <span>FIRMWARE</span>
-              <span className="text-text-muted font-bold">v2.60-TE</span>
-            </div>
-          </div>
-        </aside>
-
-        {/* Content Rack Panel */}
-        <section
-          className="flex-1 bg-bg p-5 lg:p-8 overflow-y-auto flex flex-col justify-between"
-          data-purpose="settings-rack-panel"
-        >
-          <div key={activeTab} ref={scrollContainerRef} className="max-w-4xl space-y-6 animate-tab-enter">
+          <div className={`w-full max-w-3xl mx-auto px-6 pb-6${isWindows ? " pt-2" : ""}`}>
             {activeTab === "general" && <GeneralSettingsSection />}
             {activeTab === "tools" && <ToolsSettingsSection />}
             {activeTab === "editor" && <AppearanceSettingsSection />}
             {activeTab === "shortcuts" && <ShortcutsSettingsSection />}
             {activeTab === "about" && <AboutSettingsSection />}
           </div>
-
-          {/* Panel Telemetry Footer */}
-          <div className="pt-6 mt-6 flex items-center justify-between text-[10px] font-mono text-text-muted/70 border-t border-border">
-            <span>TELEMETRY PROTOCOL: ISO-9001 // TE-SYS-DIAG</span>
-            <span>SYSTEM CHASSIS: NOMINAL</span>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );

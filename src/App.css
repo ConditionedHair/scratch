@@ -4,50 +4,43 @@
 /* Use class-based dark mode instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Theme color tokens - Light mode (Field Instrument Pebble) */
+/* Theme color tokens - Light mode (Braun Alabaster Daylight) */
 :root {
-  --color-bg: #FAF8F4;
-  --color-bg-secondary: #E5E1D8;
-  --color-bg-sidebar: #D8D4CA;
-  --color-bg-header: #DDD9CF;
-  --color-bg-card: #FAF8F5;
-  --color-bg-card-muted: #E2DED4;
-  --color-bg-recess: #D1CCC0;
-  --color-bg-muted: rgba(43, 40, 36, 0.06);
-  --color-bg-emphasis: rgba(43, 40, 36, 0.12);
-  --color-text: #1C1B19;
-  --color-text-muted: #7E7A72;
-  --color-text-inverse: #FAF8F4;
-  --color-border: #C5C0B3;
-  --color-border-subtle: #DDD7C9;
-  --color-accent: #FF5500;
-  --color-selection: rgba(255, 85, 0, 0.25);
+  --color-bg: #F4F3EE;
+  --color-bg-secondary: #EBEAE4;
+  --color-bg-muted: rgba(29, 29, 31, 0.05);
+  --color-bg-emphasis: rgba(29, 29, 31, 0.08);
+  --color-text: #1D1D1F;
+  --color-text-muted: #6E6D70;
+  --color-text-inverse: #F4F3EE;
+  --color-border: #D8D6CE;
+  --color-accent: #F5A623;
+  --color-selection: rgba(245, 166, 35, 0.25);
 
-  /* Tactical hardware colors */
-  --color-ram-orange: #FF5500;
-  --color-ram-blue: #0047FF;
-  --color-ram-cyan: #00BCD4;
-  --color-ram-amber: #F5A623;
-  --color-ram-green: #10B981;
+  /* Braun Signal Accents */
+  --color-braun-yellow: #F5A623;
+  --color-braun-orange: #E65100;
+  --color-braun-green: #2E7D32;
+  --color-braun-blue: #0066CC;
 
   /* Editor font settings - simplified (overridden by ThemeContext) */
   --editor-font-family:
-    "Hanken Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, sans-serif;
-  --editor-base-font-size: 15px;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --editor-base-font-size: 16px;
   --editor-bold-weight: 700;
   --editor-line-height: 1.6;
   --editor-paragraph-spacing: 1em;
 
   /* Computed header sizes (set by ThemeContext based on base size) */
-  --editor-h1-size: 34px;
-  --editor-h2-size: 26px;
-  --editor-h3-size: 22px;
-  --editor-h4-size: 18px;
-  --editor-h5-size: 15px;
-  --editor-h6-size: 15px;
+  --editor-h1-size: 36px;
+  --editor-h2-size: 28px;
+  --editor-h3-size: 24px;
+  --editor-h4-size: 20px;
+  --editor-h5-size: 16px;
+  --editor-h6-size: 16px;
 
-  /* Syntax highlighting colors - Light */
+  /* Syntax highlighting colors - Light (GitHub) */
   --color-syntax-keyword: #d73a49;
   --color-syntax-string: #032f62;
   --color-syntax-number: #005cc5;
@@ -60,88 +53,63 @@
 
   /* Inline code color */
   --color-code: #d73a49;
-
-  /* Flat keycap & chassis shadows */
-  --shadow-keycap: 0 1px 0px #B8B2A4, 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0px rgba(255, 255, 255, 0.8);
-  --shadow-keycap-pressed: 0 0 0px transparent, inset 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-knob: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  --shadow-screen-inset: inset 0 1px 3px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(0,0,0,0.05);
 }
 
-/* Theme color tokens - Dark mode (Field Instrument Dark) */
+/* Theme color tokens - Dark mode (Braun Anodized Graphite) */
 .dark {
-  --color-bg: #121315;
-  --color-bg-secondary: #141518;
-  --color-bg-sidebar: #141518;
-  --color-bg-header: #16171b;
-  --color-bg-card: #16171b;
-  --color-bg-card-muted: #18191d;
-  --color-bg-recess: #0d0e10;
-  --color-bg-muted: rgba(255, 255, 255, 0.05);
-  --color-bg-emphasis: rgba(255, 255, 255, 0.08);
-  --color-text: #E3E2E4;
-  --color-text-muted: #8E929B;
-  --color-text-inverse: #0A0B0C;
-  --color-border: #22242a;
-  --color-border-subtle: #1c1e24;
-  --color-accent: #FF5500;
-  --color-selection: rgba(255, 85, 0, 0.35);
+  --color-bg: #18191B;
+  --color-bg-secondary: #202225;
+  --color-bg-muted: rgba(238, 238, 240, 0.06);
+  --color-bg-emphasis: rgba(238, 238, 240, 0.10);
+  --color-text: #EEEEF0;
+  --color-text-muted: #9FA0A5;
+  --color-text-inverse: #18191B;
+  --color-border: #2E3137;
+  --color-accent: #F5A623;
+  --color-selection: rgba(245, 166, 35, 0.35);
 
-  /* Tactical hardware colors */
-  --color-ram-orange: #FF5500;
-  --color-ram-blue: #0047FF;
-  --color-ram-cyan: #00E5FF;
-  --color-ram-amber: #FFB300;
-  --color-ram-green: #10B981;
+  /* Braun Signal Accents */
+  --color-braun-yellow: #F5A623;
+  --color-braun-orange: #FF7043;
+  --color-braun-green: #4CAF50;
+  --color-braun-blue: #29B6F6;
 
-  /* Syntax highlighting colors - Dark */
-  --color-syntax-keyword: #ff5500;
-  --color-syntax-string: #00e5ff;
-  --color-syntax-number: #ffba38;
-  --color-syntax-comment: #5c6270;
-  --color-syntax-function: #bdf4ff;
-  --color-syntax-variable: #ffb59c;
+  /* Syntax highlighting colors - Dark (GitHub) */
+  --color-syntax-keyword: #ea4a5a;
+  --color-syntax-string: #79b8ff;
+  --color-syntax-number: #79b8ff;
+  --color-syntax-comment: #959da5;
+  --color-syntax-function: #b392f0;
+  --color-syntax-variable: #fb8532;
   --color-syntax-type: #7bcc72;
-  --color-syntax-operator: #ff5500;
-  --color-syntax-attr: #00e5ff;
+  --color-syntax-operator: #ea4a5a;
+  --color-syntax-attr: #79b8ff;
 
   /* Inline code color */
-  --color-code: #00e5ff;
-
-  /* Flat keycap & chassis shadows */
-  --shadow-keycap: 0 1px 0px #090a0c, 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --shadow-keycap-pressed: 0 0 0px #000, inset 0 1px 2px rgba(0, 0, 0, 0.6);
-  --shadow-knob: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-  --shadow-screen-inset: inset 0 1px 3px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.04);
+  --color-code: #ea4a5a;
 }
 
-/* Register theme typography & colors with Tailwind */
+/* Register theme colors with Tailwind */
 @theme {
   --font-sans:
-    "Hanken Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display:
-    "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-serif:
+    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif,
+    "Apple Color Emoji";
   --font-mono:
-    "JetBrains Mono", "Space Mono", ui-monospace, "SF Mono", Menlo, Monaco,
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, "Courier New",
     monospace;
 
   /* Custom font sizes */
-  --text-2xs: 0.6875rem; /* 11px */
-  --text-2xs--line-height: 0.875rem;
-  --text-xs: 0.75rem; /* 12px */
-  --text-xs--line-height: 1.125rem;
-  --text-sm: 0.875rem; /* 14px */
-  --text-sm--line-height: 1.25rem;
+  --text-2xs: 0.75rem; /* 12px */
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.8125rem; /* 13px */
+  --text-xs--line-height: 1.25rem;
 
   /* Background colors */
   --color-bg: var(--color-bg);
   --color-bg-secondary: var(--color-bg-secondary);
-  --color-bg-sidebar: var(--color-bg-sidebar);
-  --color-bg-header: var(--color-bg-header);
-  --color-bg-card: var(--color-bg-card);
-  --color-bg-card-muted: var(--color-bg-card-muted);
-  --color-bg-recess: var(--color-bg-recess);
   --color-bg-muted: var(--color-bg-muted);
   --color-bg-emphasis: var(--color-bg-emphasis);
 
@@ -152,15 +120,13 @@
 
   /* Border colors */
   --color-border: var(--color-border);
-  --color-border-subtle: var(--color-border-subtle);
 
   /* Accent colors */
   --color-accent: var(--color-accent);
-  --color-ram-orange: var(--color-ram-orange);
-  --color-ram-blue: var(--color-ram-blue);
-  --color-ram-cyan: var(--color-ram-cyan);
-  --color-ram-amber: var(--color-ram-amber);
-  --color-ram-green: var(--color-ram-green);
+  --color-braun-yellow: var(--color-braun-yellow);
+  --color-braun-orange: var(--color-braun-orange);
+  --color-braun-green: var(--color-braun-green);
+  --color-braun-blue: var(--color-braun-blue);
 }
 
 /* Base styles */
@@ -204,95 +170,37 @@ body {
   background-color: var(--color-selection);
 }
 
-/* Hardware chassis texture and precision grid */
-.bg-chassis-grain {
-  background-color: var(--color-bg-secondary);
-  background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1.2px, transparent 1.2px), radial-gradient(rgba(0, 0, 0, 0.08) 1.2px, var(--color-bg-secondary) 1.2px);
-  background-size: 24px 24px;
-  background-position: 0 0, 12px 12px;
+/* Braun Precision Scrollbars (Dieter Rams "Weniger, aber besser") */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-border) 70%, var(--color-text-muted) 30%) transparent;
 }
 
-.dark .bg-chassis-grain {
-  background-color: var(--color-bg-secondary);
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1.2px, transparent 1.2px), radial-gradient(rgba(255, 255, 255, 0.04) 1.2px, var(--color-bg-secondary) 1.2px);
-}
-
-.grid-guide-paper {
-  background-size: 20px 20px;
-  background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
-}
-
-.dark .grid-guide-paper {
-  background-size: 20px 20px;
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-
-
-:root {
-  --ease-mechanical: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
-}
-
-/* Tactile shadows & chiclet active states */
-.shadow-knob {
-  box-shadow: var(--shadow-knob);
-}
-
-.shadow-keycap {
-  box-shadow: var(--shadow-keycap);
-}
-
-.shadow-screen-inset {
-  box-shadow: var(--shadow-screen-inset);
-}
-
-.chiclet-btn {
-  transition: transform 0.1s var(--ease-mechanical), box-shadow 0.1s var(--ease-mechanical), background-color 0.15s ease, border-color 0.15s ease, filter 0.1s ease;
-}
-
-.chiclet-btn:hover {
-  filter: brightness(1.03);
-}
-
-.chiclet-btn:active {
-  transform: translateY(1.5px) scale(0.985);
-  box-shadow: var(--shadow-keycap-pressed) !important;
-}
-
-/* Clean custom minimalist scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 7px;
+  height: 7px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 120, 140, 0.25);
-  border-radius: 2px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 120, 140, 0.45);
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #2b2e37;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #3e424f;
+  background: color-mix(in srgb, var(--color-border) 75%, var(--color-text-muted) 25%);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.15s ease;
 }
 
-/* Flashing cursor animation */
-@keyframes cursor-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-text-muted) 65%, var(--color-border) 35%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
-.caret-blink {
-  animation: cursor-blink 1.06s infinite steps(1);
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Hide scrollbar while allowing scroll */
@@ -353,7 +261,7 @@ html.dark {
   color-scheme: dark;
 }
 
-/* Core Mechanical & Hardware UI Keyframes */
+/* Command palette animations */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -366,55 +274,11 @@ html.dark {
 @keyframes slide-down {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-10px) scale(0.98);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes modal-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0.96) translateY(-4px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes note-settle {
-  0% {
-    opacity: 0.85;
-    transform: translateY(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes tab-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes chassis-enter {
-  0% {
-    opacity: 0;
-    transform: scale(0.995);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -428,69 +292,11 @@ html.dark {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.12s var(--ease-mechanical) forwards;
+  animation: fade-in 0.15s ease-out;
 }
 
 .animate-slide-down {
-  animation: slide-down 0.15s var(--ease-mechanical) forwards;
-}
-
-.animate-modal-pop {
-  animation: modal-pop 0.15s var(--ease-mechanical) forwards;
-}
-
-.animate-note-settle {
-  animation: note-settle 0.12s var(--ease-mechanical) forwards;
-}
-
-.animate-tab-enter {
-  animation: tab-enter 0.14s var(--ease-mechanical) forwards;
-}
-
-.animate-chassis-enter {
-  animation: chassis-enter 0.15s var(--ease-mechanical) forwards;
-}
-
-/* Elements entering into view */
-@keyframes element-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-element-in {
-  animation: element-in 0.16s var(--ease-mechanical) both;
-}
-
-/* Staggered items container for list views, search results, and cards */
-.stagger-items > * {
-  animation: element-in 0.16s var(--ease-mechanical) both;
-}
-.stagger-items > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-items > *:nth-child(2) { animation-delay: 20ms; }
-.stagger-items > *:nth-child(3) { animation-delay: 40ms; }
-.stagger-items > *:nth-child(4) { animation-delay: 60ms; }
-.stagger-items > *:nth-child(5) { animation-delay: 80ms; }
-.stagger-items > *:nth-child(6) { animation-delay: 100ms; }
-.stagger-items > *:nth-child(7) { animation-delay: 120ms; }
-.stagger-items > *:nth-child(8) { animation-delay: 140ms; }
-.stagger-items > *:nth-child(9) { animation-delay: 160ms; }
-.stagger-items > *:nth-child(10) { animation-delay: 180ms; }
-.stagger-items > *:nth-child(n+11) { animation-delay: 200ms; }
-
-/* Interactive blocks in editor (callouts, tables, math, code blocks, images) smooth reveal */
-.prose pre,
-.prose table,
-.prose blockquote,
-.prose img,
-.prose .math-block,
-.prose .mermaid-block {
-  animation: element-in 0.18s var(--ease-mechanical) both;
+  animation: slide-down 0.2s ease-out;
 }
 
 .animate-spin-slow {
@@ -527,6 +333,14 @@ html.dark {
   animation: pulse-gentle 1.3s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow,
+  .animate-bounce-gentle,
+  .animate-pulse-gentle {
+    animation: none;
+  }
+}
+
 /* Staggered fade-in-up animation for welcome screen */
 @keyframes fade-in-up {
   from {
@@ -540,28 +354,8 @@ html.dark {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.35s var(--ease-mechanical) forwards;
+  animation: fade-in-up 0.5s ease-out forwards;
   opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  .animate-spin-slow,
-  .animate-bounce-gentle,
-  .animate-pulse-gentle,
-  .animate-modal-pop,
-  .animate-note-settle,
-  .animate-tab-enter,
-  .animate-chassis-enter {
-    animation: none !important;
-  }
 }
 
 /* Editor layout - max-width from settings */

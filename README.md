@@ -1,118 +1,155 @@
 # Scratch
 
-<img src="docs/app-icon.png" alt="Scratch" width="128" height="128" style="border-radius: 22px; margin-bottom: 8px;">
+<div align="center">
+  <img src="docs/app-icon.png" alt="Scratch Icon" width="128" height="128" style="border-radius: 28px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+  
+  <h3>A minimalist, offline-first markdown instrument inspired by classic Braun industrial design.</h3>
 
-A minimalist, offline-first markdown note-taking app for macOS, Windows, and Linux.
+  <p>
+    <a href="https://img.shields.io/badge/platform-macOS-lightgrey"><img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="macOS" /></a>
+    <a href="https://img.shields.io/badge/platform-Windows-blue"><img src="https://img.shields.io/badge/platform-Windows-blue" alt="Windows" /></a>
+    <a href="https://img.shields.io/badge/platform-Linux-orange"><img src="https://img.shields.io/badge/platform-Linux-orange" alt="Linux" /></a>
+    <a href="https://github.com/erictli/scratch/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" /></a>
+  </p>
 
-![macOS](https://img.shields.io/badge/platform-macOS-lightgrey) ![Windows](https://img.shields.io/badge/platform-Windows-blue) ![Linux](https://img.shields.io/badge/platform-Linux-orange)
+  <p>
+    <a href="https://www.ericli.io/scratch">Website</a> · 
+    <a href="https://github.com/erictli/scratch/releases">Releases</a> · 
+    <a href="./AGENTS.md">Agent Architecture</a> · 
+    <a href="./CLAUDE.md">Developer Guide</a>
+  </p>
+</div>
 
-[Website](https://www.ericli.io/scratch) · [Releases](https://github.com/erictli/scratch/releases)
+---
 
-## Features
+## Overview
 
-- **Offline-first** - No cloud, no account, no internet required
-- **Markdown-based** - Notes stored as plain `.md` files you own
-- **WYSIWYG editing** - Rich text editing that saves as markdown
-- **Preview mode** - Open any `.md` file via drag-and-drop or "Open With" without a notes folder
-- **Markdown source mode** - Toggle to view and edit raw markdown (`Cmd+Shift+M`)
-- **Syntax highlighting** - 20 languages with GitHub-inspired color scheme
-- **Mermaid diagrams** - Render flowcharts, sequence diagrams, and more in fenced code blocks
-- **KaTeX math** - Render block `$$...$$` math equations
-- **Wikilinks** - Type `[[` to link between notes with autocomplete
-- **Slash commands** - Type `/` to quickly insert headings, lists, code blocks, diagrams, and more
-- **Focus mode** - Distraction-free writing with animated sidebar/toolbar fade (`Cmd+Shift+Enter`)
-- **Edit with Claude Code, OpenAI Codex, OpenCode, or Ollama** - Use your local CLI to edit notes with AI (including fully offline via Ollama)
-- **Works with other AI agents** - Detects external file changes
-- **Folders** - Opt-in collapsible folder tree with drag-and-drop to organize notes
-- **Keyboard optimized** - Lots of shortcuts and a command palette
-- **Customizable** - Theme, typography, page width, and RTL text direction
-- **Git integration** - Optional version control with push/pull for multi-device sync
-- **iCloud Drive sync (macOS only)** - Store your notes folder in iCloud Drive to sync across your Macs
-- **Lightweight** - 5-10x smaller than Obsidian or Notion
+Scratch is a cross-platform desktop note-taking instrument built with **Tauri v2**, **React 19**, and **TipTap**. Drawing inspiration from Dieter Rams' design ethos, Scratch combines the tactile feel of precision hardware instruments with a modern, distraction-free markdown editing engine.
+
+Your notes live as plain `.md` files directly on your filesystem. No account required, no proprietary databases, and no cloud lock-in.
+
+---
 
 ## Screenshot
 
-![Screenshot](docs/screenshot.png)
+<div align="center">
+  <img src="docs/screenshot.png" alt="Scratch Application Screenshot" style="border-radius: 12px; max-width: 100%; box-shadow: 0 12px 36px rgba(0,0,0,0.25);" />
+</div>
+
+---
+
+## Key Features
+
+* **Offline-First & Local Storage**: Notes are plain `.md` files in a folder you choose. You retain complete ownership and portability of your data.
+* **Braun Industrial Instrument Aesthetic**: Tactile buttons, matte surfaces, signal yellow/orange accents, and typography crafted for legibility and visual calm.
+* **Fluid Dual-Mode Editing**:
+  * Rich-text WYSIWYG editing with live markdown formatting.
+  * Instant raw Markdown source view (`Cmd+Shift+M`) for direct editing of raw markdown and frontmatter.
+* **Intelligent Tag Taxonomy**:
+  * Color-coded tag pills with a 24-shade curated Braun palette.
+  * Drag-to-reorder, rename, custom color picker, and instant library filtering.
+  * Seamlessly stored as YAML frontmatter (`tags: [...]`) while staying hidden from the visual editor and PDF export for a clean reading experience.
+* **Responsive Floating Format Bar**:
+  * Sits comfortably at the bottom center of the editor.
+  * Compact **Heading** (`H1`/`H2`/`H3`) and **List** dropdown menus.
+  * Intelligently collapses secondary tools into an overflow **More (`...`)** menu when the window or editor size is narrow.
+* **Technical Markdown Tools**:
+  * **Code Blocks**: Syntax highlighting for 20+ languages with copy and language switcher.
+  * **Math Equations**: KaTeX-powered block math (`$$...$$`).
+  * **Mermaid Diagrams**: Interactive flowcharts, sequence diagrams, and architecture charts rendered inside code blocks.
+  * **Wikilinks**: Type `[[` to link notes with autocomplete.
+  * **Slash Commands**: Type `/` to insert formatting blocks instantly.
+* **Full-Text Tantivy Search**: Instant fuzzy and prefix search across titles and note bodies via the Command Palette (`Cmd+P`) and Library Search (`Cmd+Shift+F`).
+* **Focus & Zen Mode (`Cmd+Shift+Enter`)**: Distraction-free writing with animated sidebar and header fades.
+* **Pair with Local AI CLIs**: Edit notes using your preferred local CLI tool (Claude Code, OpenAI Codex, OpenCode, or fully offline with Ollama).
+* **Multi-Device Sync Options**:
+  * **iCloud Drive (macOS)**: Native folder sync that automatically detects and materializes placeholder files.
+  * **Git Sync**: Built-in repository status, automated commits, and remote push/pull.
+* **Export Suite**:
+  * Clean, print-ready PDF export (`Cmd+Shift+P`).
+  * Download `.md` markdown files.
+  * Copy note as formatted HTML or plain text.
+
+---
 
 ## Installation
 
 ### macOS
 
-**Homebrew (Recommended)**
-
+**Homebrew (Recommended)**:
 ```bash
 brew tap erictli/tap
 brew install --cask erictli/tap/scratch
 ```
 
-**Manual Download**
-
-1. Download the latest `.dmg` from [Releases](https://github.com/erictli/scratch/releases)
-2. Open the DMG and drag Scratch to Applications
-3. Open Scratch from Applications
+**Manual Download**:
+1. Download the latest `.dmg` from [Releases](https://github.com/erictli/scratch/releases).
+2. Open the DMG and drag Scratch to Applications.
 
 ### Windows
 
-Download the latest `.exe` installer from [Releases](https://github.com/erictli/scratch/releases) and run it. WebView2 will be downloaded automatically if needed.
+Download the latest `.exe` installer from [Releases](https://github.com/erictli/scratch/releases) and launch the setup. (Requires WebView2, pre-installed on Windows 11).
 
 ### Linux
 
-Download the latest `.AppImage` or `.deb` from [Releases](https://github.com/erictli/scratch/releases).
+Download the latest `.AppImage` or `.deb` package from [Releases](https://github.com/erictli/scratch/releases).
 
-### From Source
-
-**Prerequisites:** Node.js 18+, Rust 1.70+
-
-**macOS:** Xcode Command Line Tools · **Windows:** WebView2 Runtime (pre-installed on Windows 11)
-
-```bash
-git clone https://github.com/erictli/scratch.git
-cd scratch
-npm install
-npm run tauri dev      # Development
-npm run tauri build    # Production build
-```
+---
 
 ## Keyboard Shortcuts
 
-Scratch is designed to be usable without a mouse. Here are the essentials to get started:
+Scratch is designed to be fully operated via keyboard:
 
-| Shortcut          | Action                 |
-| ----------------- | ---------------------- |
-| `Cmd+N`           | New note               |
-| `Cmd+D`           | Duplicate note         |
-| `Delete`          | Delete note            |
-| `Cmd+Backspace`   | Delete note            |
-| `Cmd+P`           | Command palette        |
-| `Cmd+K`           | Add/edit link          |
-| `Cmd+F`           | Find in note           |
-| `Cmd+Shift+C`     | Copy & Export menu     |
-| `Cmd+Shift+M`     | Toggle Markdown source |
-| `Cmd+Shift+Enter` | Toggle Focus mode      |
-| `Cmd+Shift+F`     | Search notes           |
-| `Cmd+R`           | Reload current note    |
-| `Cmd+,`           | Open settings          |
-| `Cmd+\`           | Toggle sidebar         |
-| `Cmd+B/I`         | Bold/Italic            |
-| `Cmd+=/-/0`       | Zoom in/out/reset      |
-| `↑/↓`             | Navigate notes         |
+| Shortcut | Action |
+| :--- | :--- |
+| `Cmd+P` | **Command Palette / Search or jump...** |
+| `Cmd+N` | New note |
+| `Cmd+D` | Duplicate note |
+| `Cmd+Backspace` / `Delete` | Delete note |
+| `Cmd+K` | **Add / edit hyperlink** |
+| `Cmd+F` | Find in note |
+| `Cmd+Shift+F` | Search note library (Tantivy) |
+| `Cmd+Shift+M` | Toggle Markdown raw source mode |
+| `Cmd+Shift+Enter` | Toggle Focus mode |
+| `Cmd+Shift+C` | Copy & Export menu |
+| `Cmd+Shift+P` | Print / Export as PDF |
+| `Cmd+R` | Refresh current note from disk |
+| `Cmd+\` | Toggle library sidebar |
+| `Cmd+,` | Open settings |
+| `Cmd+B` / `Cmd+I` | Bold / Italic |
+| `Cmd+=` / `Cmd+-` / `Cmd+0` | Zoom in / Zoom out / Reset |
+| `↑` / `↓` | Navigate note list |
 
-**Note:** On Windows, use `Ctrl` instead of `Cmd` for all shortcuts.
+> **Note**: On Windows and Linux, substitute `Ctrl` for `Cmd`.
 
-Many more shortcuts and features are available in the app—explore via the command palette (`Cmd+P` / `Ctrl+P`) or view the full reference in Settings → Shortcuts.
+---
 
-## Built With
+## Development & Building
 
-[Tauri](https://tauri.app/) · [React](https://react.dev/) · [TipTap](https://tiptap.dev/) · [Tailwind CSS](https://tailwindcss.com/) · [Tantivy](https://github.com/quickwit-oss/tantivy)
+**Prerequisites**: Node.js 18+, Rust 1.77+
 
-## Contributing
+```bash
+# Clone the repository
+git clone https://github.com/erictli/scratch.git
+cd scratch
 
-Scratch is mostly stable and intentionally minimal, so I'm no longer monitoring issues and PRs regularly. You're welcome to open them, but I can't guarantee I'll get to everything, and it may take a while when I do.
+# Install frontend dependencies
+npm install
 
-What makes Scratch special is its minimal feature set and focus on user experience. We're not trying to build Obsidian or Notion, so not every feature will be a fit. If you want to make major changes or take Scratch in a new direction, you should fork it – it's MIT licensed.
+# Run full desktop app in development
+npm run tauri dev
 
-**If you open a PR:** keep it small and focused, and try to address any CodeRabbit comments. I generally won't go back and forth with review comments – if I merge, I'll make any additional changes directly.
+# Typecheck and build frontend
+npm run build
+
+# Build release desktop app binary
+npm run tauri build
+```
+
+For agent instructions and subsystem architectural details, refer to [AGENTS.md](./AGENTS.md) and [CLAUDE.md](./CLAUDE.md).
+
+---
 
 ## License
 
-MIT
+Scratch is open source software released under the [MIT License](LICENSE).

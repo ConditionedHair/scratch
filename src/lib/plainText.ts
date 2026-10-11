@@ -1,6 +1,15 @@
 export function plainTextFromMarkdown(markdown: string): string {
+  // Strip frontmatter if present
+  let cleanedMarkdown = markdown;
+  const frontmatterMatch = cleanedMarkdown.match(
+    /^(?:\ufeff)?---[ \t]*\r?\n([\s\S]*?\r?\n)?---[ \t]*(?:\r?\n|$)/,
+  );
+  if (frontmatterMatch) {
+    cleanedMarkdown = cleanedMarkdown.slice(frontmatterMatch[0].length);
+  }
+
   let inCodeBlock = false;
-  const lines = markdown.split(/\r?\n/);
+  const lines = cleanedMarkdown.split(/\r?\n/);
   const plainLines = lines.map((line) => {
     let text = line;
 

@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Soft ambient drop shadow for squircle -->
+    <filter id="squircle-shadow" x="-10%" y="-10%" width="125%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="24" stdDeviation="32" flood-color="#18191B" flood-opacity="0.14" />
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#18191B" flood-opacity="0.08" />
+    </filter>
+
+    <!-- Linear gradients for authentic Alabaster hardware feel -->
+    <linearGradient id="alabaster-plate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCFBF7" />
+      <stop offset="50%" stop-color="#F4F3EE" />
+      <stop offset="100%" stop-color="#ECEBE5" />
+    </linearGradient>
+
+    <linearGradient id="pen-fill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#F7F6F1" />
+      <stop offset="100%" stop-color="#ECEBE5" />
+    </linearGradient>
+
+    <linearGradient id="signal-yellow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFBD3B" />
+      <stop offset="100%" stop-color="#EAA01E" />
+    </linearGradient>
+
+    <!-- Subtle inner deboss shadow for linework -->
+    <filter id="deboss-depth" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#FFFFFF" flood-opacity="0.7" />
+    </filter>
+  </defs>
+
+  <!-- ================= BASE SQUIRCLE ================= -->
+  <rect
+    x="96"
+    y="96"
+    width="832"
+    height="832"
+    rx="188"
+    fill="url(#alabaster-plate)"
+    filter="url(#squircle-shadow)"
+  />
+  <!-- Inner Bezel Rim -->
+  <rect
+    x="96"
+    y="96"
+    width="832"
+    height="832"
+    rx="188"
+    fill="none"
+    stroke="#D8D6CE"
+    stroke-width="3"
+  />
+
+  <!-- ================= DRAFTING PEN / STYLUS ================= -->
+  <!-- Pen center is positioned at X=485 -->
+  <g transform="translate(485, 0)" filter="url(#deboss-depth)">
+    
+    <!-- 1. Braun Signal Yellow Push Button (Recessed at the Top) -->
+    <rect
+      x="-13"
+      y="290"
+      width="26"
+      height="44"
+      rx="6"
+      fill="url(#signal-yellow)"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+
+    <!-- 2. Button Collar / Top Housing -->
+    <!-- U-shaped housing surrounding button base -->
+    <path
+      d="M -24 336
+         L -24 300
+         A 8 8 0 0 1 -16 292
+         L -13 292
+         M 13 292
+         L 16 292
+         A 8 8 0 0 1 24 300
+         L 24 336"
+      fill="none"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- 3. Pocket Clip (Fully closed, independent geometric path to the left) -->
+    <!-- Leaves a crisp, clear gap between clip and pen barrel so the barrel line is never broken -->
+    <path
+      d="M -24 336
+         L -44 336
+         A 10 10 0 0 0 -54 346
+         L -54 446
+         C -54 466 -42 472 -38 468
+         C -34 464 -34 454 -40 448
+         L -44 442
+         L -44 350
+         A 4 4 0 0 1 -40 346
+         L -24 346
+         Z"
+      fill="#1D1D1F"
+      stroke="#1D1D1F"
+      stroke-width="3"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+
+    <!-- 4. Pen Barrel (Complete, unbroken vertical rectangle) -->
+    <!-- Left wall is completely visible and contiguous from top to bottom -->
+    <rect
+      x="-28"
+      y="346"
+      width="56"
+      height="354"
+      fill="url(#pen-fill)"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+
+    <!-- Top Collar Band -->
+    <rect
+      x="-28"
+      y="326"
+      width="56"
+      height="20"
+      fill="url(#pen-fill)"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+
+    <!-- 5. Conical Drafting Tip -->
+    <path
+      d="M -28 700
+         L -6 788
+         A 3 3 0 0 0 0 790
+         A 3 3 0 0 0 6 788
+         L 28 700
+         Z"
+      fill="url(#pen-fill)"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+
+    <!-- Technical Needle / Lead Point -->
+    <line
+      x1="0"
+      y1="790"
+      x2="0"
+      y2="814"
+      stroke="#1D1D1F"
+      stroke-width="10"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- ================= RULER GAUGE (PRECISION CALIPER TICKS) ================= -->
+  <!-- Positioned to the right of the pen from Y=288 to Y=816 -->
+  <!-- 1 Major tick (length 48) every 3 ticks, with 2 minor ticks (length 24) -->
+  <g stroke="#1D1D1F" stroke-linecap="round" filter="url(#deboss-depth)">
+    <!-- Y=288 (Major) -->
+    <line x1="565" y1="288" x2="613" y2="288" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="312" x2="589" y2="312" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="336" x2="589" y2="336" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=360 (Major) -->
+    <line x1="565" y1="360" x2="613" y2="360" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="384" x2="589" y2="384" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="408" x2="589" y2="408" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=432 (Major) -->
+    <line x1="565" y1="432" x2="613" y2="432" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="456" x2="589" y2="456" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="480" x2="589" y2="480" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=504 (Major) -->
+    <line x1="565" y1="504" x2="613" y2="504" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="528" x2="589" y2="528" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="552" x2="589" y2="552" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=576 (Major) -->
+    <line x1="565" y1="576" x2="613" y2="576" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="600" x2="589" y2="600" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="624" x2="589" y2="624" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=648 (Major) -->
+    <line x1="565" y1="648" x2="613" y2="648" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="672" x2="589" y2="672" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="696" x2="589" y2="696" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=720 (Major) -->
+    <line x1="565" y1="720" x2="613" y2="720" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="744" x2="589" y2="744" stroke-width="8" stroke-opacity="0.85" />
+    <line x1="565" y1="768" x2="589" y2="768" stroke-width="8" stroke-opacity="0.85" />
+
+    <!-- Y=792 (Major) -->
+    <line x1="565" y1="792" x2="613" y2="792" stroke-width="10" />
+    <!-- Minor -->
+    <line x1="565" y1="816" x2="589" y2="816" stroke-width="8" stroke-opacity="0.85" />
+  </g>
+</svg>

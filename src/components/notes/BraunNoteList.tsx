@@ -33,12 +33,15 @@ function formatTimestamp(timestamp: number): string {
   return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 }
 
-function estimateWords(preview?: string): string {
-  if (!preview) return "Empty";
+function formatWordCount(count?: number, preview?: string): string {
+  if (typeof count === "number") {
+    if (count === 0 && (!preview || !preview.trim())) return "Empty";
+    return count === 1 ? "1 word" : `${count.toLocaleString()} words`;
+  }
+  if (!preview || !preview.trim()) return "Empty";
   const words = preview.trim().split(/\s+/).filter(Boolean).length;
-  // Scale estimate based on snippet length
-  const approx = Math.max(words * 8, 45);
-  return `${approx} words`;
+  if (words === 0) return "Empty";
+  return words === 1 ? "1 word" : `${words.toLocaleString()} words`;
 }
 
 export const BraunNoteList = memo(function BraunNoteList() {
@@ -49,6 +52,7 @@ export const BraunNoteList = memo(function BraunNoteList() {
     deleteNote,
     duplicateNote,
     activeTagFilter,
+    currentNote,
   } = useNotes();
 
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -128,6 +132,16 @@ export const BraunNoteList = memo(function BraunNoteList() {
             const title = cleanTitle(note.title) || "Untitled Note";
             const previewText =
               note.preview || "No content in this note yet...";
+            const noteWordCount =
+              isSelected && currentNote && typeof currentNote.content === "string"
+                ? (currentNote.content.trim()
+                    ? currentNote.content
+                        .trim()
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .filter((w) => !/^[#*\-+>|~=_`]+$/.test(w)).length
+                    : 0)
+                : note.wordCount;
 
             return (
               <ContextMenu.Root key={note.id}>
@@ -194,7 +208,7 @@ export const BraunNoteList = memo(function BraunNoteList() {
                     {/* Bottom Row: Timestamp & Word Count in Monospace */}
                     <div className="flex items-center justify-between text-[10px] font-mono text-text-muted/70">
                       <span>{formatTimestamp(note.modified)}</span>
-                      <span>{estimateWords(note.preview)}</span>
+                      <span>{formatWordCount(noteWordCount, note.preview)}</span>
                     </div>
                   </div>
                 </ContextMenu.Trigger>

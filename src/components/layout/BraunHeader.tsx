@@ -44,7 +44,7 @@ export const BraunHeader = memo(function BraunHeader({
         <button
           onClick={onOpenCommandPalette}
           className="px-3 py-1 rounded-full text-xs flex items-center gap-2 transition-all cursor-pointer bg-bg border border-border text-text-muted hover:text-text hover:border-border/80 shadow-2xs group"
-          title={`Search or jump (${mod}+K)`}
+          title={`Search or jump (${mod}+P)`}
         >
           <svg
             className="w-3.5 h-3.5 stroke-[2] text-text-muted/70 group-hover:text-text transition-colors"
@@ -60,7 +60,7 @@ export const BraunHeader = memo(function BraunHeader({
           </svg>
           <span className="text-xs font-normal">Search or jump...</span>
           <kbd className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-bg-muted text-text font-medium border border-border/40">
-            {mod}K
+            {mod}P
           </kbd>
         </button>
       </div>

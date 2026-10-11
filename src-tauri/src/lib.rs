@@ -30,6 +30,8 @@ pub struct NoteMetadata {
     /// True when this note is an iCloud placeholder that hasn't downloaded yet.
     #[serde(default)]
     pub downloading: bool,
+    #[serde(default, rename = "wordCount", alias = "word_count")]
+    pub word_count: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -508,6 +510,14 @@ fn generate_preview(content: &str) -> String {
         }
     }
     String::new()
+}
+
+// Utility: Count words in markdown content (excluding frontmatter and standalone markdown symbols)
+fn count_words(content: &str) -> usize {
+    let body = strip_frontmatter(content);
+    body.split_whitespace()
+        .filter(|w| !w.chars().all(|c| "#*-+>|~=_`".contains(c)))
+        .count()
 }
 
 // Utility: Extract the frontmatter block (without the surrounding `---` markers), if present
@@ -1035,7 +1045,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
     let path_clone = path.clone();
     let discovered = tokio::task::spawn_blocking(move || {
         use walkdir::WalkDir;
-        let mut results: Vec<(String, String, String, i64, Vec<String>, bool)> = Vec::new();
+        let mut results: Vec<(String, String, String, i64, Vec<String>, bool, usize)> = Vec::new();
         for entry in WalkDir::new(&path_clone)
             .max_depth(10)
             .into_iter()
@@ -1058,7 +1068,8 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                     let title = extract_title(&content);
                     let preview = generate_preview(&content);
                     let tags = parse_frontmatter_tags(&content);
-                    results.push((id, title, preview, modified, tags, false));
+                    let word_count = count_words(&content);
+                    results.push((id, title, preview, modified, tags, false, word_count));
                 }
             } else if icloud::is_placeholder(file_path) {
                 // Not-yet-downloaded iCloud file: synthesize a placeholder entry
@@ -1076,6 +1087,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                                 0,
                                 Vec::new(),
                                 true,
+                                0,
                             ));
                         }
                     }
@@ -1089,13 +1101,14 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
 
     let mut notes: Vec<NoteMetadata> = discovered
         .into_iter()
-        .map(|(id, title, preview, modified, tags, downloading)| NoteMetadata {
+        .map(|(id, title, preview, modified, tags, downloading, word_count)| NoteMetadata {
             id,
             title,
             preview,
             modified,
             tags,
             downloading,
+            word_count,
         })
         .collect();
 
@@ -2320,6 +2333,8 @@ async fn import_file_to_folder(
 
     let tags = parse_frontmatter_tags(&content);
 
+    let word_count = count_words(&content);
+
     let metadata = NoteMetadata {
         id: final_id,
         title: extracted_title,
@@ -2327,6 +2342,7 @@ async fn import_file_to_folder(
         modified,
         tags,
         downloading: false,
+        word_count,
     };
 
     // Update notes cache so fallback search sees the imported note immediately

@@ -112,6 +112,8 @@ import {
   MarkdownOffIcon,
   FolderPlusIcon,
   ZenIcon,
+  MoreHorizontalIcon,
+  ChevronRightIcon,
 } from "../icons";
 
 function formatBraunDate(timestamp: number): string {
@@ -254,10 +256,51 @@ function FloatingFormatBar({
   onAddBlockMath: () => void;
   onAddImage: () => void;
 }) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const [isCompact, setIsCompact] = useState(false);
+  const [headingMenuOpen, setHeadingMenuOpen] = useState(false);
+  const [listMenuOpen, setListMenuOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const parent = barRef.current?.parentElement;
+    if (!parent) return;
+
+    const checkWidth = () => {
+      // Collapse when editor container width is under 700px
+      setIsCompact(parent.clientWidth < 700);
+    };
+
+    checkWidth();
+    const observer = new ResizeObserver(checkWidth);
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, []);
+
+  const activeHeadingLevel = editor.isActive("heading", { level: 1 })
+    ? 1
+    : editor.isActive("heading", { level: 2 })
+    ? 2
+    : editor.isActive("heading", { level: 3 })
+    ? 3
+    : null;
+
+  const isBulletList = editor.isActive("bulletList");
+  const isOrderedList = editor.isActive("orderedList");
+  const isTaskList = editor.isActive("taskList");
+  const isAnyList = isBulletList || isOrderedList || isTaskList;
+
+  const isSecondaryActive =
+    editor.isActive("blockquote") ||
+    editor.isActive("code") ||
+    editor.isActive("codeBlock") ||
+    editor.isActive("blockMath") ||
+    editor.isActive("table");
 
   return (
     <div
+      ref={barRef}
       className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full border border-border bg-bg-secondary/92 dark:bg-bg-secondary/95 backdrop-blur-md shadow-xl select-none max-w-[calc(100%-2.5rem)] overflow-x-auto scrollbar-none transition-all duration-200"
       role="toolbar"
       aria-label="Editor Formatting Toolbar"
@@ -311,179 +354,175 @@ function FloatingFormatBar({
 
       <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
 
-      {/* Headings */}
-      <Tooltip content={`Heading 1 (${mod}+${alt}+1)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("heading", { level: 1 })
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Heading 1"
-        >
-          <Heading1Icon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content={`Heading 2 (${mod}+${alt}+2)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("heading", { level: 2 })
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Heading 2"
-        >
-          <Heading2Icon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content={`Heading 3 (${mod}+${alt}+3)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("heading", { level: 3 })
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Heading 3"
-        >
-          <Heading3Icon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
+      {/* Headings Dropdown */}
+      <DropdownMenu.Root open={headingMenuOpen} onOpenChange={setHeadingMenuOpen}>
+        <Tooltip content={`Headings (${mod}+${alt}+1/2/3)`}>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                activeHeadingLevel !== null
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="Heading Options"
+            >
+              {activeHeadingLevel !== null ? `H${activeHeadingLevel}` : "H"}
+            </button>
+          </DropdownMenu.Trigger>
+        </Tooltip>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="min-w-44 p-1 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+            side="top"
+            sideOffset={10}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                activeHeadingLevel === 1
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            >
+              <div className="flex items-center gap-2">
+                <Heading1Icon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Heading 1</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{mod}+{alt}+1</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                activeHeadingLevel === 2
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            >
+              <div className="flex items-center gap-2">
+                <Heading2Icon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Heading 2</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{mod}+{alt}+2</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                activeHeadingLevel === 3
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            >
+              <div className="flex items-center gap-2">
+                <Heading3Icon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Heading 3</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{mod}+{alt}+3</span>
+            </DropdownMenu.Item>
+            {activeHeadingLevel !== null && (
+              <>
+                <DropdownMenu.Separator className="h-px bg-border my-1" />
+                <DropdownMenu.Item
+                  className="px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center gap-2 hover:bg-bg-muted focus:bg-bg-muted text-text-muted hover:text-text transition-colors"
+                  onSelect={() => editor.chain().focus().setParagraph().run()}
+                >
+                  <span>Normal text</span>
+                </DropdownMenu.Item>
+              </>
+            )}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
 
       <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
 
-      {/* Lists & Quotes */}
-      <Tooltip content={`Bullet List (${mod}+${shift}+8)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("bulletList")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Bullet List"
-        >
-          <ListIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content={`Numbered List (${mod}+${shift}+7)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("orderedList")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Numbered List"
-        >
-          <ListOrderedIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content="Task List">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("taskList")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Task List"
-        >
-          <CheckSquareIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content={`Blockquote (${mod}+${shift}+B)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("blockquote")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Blockquote"
-        >
-          <QuoteIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
+      {/* Lists Dropdown */}
+      <DropdownMenu.Root open={listMenuOpen} onOpenChange={setListMenuOpen}>
+        <Tooltip content="Lists (Bullet / Numbered / Task)">
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                isAnyList
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="List Options"
+            >
+              {isTaskList ? (
+                <CheckSquareIcon className="w-3.5 h-3.5 stroke-[2]" />
+              ) : isOrderedList ? (
+                <ListOrderedIcon className="w-3.5 h-3.5 stroke-[2]" />
+              ) : (
+                <ListIcon className="w-3.5 h-3.5 stroke-[2]" />
+              )}
+            </button>
+          </DropdownMenu.Trigger>
+        </Tooltip>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="min-w-44 p-1 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+            side="top"
+            sideOffset={10}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                isBulletList
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleBulletList().run()}
+            >
+              <div className="flex items-center gap-2">
+                <ListIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Bullet List</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{mod}+{shift}+8</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                isOrderedList
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleOrderedList().run()}
+            >
+              <div className="flex items-center gap-2">
+                <ListOrderedIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Numbered List</span>
+              </div>
+              <span className="text-[10px] text-text-muted">{mod}+{shift}+7</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                isTaskList
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+              )}
+              onSelect={() => editor.chain().focus().toggleTaskList().run()}
+            >
+              <div className="flex items-center gap-2">
+                <CheckSquareIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Task List</span>
+              </div>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
 
       <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
 
-      {/* Code & Math */}
-      <Tooltip content={`Inline Code (${mod}+E)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("code")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Inline Code"
-        >
-          <InlineCodeIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content={`Code Block (${mod}+${alt}+C)`}>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("codeBlock")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Code Block"
-        >
-          <CodeIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content="Block Math">
-        <button
-          type="button"
-          onClick={onAddBlockMath}
-          className={cn(
-            "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-            editor.isActive("blockMath")
-              ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
-              : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
-          )}
-          aria-label="Block Math"
-        >
-          <BlockMathIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content="Horizontal Rule">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
-          aria-label="Horizontal Rule"
-        >
-          <SeparatorIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-
-      <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
-
-      {/* Inserts: Link, Wikilink, Image, Table */}
+      {/* Add Link - Always visible primary insert */}
       <Tooltip content={`Add Link (${mod}+K)`}>
         <button
           type="button"
@@ -499,67 +538,306 @@ function FloatingFormatBar({
           <LinkIcon className="w-3.5 h-3.5 stroke-[2]" />
         </button>
       </Tooltip>
-      <Tooltip content="Insert Wikilink ([[])">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().insertContent("[[").run()}
-          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
-          aria-label="Insert Wikilink"
-        >
-          <BracketsIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <Tooltip content="Add Image">
-        <button
-          type="button"
-          onClick={onAddImage}
-          className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
-          aria-label="Add Image"
-        >
-          <ImageIcon className="w-3.5 h-3.5 stroke-[2]" />
-        </button>
-      </Tooltip>
-      <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
-        <Tooltip content="Insert Table">
-          <DropdownMenu.Trigger asChild>
+
+      {/* Secondary Tools: Shown directly when wide, collapsed into More (...) when compact */}
+      {!isCompact ? (
+        <>
+          <Tooltip content={`Blockquote (${mod}+${shift}+B)`}>
             <button
               type="button"
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
               className={cn(
                 "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
-                editor.isActive("table")
+                editor.isActive("blockquote")
                   ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
                   : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
               )}
-              aria-label="Insert Table"
+              aria-label="Blockquote"
             >
-              <TableIcon className="w-3.5 h-3.5 stroke-[2]" />
+              <QuoteIcon className="w-3.5 h-3.5 stroke-[2]" />
             </button>
-          </DropdownMenu.Trigger>
-        </Tooltip>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            className="p-2.5 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150"
-            side="top"
-            sideOffset={10}
-            onCloseAutoFocus={(e) => e.preventDefault()}
-          >
-            <GridPicker
-              onSelect={(rows, cols) => {
-                editor
-                  .chain()
-                  .focus()
-                  .insertTable({
-                    rows,
-                    cols,
-                    withHeaderRow: true,
-                  })
-                  .run();
-                setTableMenuOpen(false);
-              }}
-            />
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+          </Tooltip>
+
+          <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+          {/* Code & Math */}
+          <Tooltip content={`Inline Code (${mod}+E)`}>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                editor.isActive("code")
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="Inline Code"
+            >
+              <InlineCodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+          <Tooltip content={`Code Block (${mod}+${alt}+C)`}>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                editor.isActive("codeBlock")
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="Code Block"
+            >
+              <CodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Block Math">
+            <button
+              type="button"
+              onClick={onAddBlockMath}
+              className={cn(
+                "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                editor.isActive("blockMath")
+                  ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                  : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+              )}
+              aria-label="Block Math"
+            >
+              <BlockMathIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Horizontal Rule">
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+              aria-label="Horizontal Rule"
+            >
+              <SeparatorIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+
+          <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
+
+          {/* Inserts: Wikilink, Image, Table */}
+          <Tooltip content="Insert Wikilink ([[])">
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().insertContent("[[").run()}
+              className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+              aria-label="Insert Wikilink"
+            >
+              <BracketsIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Add Image">
+            <button
+              type="button"
+              onClick={onAddImage}
+              className="w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95"
+              aria-label="Add Image"
+            >
+              <ImageIcon className="w-3.5 h-3.5 stroke-[2]" />
+            </button>
+          </Tooltip>
+          <DropdownMenu.Root open={tableMenuOpen} onOpenChange={setTableMenuOpen}>
+            <Tooltip content="Insert Table">
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                    editor.isActive("table")
+                      ? "bg-accent text-slate-950 font-bold scale-105 shadow-xs"
+                      : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+                  )}
+                  aria-label="Insert Table"
+                >
+                  <TableIcon className="w-3.5 h-3.5 stroke-[2]" />
+                </button>
+              </DropdownMenu.Trigger>
+            </Tooltip>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                className="p-2.5 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150"
+                side="top"
+                sideOffset={10}
+                onCloseAutoFocus={(e) => e.preventDefault()}
+              >
+                <GridPicker
+                  onSelect={(rows, cols) => {
+                    editor
+                      .chain()
+                      .focus()
+                      .insertTable({
+                        rows,
+                        cols,
+                        withHeaderRow: true,
+                      })
+                      .run();
+                    setTableMenuOpen(false);
+                  }}
+                />
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
+        </>
+      ) : (
+        /* Compact Mode: More (...) Overflow Menu */
+        <DropdownMenu.Root open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
+          <Tooltip content="More formatting tools">
+            <DropdownMenu.Trigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "w-7.5 h-7.5 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs select-none",
+                  isSecondaryActive
+                    ? "bg-accent/20 text-accent font-bold"
+                    : "bg-bg text-text-muted hover:text-text hover:bg-bg-emphasis active:scale-95",
+                )}
+                aria-label="More Options"
+              >
+                <MoreHorizontalIcon className="w-3.5 h-3.5 stroke-[2]" />
+              </button>
+            </DropdownMenu.Trigger>
+          </Tooltip>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className="min-w-48 p-1 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+              side="top"
+              sideOffset={10}
+              onCloseAutoFocus={(e) => e.preventDefault()}
+            >
+              <DropdownMenu.Item
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                  editor.isActive("blockquote")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+                )}
+                onSelect={() => editor.chain().focus().toggleBlockquote().run()}
+              >
+                <div className="flex items-center gap-2">
+                  <QuoteIcon className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Blockquote</span>
+                </div>
+                <span className="text-[10px] text-text-muted">{mod}+{shift}+B</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                  editor.isActive("code")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+                )}
+                onSelect={() => editor.chain().focus().toggleCode().run()}
+              >
+                <div className="flex items-center gap-2">
+                  <InlineCodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Inline Code</span>
+                </div>
+                <span className="text-[10px] text-text-muted">{mod}+E</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                  editor.isActive("codeBlock")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+                )}
+                onSelect={() => editor.chain().focus().toggleCodeBlock().run()}
+              >
+                <div className="flex items-center gap-2">
+                  <CodeIcon className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Code Block</span>
+                </div>
+                <span className="text-[10px] text-text-muted">{mod}+{alt}+C</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                className={cn(
+                  "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center gap-2 transition-colors",
+                  editor.isActive("blockMath")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+                )}
+                onSelect={onAddBlockMath}
+              >
+                <BlockMathIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Block Math</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                className="px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center gap-2 hover:bg-bg-muted focus:bg-bg-muted text-text transition-colors"
+                onSelect={() => editor.chain().focus().setHorizontalRule().run()}
+              >
+                <SeparatorIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Horizontal Rule</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Separator className="h-px bg-border my-1" />
+
+              <DropdownMenu.Item
+                className="px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between hover:bg-bg-muted focus:bg-bg-muted text-text transition-colors"
+                onSelect={() => editor.chain().focus().insertContent("[[").run()}
+              >
+                <div className="flex items-center gap-2">
+                  <BracketsIcon className="w-3.5 h-3.5 stroke-[2]" />
+                  <span>Insert Wikilink</span>
+                </div>
+                <span className="text-[10px] text-text-muted">[[</span>
+              </DropdownMenu.Item>
+
+              <DropdownMenu.Item
+                className="px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center gap-2 hover:bg-bg-muted focus:bg-bg-muted text-text transition-colors"
+                onSelect={onAddImage}
+              >
+                <ImageIcon className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Add Image</span>
+              </DropdownMenu.Item>
+
+              {/* Table Submenu */}
+              <DropdownMenu.Sub>
+                <DropdownMenu.SubTrigger className={cn(
+                  "px-2.5 py-1.5 rounded-lg cursor-pointer outline-none flex items-center justify-between transition-colors",
+                  editor.isActive("table")
+                    ? "bg-accent/15 text-accent font-semibold"
+                    : "hover:bg-bg-muted focus:bg-bg-muted text-text",
+                )}>
+                  <div className="flex items-center gap-2">
+                    <TableIcon className="w-3.5 h-3.5 stroke-[2]" />
+                    <span>Insert Table</span>
+                  </div>
+                  <ChevronRightIcon className="w-3.5 h-3.5 text-text-muted" />
+                </DropdownMenu.SubTrigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.SubContent
+                    className="p-2.5 bg-bg-secondary border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150"
+                    sideOffset={6}
+                  >
+                    <GridPicker
+                      onSelect={(rows, cols) => {
+                        editor
+                          .chain()
+                          .focus()
+                          .insertTable({
+                            rows,
+                            cols,
+                            withHeaderRow: true,
+                          })
+                          .run();
+                        setMoreMenuOpen(false);
+                      }}
+                    />
+                  </DropdownMenu.SubContent>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Sub>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      )}
 
       <div className="w-px h-4 mx-0.5 bg-border shrink-0" />
 
@@ -2087,7 +2365,9 @@ export function Editor({
   const handleCopyHtml = useCallback(async () => {
     if (!editor) return;
     try {
-      const html = editor.getHTML();
+      let html = editor.getHTML();
+      // Remove frontmatter blocks from copied HTML
+      html = html.replace(/<pre[^>]*data-frontmatter[^>]*>[\s\S]*?<\/pre>/gi, "").trim();
       await invoke("copy_to_clipboard", { text: html });
       toast.success("Copied as HTML");
     } catch (error) {

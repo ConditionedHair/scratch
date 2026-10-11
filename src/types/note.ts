@@ -6,6 +6,7 @@ export interface NoteMetadata {
   preview: string;
   modified: number;
   tags: string[];
+  wordCount?: number;
 }
 
 export interface Note {

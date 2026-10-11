@@ -3,21 +3,35 @@ import { Node, type JSONContent, type MarkdownToken } from "@tiptap/core";
 export const Frontmatter = Node.create({
   name: "frontmatter",
   group: "block",
-  content: "text*",
-  marks: "",
-  code: true,
-  defining: true,
-  isolating: true,
+  atom: true,
+  selectable: false,
+  draggable: false,
 
-  parseHTML() {
-    return [{ tag: "pre[data-frontmatter]", preserveWhitespace: "full" as const }];
+  addAttributes() {
+    return {
+      value: {
+        default: "",
+      },
+    };
   },
 
-  renderHTML({ HTMLAttributes }) {
+  parseHTML() {
+    return [
+      {
+        tag: "pre[data-frontmatter]",
+        preserveWhitespace: "full" as const,
+        getAttrs: (node) => ({
+          value: (node as HTMLElement).textContent || "",
+        }),
+      },
+    ];
+  },
+
+  renderHTML({ node, HTMLAttributes }) {
     return [
       "pre",
       { ...HTMLAttributes, "data-frontmatter": "", class: "frontmatter" },
-      ["code", 0],
+      ["code", node.attrs.value || ""],
     ];
   },
 
@@ -42,17 +56,13 @@ export const Frontmatter = Node.create({
   },
 
   parseMarkdown(token: MarkdownToken, helpers) {
-    return helpers.createNode(
-      "frontmatter",
-      {},
-      token.text ? [helpers.createTextNode(token.text)] : [],
-    );
+    return helpers.createNode("frontmatter", {
+      value: token.text ?? "",
+    });
   },
 
-  renderMarkdown(node: JSONContent, helpers) {
-    const content = node.content
-      ? helpers.renderChildren(node.content).replace(/\n$/, "")
-      : "";
-    return `---\n${content}\n---`;
+  renderMarkdown(node: JSONContent) {
+    const value = (node.attrs?.value as string) ?? "";
+    return `---\n${value}\n---`;
   },
 });

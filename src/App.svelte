@@ -561,7 +561,7 @@
 {:else if !notesState.notesFolder}
 	<FolderPicker />
 {:else}
-	<div class="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden">
+	<div data-app-shell class="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden">
 		<!-- Braun System Header Bar -->
 		{#if !focusMode && view === 'notes'}
 			<BraunHeader
@@ -575,6 +575,7 @@
 		<div class="flex-1 min-h-0 relative overflow-hidden">
 			{#if view === 'settings'}
 				<div
+					data-settings-container
 					in:viewFadeIn
 					out:viewFadeOut
 					class="absolute inset-0 z-10 bg-bg overflow-y-auto"
@@ -585,6 +586,7 @@
 
 			{#if view === 'calendar'}
 				<div
+					data-calendar-container
 					in:viewFadeIn
 					out:viewFadeOut
 					class="absolute inset-0 z-10 bg-bg overflow-hidden"
@@ -595,6 +597,7 @@
 
 			{#if view === 'mail'}
 				<div
+					data-mail-container
 					in:viewFadeIn
 					out:viewFadeOut
 					class="absolute inset-0 z-10 bg-bg overflow-hidden"
@@ -615,17 +618,19 @@
 				<!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
 				<div
 					data-sidebar
-					class={`w-48 shrink-0 border-r border-border bg-bg-secondary flex flex-col overflow-hidden ${
+					class={`shrink-0 border-r border-border bg-bg-secondary flex flex-col overflow-hidden will-change-[width,opacity] ${
 						!sidebarVisible || focusMode
-							? '!w-0 opacity-0 pointer-events-none border-r-0'
-							: 'opacity-100'
+							? 'w-0 opacity-0 pointer-events-none border-r-0'
+							: 'w-48 opacity-100'
 					}`}
 				>
-					<BraunLibrary
-						onOpenSettings={toggleSettings}
-						onOpenCalendar={openCalendar}
-						onOpenMail={openMail}
-					/>
+					<div class="w-48 h-full flex flex-col shrink-0">
+						<BraunLibrary
+							onOpenSettings={toggleSettings}
+							onOpenCalendar={openCalendar}
+							onOpenMail={openMail}
+						/>
+					</div>
 				</div>
 
 				<!-- Column 2: Note Cards List -->
@@ -634,14 +639,19 @@
 					style:width={!sidebarVisible || focusMode
 						? '0px'
 						: 'var(--sidebar-width, 16rem)'}
-					class={`shrink-0 border-r border-border bg-bg flex flex-col overflow-hidden relative ${
+					class={`shrink-0 border-r border-border bg-bg flex flex-col overflow-hidden relative will-change-[width,opacity] ${
 						!sidebarVisible || focusMode
-							? '!w-0 opacity-0 pointer-events-none border-r-0'
+							? 'opacity-0 pointer-events-none border-r-0'
 							: 'opacity-100'
 					}`}
 				>
-					<BraunNoteList />
-					<SidebarResizeHandle />
+					<div
+						style:width="var(--sidebar-width, 16rem)"
+						class="h-full flex flex-col shrink-0"
+					>
+						<BraunNoteList />
+						<SidebarResizeHandle />
+					</div>
 				</div>
 
 				<!-- Column 3: Main Editor Canvas -->

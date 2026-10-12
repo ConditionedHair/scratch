@@ -29,6 +29,7 @@ dependencies = [
  "url",
  "urlencoding",
  "walkdir",
+ "window-vibrancy",
 ]
 
 [[package]]

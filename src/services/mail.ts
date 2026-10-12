@@ -4,7 +4,8 @@ import type {
 	MailThread,
 	MailMessage,
 	SendMailPayload,
-	ModifyThreadPayload
+	ModifyThreadPayload,
+	AttachmentData
 } from '../types/mail'
 
 export async function getMailState(): Promise<MailSyncState> {
@@ -45,4 +46,11 @@ export async function trashMailThread(threadId: string): Promise<void> {
 
 export async function sendMail(payload: SendMailPayload): Promise<MailMessage> {
 	return invoke('mail_send', { payload })
+}
+
+export async function getMailAttachmentData(
+	messageId: string,
+	attachmentId: string
+): Promise<AttachmentData> {
+	return invoke('mail_get_attachment_data', { messageId, attachmentId })
 }

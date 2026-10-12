@@ -50,8 +50,14 @@
 		padding: 0 !important;
 	}
 
-	/* Hide sidebar when printing */
-	[data-sidebar] {
+	/* Hide sidebars, note lists, tooling subheaders, and navigation panels when printing */
+	[data-sidebar],
+	[data-note-list],
+	[data-sub-header],
+	[data-calendar-agenda],
+	[data-mail-list],
+	[data-mail-sidebar],
+	aside {
 		display: none !important;
 	}
 
@@ -73,14 +79,25 @@
 	}
 
 	/* Hide toolbar, format bar, and frontmatter/tags block when printing */
-	[data-tauri-drag-region],
 	[data-format-bar],
 	pre.frontmatter,
 	[data-frontmatter] {
 		display: none !important;
 	}
 
-	/* Make editor container expand for printing */
+	/* Make editor column take full width and expand for printing */
+	[data-editor-column] {
+		width: 100% !important;
+		max-width: 100% !important;
+		height: auto !important;
+		overflow: visible !important;
+		position: static !important;
+		flex: 1 1 100% !important;
+		border: none !important;
+		padding: 0 !important;
+		margin: 0 !important;
+	}
+
 	.flex-1 {
 		overflow: visible !important;
 		height: auto !important;

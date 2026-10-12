@@ -55,6 +55,13 @@ pub struct MailAttachment {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct AttachmentData {
+    pub size: usize,
+    pub data: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MailMessage {
     pub id: String,
     pub thread_id: String,
@@ -958,6 +965,44 @@ impl GmailManager {
 
         Ok(created_msg)
     }
+
+    pub async fn get_attachment_data(
+        &self,
+        message_id: &str,
+        attachment_id: &str,
+    ) -> Result<AttachmentData> {
+        let token = self.get_valid_access_token().await?;
+        let url = format!(
+            "https://gmail.googleapis.com/gmail/v1/users/me/messages/{}/attachments/{}",
+            message_id, attachment_id
+        );
+        let res = self.client.get(&url).bearer_auth(&token).send().await?;
+
+        if !res.status().is_success() {
+            let err = res.text().await.unwrap_or_default();
+            return Err(anyhow!("Failed to fetch attachment {}: {}", attachment_id, err));
+        }
+
+        #[derive(Deserialize)]
+        struct RawAttachmentResponse {
+            size: Option<usize>,
+            data: Option<String>,
+        }
+
+        let raw: RawAttachmentResponse = res.json().await?;
+        let raw_data = raw.data.unwrap_or_default();
+        let clean = raw_data.replace('-', "+").replace('_', "/");
+        let padded = match clean.len() % 4 {
+            2 => format!("{}==", clean),
+            3 => format!("{}=", clean),
+            _ => clean,
+        };
+
+        Ok(AttachmentData {
+            size: raw.size.unwrap_or(0),
+            data: padded,
+        })
+    }
 }
 
 // Helper to recursively traverse payload parts for bodies and attachments
@@ -1319,4 +1364,16 @@ pub async fn mail_send(
     manager: State<'_, Arc<GmailManager>>,
 ) -> Result<MailMessage, String> {
     manager.send_mail(payload).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn mail_get_attachment_data(
+    message_id: String,
+    attachment_id: String,
+    manager: State<'_, Arc<GmailManager>>,
+) -> Result<AttachmentData, String> {
+    manager
+        .get_attachment_data(&message_id, &attachment_id)
+        .await
+        .map_err(|e| e.to_string())
 }

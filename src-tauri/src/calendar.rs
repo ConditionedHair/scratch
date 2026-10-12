@@ -610,11 +610,23 @@ impl CalendarManager {
         });
 
         if payload.all_day {
-            body["start"] = serde_json::json!({ "date": payload.start_time });
-            body["end"] = serde_json::json!({ "date": payload.end_time });
+            body["start"] = serde_json::json!({
+                "date": payload.start_time,
+                "dateTime": serde_json::Value::Null
+            });
+            body["end"] = serde_json::json!({
+                "date": payload.end_time,
+                "dateTime": serde_json::Value::Null
+            });
         } else {
-            body["start"] = serde_json::json!({ "dateTime": payload.start_time });
-            body["end"] = serde_json::json!({ "dateTime": payload.end_time });
+            body["start"] = serde_json::json!({
+                "dateTime": payload.start_time,
+                "date": serde_json::Value::Null
+            });
+            body["end"] = serde_json::json!({
+                "dateTime": payload.end_time,
+                "date": serde_json::Value::Null
+            });
         }
 
         if !payload.attendees.is_empty() {

@@ -336,6 +336,31 @@ export class MailState {
 		}
 	}
 
+	async toggleImportant(threadId: string) {
+		const thread = this.threads.find((t) => t.id === threadId)
+		if (!thread) return
+
+		const isImportant = thread.labelIds.includes('IMPORTANT')
+		try {
+			const updated = await mailService.modifyMailThread({
+				threadId,
+				addLabelIds: !isImportant ? ['IMPORTANT'] : [],
+				removeLabelIds: isImportant ? ['IMPORTANT'] : []
+			})
+
+			const idx = this.threads.findIndex((t) => t.id === threadId)
+			if (idx !== -1) {
+				this.threads[idx] = updated
+			}
+			if (this.selectedThreadId === threadId) {
+				this.currentThread = updated
+			}
+		} catch (err) {
+			console.error('[Mail] Toggle important error:', err)
+			toast.error('Failed to update importance')
+		}
+	}
+
 	async markAsRead(threadId: string) {
 		try {
 			const updated = await mailService.modifyMailThread({

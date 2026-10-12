@@ -1797,6 +1797,7 @@
 	>
 		<!-- Braun Sub-header Tooling Strip -->
 		<div
+			data-sub-header
 			class={cn(
 				'h-10 px-6 border-b shrink-0 flex items-center justify-between select-none bg-bg-secondary border-border',
 				focusMode &&

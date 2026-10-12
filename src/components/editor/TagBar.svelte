@@ -154,7 +154,7 @@
 			<span
 				style={tagPillCss(color)}
 				title={`#${item.name}`}
-				class="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full font-medium leading-none cursor-grab active:cursor-grabbing touch-none border shadow-2xs group shrink min-w-0 max-w-[130px] sm:max-w-[170px]"
+				class="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full font-medium leading-none cursor-grab active:cursor-grabbing touch-none border shadow-2xs group shrink min-w-0 max-w-[130px] sm:max-w-[170px] transition-all duration-100 ease-braun-snappy"
 			>
 				<span
 					class="w-1.5 h-1.5 rounded-full shrink-0"
@@ -167,7 +167,7 @@
 						e.stopPropagation()
 						removeTag(item.name)
 					}}
-					class="opacity-50 hover:opacity-100 hover:scale-115 transition-all ml-0.5 cursor-pointer shrink-0"
+					class="opacity-50 hover:opacity-100 active:scale-90 transition-all duration-100 ease-braun-snappy ml-0.5 cursor-pointer shrink-0"
 					tabindex={-1}
 					aria-label={`Remove tag ${item.name}`}
 				>

@@ -3,6 +3,7 @@
 	import { Button, CodeCopyButton, IconButton, Input, Select } from '../ui'
 	import ColorsExpandable from './ColorsExpandable.svelte'
 	import { EyeIcon, MinusIcon, PlusIcon } from '../icons'
+	import { isMac } from '../../lib/platform'
 	import type {
 		FontFamily,
 		TextDirection,
@@ -62,7 +63,8 @@
 			themeState.textDirection !== 'auto' ||
 			themeState.editorWidth !== 'normal' ||
 			Math.round(themeState.interfaceZoom * 100) !== 100 ||
-			!themeState.animationsEnabled
+			!themeState.animationsEnabled ||
+			themeState.liquidGlassEnabled
 	)
 
 	let isMonospace = $derived(
@@ -428,6 +430,41 @@
 					</button>
 				</div>
 			</div>
+
+			<!-- Liquid Glass Effect (macOS only) -->
+			{#if isMac}
+				<div class="flex items-center justify-between">
+					<div>
+						<span class="text-sm text-text font-medium block">
+							Liquid Glass
+						</span>
+						<span class="text-xs text-text-muted">
+							Translucent frosted glass with native macOS window vibrancy
+						</span>
+					</div>
+					<div class="w-40 flex justify-end">
+						<button
+							type="button"
+							role="switch"
+							aria-label="Toggle liquid glass effect"
+							aria-checked={themeState.liquidGlassEnabled}
+							onclick={() =>
+								themeState.setLiquidGlassEnabled(
+									!themeState.liquidGlassEnabled
+								)}
+							class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+							class:bg-accent={themeState.liquidGlassEnabled}
+							class:bg-border={!themeState.liquidGlassEnabled}
+						>
+							<span
+								class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+								class:translate-x-5={themeState.liquidGlassEnabled}
+								class:translate-x-0={!themeState.liquidGlassEnabled}
+							></span>
+						</button>
+					</div>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Preview -->

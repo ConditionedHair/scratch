@@ -131,6 +131,7 @@ export class ThemeState {
 	customColorsLight = $state<CustomColors>({})
 	customColorsDark = $state<CustomColors>({})
 	animationsEnabled = $state<boolean>(true)
+	liquidGlassEnabled = $state<boolean>(false)
 	isInitialized = $state<boolean>(false)
 
 	resolvedTheme = $derived<'light' | 'dark'>(
@@ -147,6 +148,13 @@ export class ThemeState {
 		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 		mediaQuery.addEventListener('change', (e) => {
 			this.systemTheme = e.matches ? 'dark' : 'light'
+		})
+
+		window.addEventListener('focus', () => {
+			document.documentElement.classList.remove('window-inactive')
+		})
+		window.addEventListener('blur', () => {
+			document.documentElement.classList.add('window-inactive')
 		})
 
 		this.loadSettingsFromBackend().finally(() => {
@@ -220,6 +228,9 @@ export class ThemeState {
 			if (typeof settings.animationsEnabled === 'boolean') {
 				this.animationsEnabled = settings.animationsEnabled
 			}
+			if (typeof settings.liquidGlassEnabled === 'boolean') {
+				this.liquidGlassEnabled = settings.liquidGlassEnabled
+			}
 			this.applyAllStyles()
 		} catch {
 			// If settings can't be loaded, use defaults
@@ -239,6 +250,16 @@ export class ThemeState {
 		this.applyInterfaceZoom()
 		this.applyCustomColors()
 		this.applyAnimationStyles()
+		this.applyLiquidGlassStyles()
+	}
+
+	private applyLiquidGlassStyles() {
+		const root = document.documentElement
+		if (this.liquidGlassEnabled) {
+			root.classList.add('liquid-glass')
+		} else {
+			root.classList.remove('liquid-glass')
+		}
 	}
 
 	private applyAnimationStyles() {
@@ -414,6 +435,8 @@ export class ThemeState {
 		this.customColorsLight = {}
 		this.customColorsDark = {}
 		this.animationsEnabled = true
+		this.liquidGlassEnabled = false
+		invoke('set_liquid_glass', { enabled: false }).catch(() => {})
 		this.applyAllStyles()
 		try {
 			const settings = await getSettings()
@@ -424,6 +447,7 @@ export class ThemeState {
 				editorWidth: 'normal',
 				interfaceZoom: 1.0,
 				animationsEnabled: true,
+				liquidGlassEnabled: false,
 				customEditorWidthPx: undefined,
 				sidebarWidthPx: undefined,
 				customColorsLight: undefined,
@@ -431,6 +455,21 @@ export class ThemeState {
 			})
 		} catch (error) {
 			console.error('Failed to reset editor settings:', error)
+		}
+	}
+
+	async setLiquidGlassEnabled(enabled: boolean) {
+		this.liquidGlassEnabled = enabled
+		this.applyLiquidGlassStyles()
+		invoke('set_liquid_glass', { enabled }).catch(() => {})
+		try {
+			const settings = await getSettings()
+			await updateSettings({
+				...settings,
+				liquidGlassEnabled: enabled
+			})
+		} catch (error) {
+			console.error('Failed to save liquid glass setting:', error)
 		}
 	}
 

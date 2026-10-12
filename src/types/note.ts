@@ -59,4 +59,5 @@ export interface Settings {
 	customColorsLight?: CustomColors
 	customColorsDark?: CustomColors
 	tagColors?: Record<string, string>
+	liquidGlassEnabled?: boolean
 }

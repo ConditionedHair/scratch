@@ -1,7 +1,9 @@
 <script lang="ts">
 	import {
 		calendarState,
-		formatEventDateKey
+		formatEventDateKey,
+		getInclusiveEndDate,
+		getExclusiveEndDate
 	} from '../../context/calendar.svelte'
 	import type { CalendarEvent } from '../../types/calendar'
 	import {
@@ -59,7 +61,10 @@
 
 				if (event.allDay) {
 					startDate = event.startTime
-					endDate = event.endTime || event.startTime
+					endDate = getInclusiveEndDate(
+						event.startTime,
+						event.endTime || event.startTime
+					)
 					startTime = '09:00'
 					endTime = '10:00'
 				} else {
@@ -115,16 +120,18 @@
 
 			if (allDay) {
 				startIso = startDate
-				endIso = endDate || startDate
+				endIso = getExclusiveEndDate(endDate || startDate)
 			} else {
 				const [sH, sM] = startTime.split(':').map(Number)
 				const [eH, eM] = endTime.split(':').map(Number)
 
-				const startObj = new Date(startDate)
-				startObj.setHours(sH, sM, 0, 0)
+				const [sY, sMth, sD] = startDate.split('-').map(Number)
+				const startObj = new Date(sY, sMth - 1, sD, sH, sM, 0, 0)
 
-				const endObj = new Date(endDate)
-				endObj.setHours(eH, eM, 0, 0)
+				const [eY, eMth, eD] = (endDate || startDate)
+					.split('-')
+					.map(Number)
+				const endObj = new Date(eY, eMth - 1, eD, eH, eM, 0, 0)
 
 				startIso = startObj.toISOString()
 				endIso = endObj.toISOString()

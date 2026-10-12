@@ -8,6 +8,12 @@ if (!target) {
 	throw new Error('Failed to find target root element')
 }
 
+import { notesState } from './context/notes.svelte'
+
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+	;(window as any).notesState = notesState
+}
+
 const app = mount(App, { target })
 
 export default app

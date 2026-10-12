@@ -30,6 +30,30 @@ export function parseEventDate(dateStr: string): Date {
 	return new Date(dateStr)
 }
 
+/**
+ * For all-day events, Google Calendar API returns exclusive end dates
+ * (the day after the last day). This converts it to the inclusive end date for user UI display.
+ */
+export function getInclusiveEndDate(startStr: string, endStr: string): string {
+	const endDt = parseEventDate(endStr)
+	const startDt = parseEventDate(startStr)
+	if (endDt > startDt) {
+		endDt.setDate(endDt.getDate() - 1)
+		return formatEventDateKey(endDt)
+	}
+	return startStr
+}
+
+/**
+ * For all-day events, Google Calendar API requires exclusive end dates
+ * (the day after the last day). This converts the user's inclusive end date to the API format.
+ */
+export function getExclusiveEndDate(endStr: string): string {
+	const d = parseEventDate(endStr)
+	d.setDate(d.getDate() + 1)
+	return formatEventDateKey(d)
+}
+
 export class CalendarState {
 	connected = $state<boolean>(false)
 	userEmail = $state<string | null>(null)

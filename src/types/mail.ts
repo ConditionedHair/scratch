@@ -15,6 +15,11 @@ export interface MailAttachment {
 	size: number
 }
 
+export interface AttachmentData {
+	size: number
+	data: string
+}
+
 export interface MailMessage {
 	id: string
 	threadId: string

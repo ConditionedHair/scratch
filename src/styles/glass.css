@@ -1,0 +1,217 @@
+/* ========================================================================= */
+/* Scratch Liquid Glass Effect — macOS Native Vibrancy & Glassmorphism       */
+/* Dieter Rams Inspired Layered Precision Translucency                       */
+/* ========================================================================= */
+
+html.liquid-glass,
+html.liquid-glass body,
+html.liquid-glass #app,
+html.liquid-glass #root {
+	background-color: transparent !important;
+}
+
+/* Outer application shell */
+html.liquid-glass div[data-app-shell] {
+	background-color: transparent !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 1: Navigation Sidebar (Library)                                     */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[data-sidebar] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 48%,
+		transparent
+	) !important;
+	backdrop-filter: blur(30px) saturate(190%);
+	-webkit-backdrop-filter: blur(30px) saturate(190%);
+	border-right-color: color-mix(
+		in srgb,
+		var(--color-border-default) 50%,
+		transparent
+	) !important;
+}
+
+html.dark.liquid-glass div[data-sidebar] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 42%,
+		transparent
+	) !important;
+}
+
+/* Ensure inner Library container is transparent so sidebar glass shines through */
+html.liquid-glass div[data-sidebar] > div {
+	background-color: transparent !important;
+	border-right-color: transparent !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 2: Note Cards List Column                                           */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[data-note-list] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 54%,
+		transparent
+	) !important;
+	backdrop-filter: blur(28px) saturate(185%);
+	-webkit-backdrop-filter: blur(28px) saturate(185%);
+	border-right-color: color-mix(
+		in srgb,
+		var(--color-border-default) 50%,
+		transparent
+	) !important;
+}
+
+html.dark.liquid-glass div[data-note-list] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 48%,
+		transparent
+	) !important;
+}
+
+/* Ensure inner Note List container is transparent so list glass shines through */
+html.liquid-glass div[data-note-list] > div {
+	background-color: transparent !important;
+	border-right-color: transparent !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 3: System Header Bar (BraunHeader)                                  */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass header {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 52%,
+		transparent
+	) !important;
+	backdrop-filter: blur(24px) saturate(180%);
+	-webkit-backdrop-filter: blur(24px) saturate(180%);
+	border-bottom-color: color-mix(
+		in srgb,
+		var(--color-border-default) 50%,
+		transparent
+	) !important;
+	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+}
+
+html.dark.liquid-glass header {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 45%,
+		transparent
+	) !important;
+	box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 4: Editor Sub-header Tooling Strip                                  */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[data-sub-header] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 65%,
+		transparent
+	) !important;
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	border-bottom-color: color-mix(
+		in srgb,
+		var(--color-border-default) 50%,
+		transparent
+	) !important;
+}
+
+html.dark.liquid-glass div[data-sub-header] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 60%,
+		transparent
+	) !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 5: Editor Column & Reading Canvas (Comfortable Reading Veil)        */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[data-editor-column] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 72%,
+		transparent
+	) !important;
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+}
+
+html.dark.liquid-glass div[data-editor-column] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 68%,
+		transparent
+	) !important;
+	backdrop-filter: blur(24px);
+	-webkit-backdrop-filter: blur(24px);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 6: Floating Formatting Toolbar                                      */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[role='toolbar'][aria-label='Editor Formatting Toolbar'] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 65%,
+		transparent
+	) !important;
+	backdrop-filter: blur(32px) saturate(190%) !important;
+	-webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+	border-color: color-mix(
+		in srgb,
+		var(--color-border-default) 60%,
+		transparent
+	) !important;
+	box-shadow:
+		0 12px 36px rgba(0, 0, 0, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+html.dark.liquid-glass
+	div[role='toolbar'][aria-label='Editor Formatting Toolbar'] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-secondary) 60%,
+		transparent
+	) !important;
+	box-shadow:
+		0 14px 40px rgba(0, 0, 0, 0.4),
+		inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Layer 7: Settings, Calendar, and Mail Pages                               */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass div[data-settings-container],
+html.liquid-glass div[data-calendar-container],
+html.liquid-glass div[data-mail-container] {
+	background-color: color-mix(
+		in srgb,
+		var(--color-surface-primary) 85%,
+		transparent
+	) !important;
+	backdrop-filter: blur(24px);
+	-webkit-backdrop-filter: blur(24px);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Inactive Window Lifecycle (Dimmed & Softened Highlights)                  */
+/* ------------------------------------------------------------------------- */
+html.liquid-glass.window-inactive header {
+	box-shadow: none !important;
+}
+
+html.liquid-glass.window-inactive
+	div[role='toolbar'][aria-label='Editor Formatting Toolbar'] {
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}

@@ -60,7 +60,7 @@
 {:else}
 	<div
 		bind:this={listEl}
-		class="bg-bg border border-border rounded-lg shadow-lg p-1.5 max-h-80 overflow-y-auto flex flex-col gap-0.5 w-64"
+		class="bg-bg border border-border rounded-lg shadow-lg p-1.5 max-h-80 overflow-y-auto flex flex-col gap-0.5 w-64 animate-in fade-in-0 zoom-in-95 duration-snappy ease-braun-snappy"
 	>
 		{#each activeItems as item, index (item.title)}
 			<button
@@ -69,7 +69,7 @@
 				tabindex={-1}
 				onclick={() => activeCommand(item)}
 				class={cn(
-					'w-full text-left p-2 rounded-md transition-colors cursor-pointer',
+					'w-full text-left p-2 rounded-md transition-all duration-tactile ease-braun-snappy cursor-pointer select-none active:scale-[0.985]',
 					selectedIndex === index
 						? 'bg-bg-muted text-text'
 						: 'text-text hover:bg-bg-muted'

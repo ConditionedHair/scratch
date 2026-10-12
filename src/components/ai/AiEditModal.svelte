@@ -10,12 +10,7 @@
 	import * as aiService from '../../services/ai'
 	import type { AiProvider } from '../../services/ai'
 	import type { Settings } from '../../types/note'
-	import {
-		modalIn,
-		modalOut,
-		backdropIn,
-		backdropOut
-	} from '../../lib/motion'
+	import { modalIn, modalOut } from '../../lib/motion'
 
 	interface Props {
 		open: boolean
@@ -162,9 +157,7 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			in:backdropIn
-			out:backdropOut
-			class="fixed inset-0 bg-black/40 pointer-events-auto"
+			class="fixed inset-0 pointer-events-auto"
 			onclick={onback}
 		></div>
 

@@ -1,5 +1,49 @@
 /* UI Transitions and Animations */
 
+:root {
+	/* Braun Precision Motion Tokens (Dieter Rams "Weniger, aber besser") */
+	--ease-braun-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+	--ease-braun-exit: cubic-bezier(0.4, 0, 0.2, 1);
+	--ease-braun-linear: cubic-bezier(0, 0, 1, 1);
+
+	--duration-tactile: 100ms;
+	--duration-snappy: 140ms;
+	--duration-dialog: 150ms;
+	--duration-layout: 180ms;
+}
+
+/* Inspectable timing utility classes for Chrome DevTools */
+.ease-braun-snappy {
+	transition-timing-function: var(--ease-braun-snappy);
+}
+.ease-braun-exit {
+	transition-timing-function: var(--ease-braun-exit);
+}
+.duration-tactile {
+	transition-duration: var(--duration-tactile);
+}
+.duration-snappy {
+	transition-duration: var(--duration-snappy);
+}
+.duration-dialog {
+	transition-duration: var(--duration-dialog);
+}
+.duration-layout {
+	transition-duration: var(--duration-layout);
+}
+
+/* Tactile micro-press feedback for Braun physical switches and controls */
+.tactile-press {
+	transition:
+		transform var(--duration-tactile) var(--ease-braun-snappy),
+		background-color var(--duration-tactile) var(--ease-braun-snappy),
+		border-color var(--duration-tactile) var(--ease-braun-snappy),
+		box-shadow var(--duration-tactile) var(--ease-braun-snappy);
+}
+.tactile-press:active {
+	transform: translateY(0.5px) scale(0.985);
+}
+
 /* Smooth theme transitions */
 html {
 	transition:
@@ -170,18 +214,22 @@ html.dark {
 	transition: none !important;
 }
 
-/* Sidebar transitions only when collapsing or expanding */
-.sidebar-collapsing [data-sidebar],
-.sidebar-collapsing [data-note-list] {
+/* Sidebar layout transitions for collapsing or expanding */
+[data-sidebar],
+[data-note-list] {
 	transition:
-		width 200ms ease-out,
-		opacity 200ms ease-out,
-		border-color 200ms ease-out;
+		width var(--duration-layout) var(--ease-braun-snappy),
+		opacity 120ms ease-out,
+		border-color var(--duration-layout) var(--ease-braun-snappy);
 }
 
 /* Suppress sidebar transition during drag resize */
 .sidebar-no-transition [data-sidebar],
-.sidebar-no-transition [data-note-list] {
+.sidebar-no-transition [data-note-list],
+html.sidebar-no-transition [data-sidebar],
+html.sidebar-no-transition [data-note-list],
+body.sidebar-no-transition [data-sidebar],
+body.sidebar-no-transition [data-note-list] {
 	transition: none !important;
 }
 

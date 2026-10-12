@@ -5,11 +5,15 @@
 		SearchIcon,
 		SearchOffIcon,
 		StarIcon,
+		ImportanceIcon,
 		ArchiveIcon,
 		TrashIcon,
 		SpinnerIcon
 	} from '../icons'
 	import { SidebarResizeHandle } from '../layout'
+	import { getTagColor } from '../../lib/tags'
+	import { getCategoryTags, isImportantLabel } from '../../lib/mailTags'
+	import * as notesService from '../../services/notes'
 
 	function formatMailDate(timestampSecs: number): string {
 		if (!timestampSecs) return ''
@@ -35,9 +39,26 @@
 	}
 
 	let threads = $derived(mailState.filteredThreads)
+	let tagColors = $state<Record<string, string> | undefined>(undefined)
+
+	$effect(() => {
+		notesService
+			.getSettings()
+			.then((s) => {
+				tagColors = s.tagColors
+			})
+			.catch((err) => {
+				console.error('Failed to load settings in MailThreadList:', err)
+			})
+	})
 
 	function handleSelect(thread: MailThread) {
 		void mailState.selectThread(thread.id)
+	}
+
+	function handleImportant(e: MouseEvent, threadId: string) {
+		e.stopPropagation()
+		void mailState.toggleImportant(threadId)
 	}
 
 	function handleStar(e: MouseEvent, threadId: string) {
@@ -121,6 +142,8 @@
 			{#each threads as thread (thread.id)}
 				{@const isSelected = mailState.selectedThreadId === thread.id}
 				{@const isUnread = thread.unread}
+				{@const isImportant = isImportantLabel(thread.labelIds)}
+				{@const categories = getCategoryTags(thread.labelIds)}
 				<div
 					role="button"
 					tabindex="0"
@@ -140,6 +163,21 @@
 									class="w-2 h-2 rounded-full bg-accent shrink-0 shadow-2xs"
 								></span>
 							{/if}
+							<button
+								type="button"
+								onclick={(e) => handleImportant(e, thread.id)}
+								class={`p-0.5 rounded hover:bg-bg-muted transition-colors cursor-pointer shrink-0 ${
+									isImportant
+										? 'text-amber-500'
+										: 'text-text-muted/30 opacity-0 group-hover:opacity-100 hover:text-text-muted'
+								}`}
+								title={isImportant ? 'Mark not important' : 'Mark important'}
+							>
+								<ImportanceIcon
+									class="w-3.5 h-3.5"
+									filled={isImportant}
+								/>
+							</button>
 							<span
 								class={`text-xs truncate ${isUnread ? 'font-bold text-text' : 'font-medium text-text-muted'}`}
 							>
@@ -180,11 +218,31 @@
 						</div>
 					</div>
 
-					<!-- Subject Line -->
+					<!-- Subject Line & Category Tags -->
 					<div
-						class={`text-xs mb-1 line-clamp-1 ${isUnread ? 'font-bold text-text' : 'font-normal text-text/90'}`}
+						class="flex items-center justify-between gap-1.5 mb-1 min-w-0"
 					>
-						{thread.subject || '(no subject)'}
+						<span
+							class={`text-xs truncate ${isUnread ? 'font-bold text-text' : 'font-normal text-text/90'}`}
+						>
+							{thread.subject || '(no subject)'}
+						</span>
+
+						{#if categories.length > 0}
+							<div class="flex items-center gap-1 shrink-0">
+								{#each categories as category (category)}
+									{@const color = getTagColor(category, tagColors)}
+									<span
+										class="text-[9px] font-mono px-1.5 py-0.2 rounded-full border truncate select-none"
+										style:background-color="{color}18"
+										style:border-color="{color}30"
+										style:color
+									>
+										#{category}
+									</span>
+								{/each}
+							</div>
+						{/if}
 					</div>
 
 					<!-- Snippet Preview -->

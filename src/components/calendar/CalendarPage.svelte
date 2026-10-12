@@ -6,7 +6,8 @@
 	import {
 		calendarState,
 		formatEventDateKey,
-		parseEventDate
+		parseEventDate,
+		getInclusiveEndDate
 	} from '../../context/calendar.svelte'
 	import type { CalendarEvent } from '../../types/calendar'
 	import {
@@ -224,6 +225,175 @@
 		return cells
 	})
 
+	interface WeekSegment {
+		event: CalendarEvent
+		startCol: number
+		endCol: number
+		span: number
+		startsThisWeek: boolean
+		endsThisWeek: boolean
+		isMultiDay: boolean
+		track: number
+	}
+
+	interface WeekRow {
+		weekIndex: number
+		days: MonthCell[]
+		segments: WeekSegment[]
+		moreCounts: number[]
+	}
+
+	function getContrastTextColor(hexColor?: string | null): string {
+		if (!hexColor) return '#0f172a'
+		const hex = hexColor.replace('#', '')
+		if (hex.length === 6) {
+			const r = parseInt(hex.substring(0, 2), 16)
+			const g = parseInt(hex.substring(2, 4), 16)
+			const b = parseInt(hex.substring(4, 6), 16)
+			const yiq = (r * 299 + g * 587 + b * 114) / 1000
+			return yiq >= 150 ? '#0f172a' : '#ffffff'
+		}
+		return '#ffffff'
+	}
+
+	const MAX_MONTH_TRACKS = 3
+
+	let monthWeeks = $derived.by(() => {
+		const cells = monthCells
+		const weeks: WeekRow[] = []
+		const weekCount = Math.ceil(cells.length / 7)
+		const allEvents = calendarState.events
+
+		for (let w = 0; w < weekCount; w++) {
+			const weekDays = cells.slice(w * 7, (w + 1) * 7)
+			if (weekDays.length === 0) continue
+			const weekStartKey = weekDays[0].key
+			const weekEndKey = weekDays[weekDays.length - 1].key
+
+			const rawSegments: {
+				event: CalendarEvent
+				startCol: number
+				endCol: number
+				span: number
+				startsThisWeek: boolean
+				endsThisWeek: boolean
+				isMultiDay: boolean
+				startTimeStr: string
+			}[] = []
+
+			for (const ev of allEvents) {
+				const startDt = parseEventDate(ev.startTime)
+				const startKey = formatEventDateKey(startDt)
+				const endKey = ev.allDay
+					? getInclusiveEndDate(
+							ev.startTime,
+							ev.endTime || ev.startTime
+						)
+					: formatEventDateKey(parseEventDate(ev.endTime))
+
+				if (endKey < weekStartKey || startKey > weekEndKey) {
+					continue
+				}
+
+				const startCol =
+					startKey <= weekStartKey
+						? 0
+						: weekDays.findIndex((d) => d.key === startKey)
+
+				const endCol =
+					endKey >= weekEndKey
+						? 6
+						: weekDays.findIndex((d) => d.key === endKey)
+
+				if (startCol === -1 || endCol === -1) continue
+
+				const span = endCol - startCol + 1
+				const startsThisWeek = startKey >= weekStartKey
+				const endsThisWeek = endKey <= weekEndKey
+				const isMultiDay = endKey > startKey
+
+				rawSegments.push({
+					event: ev,
+					startCol,
+					endCol,
+					span,
+					startsThisWeek,
+					endsThisWeek,
+					isMultiDay,
+					startTimeStr: ev.startTime
+				})
+			}
+
+			rawSegments.sort((a, b) => {
+				if (a.isMultiDay !== b.isMultiDay) {
+					return a.isMultiDay ? -1 : 1
+				}
+				if (b.span !== a.span) {
+					return b.span - a.span
+				}
+				if (a.startCol !== b.startCol) {
+					return a.startCol - b.startCol
+				}
+				return a.startTimeStr.localeCompare(b.startTimeStr)
+			})
+
+			const tracks: boolean[][] = []
+			const placed: WeekSegment[] = []
+			const overflowByDay = new Array(7).fill(0)
+
+			for (const seg of rawSegments) {
+				let assignedTrack = -1
+				for (let t = 0; t < tracks.length; t++) {
+					let collision = false
+					for (let c = seg.startCol; c <= seg.endCol; c++) {
+						if (tracks[t][c]) {
+							collision = true
+							break
+						}
+					}
+					if (!collision) {
+						assignedTrack = t
+						break
+					}
+				}
+
+				if (assignedTrack === -1) {
+					assignedTrack = tracks.length
+					tracks.push(new Array(7).fill(false))
+				}
+
+				if (assignedTrack < MAX_MONTH_TRACKS) {
+					for (let c = seg.startCol; c <= seg.endCol; c++) {
+						tracks[assignedTrack][c] = true
+					}
+					placed.push({
+						event: seg.event,
+						startCol: seg.startCol,
+						endCol: seg.endCol,
+						span: seg.span,
+						startsThisWeek: seg.startsThisWeek,
+						endsThisWeek: seg.endsThisWeek,
+						isMultiDay: seg.isMultiDay,
+						track: assignedTrack
+					})
+				} else {
+					for (let c = seg.startCol; c <= seg.endCol; c++) {
+						overflowByDay[c]++
+					}
+				}
+			}
+
+			weeks.push({
+				weekIndex: w,
+				days: weekDays,
+				segments: placed,
+				moreCounts: overflowByDay
+			})
+		}
+
+		return weeks
+	})
+
 	let selectedDayKey = $derived(
 		formatEventDateKey(calendarState.selectedDate)
 	)
@@ -428,92 +598,136 @@
 						{/each}
 					</div>
 
-					<!-- 7x5 or 7x6 Month Grid -->
+					<!-- Weeks container -->
 					<div
-						class="flex-1 grid grid-cols-7 grid-rows-5 md:grid-rows-6 min-h-0 divide-x divide-y divide-border/60 bg-border/20 overflow-hidden"
+						class="flex-1 min-h-0 flex flex-col divide-y divide-border/60 bg-border/20 overflow-hidden"
 					>
-						{#each monthCells as cell (cell.key)}
-							<!-- svelte-ignore a11y_click_events_have_key_events -->
-							<!-- svelte-ignore a11y_no_static_element_interactions -->
+						{#each monthWeeks as week (week.weekIndex)}
 							<div
-								onclick={() =>
-									calendarState.setSelectedDate(cell.date)}
-								ondblclick={() => openCreateModal(cell.date)}
-								class={`flex flex-col p-1.5 bg-bg transition-colors cursor-pointer relative overflow-hidden group ${
-									cell.isSelected
-										? 'ring-2 ring-accent ring-inset bg-bg-emphasis/30 z-10'
-										: ''
-								} ${!cell.isCurrentMonth ? 'opacity-40 bg-bg-secondary/40' : 'hover:bg-bg-emphasis/40'}`}
+								class="flex-1 min-h-0 relative flex flex-col overflow-hidden bg-bg"
 							>
-								<!-- Day Header -->
+								<!-- Day Cells Background Layer -->
 								<div
-									class="flex items-center justify-between mb-1"
+									class="absolute inset-0 grid grid-cols-7 divide-x divide-border/60 pointer-events-auto"
 								>
-									<span
-										class={`w-5 h-5 rounded-full flex items-center justify-center tabular-nums text-xs font-semibold ${
-											cell.isToday
-												? 'bg-accent text-slate-950 font-bold shadow-xs'
-												: cell.isSelected
-													? 'text-accent font-bold'
-													: 'text-text'
-										}`}
-									>
-										{cell.date.getDate()}
-									</span>
+									{#each week.days as cell (cell.key)}
+										<!-- svelte-ignore a11y_click_events_have_key_events -->
+										<!-- svelte-ignore a11y_no_static_element_interactions -->
+										<div
+											onclick={() =>
+												calendarState.setSelectedDate(
+													cell.date
+												)}
+											ondblclick={() =>
+												openCreateModal(cell.date)}
+											class={`flex flex-col p-1.5 transition-colors cursor-pointer relative group ${
+												cell.isSelected
+													? 'ring-2 ring-accent ring-inset bg-bg-emphasis/30 z-10'
+													: ''
+											} ${!cell.isCurrentMonth ? 'opacity-40 bg-bg-secondary/40' : 'hover:bg-bg-emphasis/40'}`}
+										>
+											<!-- Day Header -->
+											<div
+												class="flex items-center justify-between mb-1"
+											>
+												<span
+													class={`w-5 h-5 rounded-full flex items-center justify-center tabular-nums text-xs font-semibold ${
+														cell.isToday
+															? 'bg-accent text-slate-950 font-bold shadow-xs'
+															: cell.isSelected
+																? 'text-accent font-bold'
+																: 'text-text'
+													}`}
+												>
+													{cell.date.getDate()}
+												</span>
 
-									<!-- Quick Plus button on hover -->
-									<button
-										type="button"
-										onclick={(e) => {
-											e.stopPropagation()
-											openCreateModal(cell.date)
-										}}
-										class="w-4 h-4 rounded hover:bg-bg-emphasis text-text-muted hover:text-text items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex cursor-pointer"
-										title="Add event on this day"
-									>
-										<PlusIcon class="w-3 h-3 stroke-[2]" />
-									</button>
+												<!-- Quick Plus button on hover -->
+												<button
+													type="button"
+													onclick={(e) => {
+														e.stopPropagation()
+														openCreateModal(
+															cell.date
+														)
+													}}
+													class="w-4 h-4 rounded hover:bg-bg-emphasis text-text-muted hover:text-text items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex cursor-pointer"
+													title="Add event on this day"
+												>
+													<PlusIcon
+														class="w-3 h-3 stroke-[2]"
+													/>
+												</button>
+											</div>
+										</div>
+									{/each}
 								</div>
 
-								<!-- Day Events Chips -->
+								<!-- Events Spanning Overlay Layer -->
 								<div
-									class="flex-1 overflow-y-auto space-y-1 min-h-0"
+									class="relative w-full h-full pointer-events-none grid grid-cols-7 gap-y-1 content-start overflow-hidden px-1 pt-7"
+									style="grid-auto-rows: 20px;"
 								>
-									{#each cell.events.slice(0, 3) as ev (ev.id)}
+									{#each week.segments as seg (seg.event.id + '-' + week.weekIndex)}
 										<!-- svelte-ignore a11y_click_events_have_key_events -->
 										<!-- svelte-ignore a11y_no_static_element_interactions -->
 										<div
 											onclick={(e) => {
 												e.stopPropagation()
-												openEditModal(ev)
+												openEditModal(seg.event)
 											}}
-											style:background-color={ev.color
-												? `${ev.color}20`
-												: 'rgba(234,179,8,0.15)'}
-											style:border-color={ev.color ||
-												'var(--color-accent)'}
-											class="px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate transition-all hover:brightness-95 hover:scale-[1.01] flex items-center gap-1 cursor-pointer select-none"
-											title={`${ev.title} (${ev.allDay ? 'All day' : formatTime(ev.startTime)})`}
+											style:grid-column={`${seg.startCol + 1} / span ${seg.span}`}
+											style:grid-row={`${seg.track + 1}`}
+											style:background-color={seg.event
+												.color || '#3b82f6'}
+											style:color={getContrastTextColor(
+												seg.event.color || '#3b82f6'
+											)}
+											class={`h-[19px] px-2 text-[10px] flex items-center gap-1 overflow-hidden pointer-events-auto cursor-pointer shadow-xs transition-all hover:brightness-110 active:scale-[0.99] select-none z-10 ${
+												seg.startsThisWeek
+													? 'rounded-l-md ml-0.5'
+													: 'rounded-l-none'
+											} ${
+												seg.endsThisWeek
+													? 'rounded-r-md mr-0.5'
+													: 'rounded-r-none'
+											}`}
+											title={`${seg.event.title} (${seg.event.allDay ? 'All day' : formatTime(seg.event.startTime)})`}
 										>
-											{#if ev.meetLink}
+											{#if seg.event.meetLink}
 												<VideoIcon
-													class="w-2.5 h-2.5 stroke-[2] shrink-0 text-accent"
+													class="w-2.5 h-2.5 stroke-[2] shrink-0"
 												/>
 											{/if}
 											<span
-												class="truncate text-text font-medium"
-												>{ev.title}</span
+												class="truncate font-semibold tracking-tight leading-none"
 											>
+												{seg.event.title}
+											</span>
+											{#if !seg.event.allDay && seg.startsThisWeek}
+												<span
+													class="text-[9px] opacity-80 shrink-0 font-mono tabular-nums ml-0.5"
+												>
+													{formatTime(
+														seg.event.startTime
+													)}
+												</span>
+											{/if}
 										</div>
 									{/each}
 
-									{#if cell.events.length > 3}
-										<div
-											class="text-[9px] tabular-nums text-text-muted px-1"
-										>
-											+{cell.events.length - 3} more
-										</div>
-									{/if}
+									<!-- Overflow count tags (+N more) -->
+									{#each week.moreCounts as more, colIndex}
+										{#if more > 0}
+											<div
+												style:grid-column={`${colIndex + 1} / span 1`}
+												style:grid-row={`${MAX_MONTH_TRACKS + 1}`}
+												class="text-[9px] font-semibold text-text-muted px-1.5 pt-0.5 truncate pointer-events-none"
+											>
+												+{more} more
+											</div>
+										{/if}
+									{/each}
 								</div>
 							</div>
 						{/each}

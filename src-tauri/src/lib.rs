@@ -148,6 +148,8 @@ pub struct Settings {
     pub custom_colors_dark: Option<std::collections::HashMap<String, String>>,
     #[serde(rename = "tagColors")]
     pub tag_colors: Option<std::collections::HashMap<String, String>>,
+    #[serde(rename = "liquidGlassEnabled")]
+    pub liquid_glass_enabled: Option<bool>,
 }
 
 // AI execution result
@@ -4013,6 +4015,8 @@ pub fn run() {
                 None
             };
 
+            let liquid_glass_enabled = settings.liquid_glass_enabled.unwrap_or(false);
+
             let state = AppState {
                 app_config: RwLock::new(app_config),
                 settings: RwLock::new(settings),
@@ -4052,6 +4056,14 @@ pub fn run() {
             };
 
             if let Some(main_window) = app.get_webview_window("main") {
+                #[cfg(target_os = "macos")]
+                {
+                    if liquid_glass_enabled {
+                        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+                        let _ = apply_vibrancy(&main_window, NSVisualEffectMaterial::FullScreenUI, None, None);
+                    }
+                }
+
                 let has_notes_folder = app
                     .state::<AppState>()
                     .app_config
@@ -4151,6 +4163,7 @@ pub fn run() {
             uninstall_cli,
             get_cli_status,
             set_title_bar_theme,
+            set_liquid_glass,
             calendar_start_auth,
             calendar_get_state,
             calendar_sync,
@@ -4167,6 +4180,7 @@ pub fn run() {
             mail_modify_thread,
             mail_trash_thread,
             mail_send,
+            mail_get_attachment_data,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
@@ -4265,6 +4279,28 @@ fn set_title_bar_theme(
     #[cfg(not(target_os = "windows"))]
     {
         let _ = (app, is_dark, r, g, b);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn set_liquid_glass(app: AppHandle, enabled: bool) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
+        for (label, window) in app.webview_windows() {
+            if label == "main" {
+                if enabled {
+                    let _ = apply_vibrancy(&window, NSVisualEffectMaterial::FullScreenUI, None, None);
+                } else {
+                    let _ = clear_vibrancy(&window);
+                }
+            }
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, enabled);
     }
     Ok(())
 }

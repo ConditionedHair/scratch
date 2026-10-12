@@ -9,6 +9,7 @@
 @import './styles/syntax.css';
 @import './styles/animations.css';
 @import './styles/print.css';
+@import './styles/glass.css';
 
 /* Use class-based dark mode instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));

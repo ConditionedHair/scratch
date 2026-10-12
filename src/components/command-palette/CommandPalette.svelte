@@ -11,6 +11,7 @@
   import { downloadPdf, downloadMarkdown } from "../../services/pdf";
   import type { Settings } from "../../types/note";
   import { cleanSerializedMarkdown } from "../../lib/markdownSpacing";
+  import { modalIn, modalOut, backdropIn, backdropOut } from "../../lib/motion";
   import {
     CommandItem,
     AlertDialog,
@@ -649,10 +650,19 @@
     <!-- Backdrop dismiss area -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="fixed inset-0 bg-black/40 pointer-events-auto" onclick={onclose}></div>
+    <div
+      in:backdropIn
+      out:backdropOut
+      class="fixed inset-0 bg-black/40 pointer-events-auto"
+      onclick={onclose}
+    ></div>
 
     <!-- Palette -->
-    <div class="relative w-full h-full max-h-108 max-w-2xl bg-bg rounded-2xl shadow-2xl overflow-hidden border border-border animate-slide-down flex flex-col pointer-events-auto z-10">
+    <div
+      in:modalIn
+      out:modalOut
+      class="relative w-full h-full max-h-108 max-w-2xl bg-bg rounded-2xl shadow-2xl overflow-hidden border border-border flex flex-col pointer-events-auto z-10"
+    >
       <!-- Search input -->
       <div class="border-b border-border flex-none flex items-center px-4">
         <span class="w-2 h-2 rounded-full bg-accent mr-3 shrink-0"></span>

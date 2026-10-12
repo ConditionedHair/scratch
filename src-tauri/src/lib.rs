@@ -823,6 +823,71 @@ fn initialize_notes_folder(app: &AppHandle, path_buf: &PathBuf, state: &AppState
     Ok(normalized_path)
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SavedWindowRect {
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+static SAVED_WINDOW_RECTS: Mutex<Option<HashMap<String, SavedWindowRect>>> = Mutex::new(None);
+
+#[tauri::command]
+async fn toggle_maximize_clean(window: tauri::WebviewWindow) -> Result<bool, String> {
+    let label = window.label().to_string();
+    let monitor = window
+        .current_monitor()
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "No monitor found".to_string())?;
+    let work_area = monitor.work_area();
+
+    let current_pos = window.outer_position().map_err(|e| e.to_string())?;
+    let current_size = window.outer_size().map_err(|e| e.to_string())?;
+
+    let is_at_work_area = (current_pos.x - work_area.position.x).abs() <= 12
+        && (current_pos.y - work_area.position.y).abs() <= 12
+        && (current_size.width as i32 - work_area.size.width as i32).abs() <= 24
+        && (current_size.height as i32 - work_area.size.height as i32).abs() <= 24;
+
+    let mut map_guard = SAVED_WINDOW_RECTS.lock().unwrap();
+    let map = map_guard.get_or_insert_with(HashMap::new);
+
+    if is_at_work_area {
+        if let Some(saved) = map.remove(&label) {
+            let _ = window.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+                x: saved.x,
+                y: saved.y,
+            }));
+            let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+                width: saved.width,
+                height: saved.height,
+            }));
+        } else {
+            let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+                width: 1080.0,
+                height: 720.0,
+            }));
+            let _ = window.center();
+        }
+        Ok(false)
+    } else {
+        map.insert(
+            label,
+            SavedWindowRect {
+                x: current_pos.x,
+                y: current_pos.y,
+                width: current_size.width,
+                height: current_size.height,
+            },
+        );
+
+        let _ = window.set_position(tauri::Position::Physical(work_area.position.clone()));
+        let _ = window.set_size(tauri::Size::Physical(work_area.size.clone()));
+        Ok(true)
+    }
+}
+
 // TAURI COMMANDS
 
 #[tauri::command]
@@ -4014,6 +4079,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            toggle_maximize_clean,
             get_notes_folder,
             set_notes_folder,
             list_notes,

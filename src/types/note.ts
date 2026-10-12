@@ -63,6 +63,7 @@ export interface Settings {
   interfaceZoom?: number;
   ollamaModel?: string;
   ignoredPatterns?: string[];
+  animationsEnabled?: boolean;
   customColorsLight?: CustomColors;
   customColorsDark?: CustomColors;
   tagColors?: Record<string, string>;

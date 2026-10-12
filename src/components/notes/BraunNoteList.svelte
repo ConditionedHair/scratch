@@ -150,7 +150,7 @@
                     notesState.selectNote(note.id);
                   }
                 }}
-                class={`p-3 rounded-xl border transition-all cursor-pointer relative ${
+                class={`p-3 rounded-xl border transition-colors duration-150 cursor-pointer relative ${
                   isSelected
                     ? "bg-bg-card border-border shadow-xs dark:bg-[#23252A]"
                     : "bg-bg-secondary/40 border-transparent hover:bg-bg-secondary hover:border-border/40 text-text"

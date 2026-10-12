@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { invoke } from "@tauri-apps/api/core";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
   import { gitState } from "../../context/git.svelte";
   import { notesState } from "../../context/notes.svelte";
   import { isMac, mod } from "../../lib/platform";
@@ -14,16 +16,43 @@
 
   let hasChanges = $derived((gitState.status?.changedCount ?? 0) > 0);
   let noteTitle = $derived(title || notesState.currentNote?.title || "All Notes");
+
+  function handlePointerDown(e: PointerEvent) {
+    if (e.button === 0 && !(e.target as HTMLElement)?.closest("button, input, textarea, a, select, kbd")) {
+      getCurrentWindow().startDragging();
+    }
+  }
+
+  async function handleHeaderDoubleClick(e: MouseEvent) {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest("button, input, textarea, a, select, kbd")) {
+      return;
+    }
+
+    try {
+      await invoke("toggle_maximize_clean");
+    } catch (err) {
+      console.error("Failed to toggle clean window maximize:", err);
+      try {
+        const win = getCurrentWindow();
+        await win.toggleMaximize();
+      } catch (fallbackErr) {
+        console.error("Fallback maximize error:", fallbackErr);
+      }
+    }
+  }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <header
   class={`h-11 px-4 flex items-center justify-between border-b shrink-0 select-none transition-colors bg-bg-secondary border-border z-30 relative ${
     isMac ? "pl-20" : ""
   }`}
-  data-tauri-drag-region
+  onpointerdown={handlePointerDown}
+  ondblclick={handleHeaderDoubleClick}
 >
   <!-- Left: Branding & Note Breadcrumb -->
-  <div class="flex items-center gap-2 min-w-0" data-tauri-drag-region>
+  <div class="flex items-center gap-2 min-w-0">
     <span class="font-bold tracking-tight text-xs uppercase text-text shrink-0">
       SCRATCH
     </span>

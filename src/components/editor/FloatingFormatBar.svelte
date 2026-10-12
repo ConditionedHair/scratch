@@ -113,7 +113,7 @@
 
 <div
   bind:this={barEl}
-  class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full border border-border bg-bg-secondary/92 dark:bg-bg-secondary/95 backdrop-blur-md shadow-xl select-none max-w-[calc(100%-2.5rem)] overflow-x-auto scrollbar-none transition-all duration-200"
+  class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 p-1.5 rounded-full border border-border bg-bg-secondary/92 dark:bg-bg-secondary/95 backdrop-blur-md shadow-xl select-none max-w-[calc(100%-2.5rem)] overflow-x-auto scrollbar-none"
   role="toolbar"
   aria-label="Editor Formatting Toolbar"
 >

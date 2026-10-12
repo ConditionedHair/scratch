@@ -101,6 +101,7 @@ export class ThemeState {
   sidebarWidthPx = $state<number | null>(null);
   customColorsLight = $state<CustomColors>({});
   customColorsDark = $state<CustomColors>({});
+  animationsEnabled = $state<boolean>(true);
   isInitialized = $state<boolean>(false);
 
   resolvedTheme = $derived<"light" | "dark">(
@@ -181,6 +182,9 @@ export class ThemeState {
       if (settings.customColorsDark) {
         this.customColorsDark = settings.customColorsDark;
       }
+      if (typeof settings.animationsEnabled === "boolean") {
+        this.animationsEnabled = settings.animationsEnabled;
+      }
       this.applyAllStyles();
     } catch {
       // If settings can't be loaded, use defaults
@@ -199,6 +203,16 @@ export class ThemeState {
     this.applySidebarWidth();
     this.applyInterfaceZoom();
     this.applyCustomColors();
+    this.applyAnimationStyles();
+  }
+
+  private applyAnimationStyles() {
+    const root = document.documentElement;
+    if (this.animationsEnabled) {
+      root.classList.remove("no-animations");
+    } else {
+      root.classList.add("no-animations");
+    }
   }
 
   private applyThemeClass() {
@@ -331,6 +345,7 @@ export class ThemeState {
     this.sidebarWidthPx = null;
     this.customColorsLight = {};
     this.customColorsDark = {};
+    this.animationsEnabled = true;
     this.applyAllStyles();
     try {
       const settings = await getSettings();
@@ -340,6 +355,7 @@ export class ThemeState {
         textDirection: "auto",
         editorWidth: "normal",
         interfaceZoom: 1.0,
+        animationsEnabled: true,
         customEditorWidthPx: undefined,
         sidebarWidthPx: undefined,
         customColorsLight: undefined,
@@ -347,6 +363,20 @@ export class ThemeState {
       });
     } catch (error) {
       console.error("Failed to reset editor settings:", error);
+    }
+  }
+
+  async setAnimationsEnabled(enabled: boolean) {
+    this.animationsEnabled = enabled;
+    this.applyAnimationStyles();
+    try {
+      const settings = await getSettings();
+      await updateSettings({
+        ...settings,
+        animationsEnabled: enabled,
+      });
+    } catch (error) {
+      console.error("Failed to save animations setting:", error);
     }
   }
 

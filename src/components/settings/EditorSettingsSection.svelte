@@ -59,7 +59,8 @@
     themeState.editorFontSettings.lineHeight !== 1.6 ||
     themeState.textDirection !== "auto" ||
     themeState.editorWidth !== "normal" ||
-    Math.round(themeState.interfaceZoom * 100) !== 100
+    Math.round(themeState.interfaceZoom * 100) !== 100 ||
+    !themeState.animationsEnabled
   );
 
   let isMonospace = $derived(
@@ -333,6 +334,36 @@
           >
             <PlusIcon class="w-4 h-4" />
           </IconButton>
+        </div>
+      </div>
+
+      <!-- Interface Animations -->
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-sm text-text font-medium block">
+            Interface Animations
+          </span>
+          <span class="text-xs text-text-muted">
+            Smooth transitions for dialogs, layout, and panels
+          </span>
+        </div>
+        <div class="w-40 flex justify-end">
+          <button
+            type="button"
+            role="switch"
+            aria-label="Toggle interface animations"
+            aria-checked={themeState.animationsEnabled}
+            onclick={() => themeState.setAnimationsEnabled(!themeState.animationsEnabled)}
+            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            class:bg-accent={themeState.animationsEnabled}
+            class:bg-border={!themeState.animationsEnabled}
+          >
+            <span
+              class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+              class:translate-x-5={themeState.animationsEnabled}
+              class:translate-x-0={!themeState.animationsEnabled}
+            ></span>
+          </button>
         </div>
       </div>
     </div>

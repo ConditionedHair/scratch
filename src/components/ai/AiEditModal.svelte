@@ -10,6 +10,7 @@
   import * as aiService from "../../services/ai";
   import type { AiProvider } from "../../services/ai";
   import type { Settings } from "../../types/note";
+  import { modalIn, modalOut, backdropIn, backdropOut } from "../../lib/motion";
 
   interface Props {
     open: boolean;
@@ -156,10 +157,19 @@
     <!-- Backdrop dismiss area -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="fixed inset-0 bg-black/40 pointer-events-auto" onclick={onback}></div>
+    <div
+      in:backdropIn
+      out:backdropOut
+      class="fixed inset-0 bg-black/40 pointer-events-auto"
+      onclick={onback}
+    ></div>
 
     <!-- Modal -->
-    <div class="relative w-full max-w-2xl bg-bg rounded-xl shadow-2xl overflow-hidden border border-border animate-slide-down pointer-events-auto z-10">
+    <div
+      in:modalIn
+      out:modalOut
+      class="relative w-full max-w-2xl bg-bg rounded-xl shadow-2xl overflow-hidden border border-border pointer-events-auto z-10"
+    >
       <!-- Input -->
       <div class="border-b border-border">
         <div class="flex items-center gap-3 px-4.5 py-3.5">

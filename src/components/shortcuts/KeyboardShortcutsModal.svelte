@@ -1,6 +1,7 @@
 <script lang="ts">
   import { XIcon } from "../icons";
   import { shortcutCategories } from "../../lib/shortcuts";
+  import { modalIn, modalOut, backdropIn, backdropOut } from "../../lib/motion";
 
   const modalCategories = shortcutCategories.filter(
     (c) => c.title !== "Settings"
@@ -66,12 +67,18 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="absolute inset-0 bg-text/50 backdrop-blur-sm animate-fade-in"
+      in:backdropIn
+      out:backdropOut
+      class="absolute inset-0 bg-text/50 backdrop-blur-sm"
       onclick={onclose}
     ></div>
 
     <!-- Modal -->
-    <div class="relative w-full max-w-4xl max-h-[85vh] mx-4 bg-bg rounded-xl shadow-2xl border border-border animate-slide-down overflow-hidden flex flex-col z-10">
+    <div
+      in:modalIn
+      out:modalOut
+      class="relative w-full max-w-4xl max-h-[85vh] mx-4 bg-bg rounded-xl shadow-2xl border border-border overflow-hidden flex flex-col z-10"
+    >
       <!-- Header -->
       <div class="flex items-center justify-between pl-5 pr-3 py-3 border-b border-border flex-none">
         <h2

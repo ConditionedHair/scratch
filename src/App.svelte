@@ -30,6 +30,12 @@
   import * as aiService from "./services/ai";
   import type { AiProvider } from "./services/ai";
   import { isMac, isWindows } from "./lib/platform";
+  import {
+    viewFadeIn,
+    viewFadeOut,
+    backdropIn,
+    backdropOut,
+  } from "./lib/motion";
 
   // Detect preview mode from URL search params
   function getWindowMode(): {
@@ -446,16 +452,26 @@
       />
     {/if}
 
-    <div class="flex-1 min-h-0 flex overflow-hidden">
+    <div class="flex-1 min-h-0 relative overflow-hidden">
       {#if view === "settings"}
-        <SettingsPage onBack={closeSettings} />
+        <div
+          in:viewFadeIn
+          out:viewFadeOut
+          class="absolute inset-0 z-10 bg-bg overflow-y-auto"
+        >
+          <SettingsPage onBack={closeSettings} />
+        </div>
       {/if}
 
-      <div class="flex-1 min-h-0 flex overflow-hidden" class:hidden={view === "settings"}>
+      <div
+        class="h-full w-full flex overflow-hidden transition-opacity duration-200"
+        class:opacity-0={view === "settings"}
+        class:pointer-events-none={view === "settings"}
+      >
         <!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
         <div
           data-sidebar
-          class={`w-48 shrink-0 border-r border-border bg-bg-secondary flex flex-col transition-all duration-300 ease-out overflow-hidden ${
+          class={`w-48 shrink-0 border-r border-border bg-bg-secondary flex flex-col overflow-hidden ${
             !sidebarVisible || focusMode
               ? "!w-0 opacity-0 pointer-events-none border-r-0"
               : "opacity-100"
@@ -468,7 +484,7 @@
         <div
           data-note-list
           style:width={!sidebarVisible || focusMode ? "0px" : "var(--sidebar-width, 16rem)"}
-          class={`shrink-0 border-r border-border bg-bg flex flex-col transition-all duration-300 ease-out overflow-hidden relative ${
+          class={`shrink-0 border-r border-border bg-bg flex flex-col overflow-hidden relative ${
             !sidebarVisible || focusMode
               ? "!w-0 opacity-0 pointer-events-none border-r-0"
               : "opacity-100"
@@ -497,7 +513,9 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="fixed inset-0 bg-text/50 backdrop-blur-sm z-40 animate-fade-in"
+      in:backdropIn
+      out:backdropOut
+      class="fixed inset-0 bg-text/50 backdrop-blur-sm z-40"
       onclick={() => {
         if (paletteOpen) handleClosePalette();
         if (aiModalOpen) aiModalOpen = false;

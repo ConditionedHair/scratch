@@ -343,6 +343,15 @@ html.dark {
   }
 }
 
+/* User-disabled animations */
+:root.no-animations *,
+:root.no-animations *::before,
+:root.no-animations *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
 /* Staggered fade-in-up animation for welcome screen */
 @keyframes fade-in-up {
   from {
@@ -1112,6 +1121,14 @@ table.not-prose th {
 .zoom-no-transition *::before,
 .zoom-no-transition *::after {
   transition: none !important;
+}
+
+/* Sidebar transitions only when collapsing or expanding */
+.sidebar-collapsing [data-sidebar],
+.sidebar-collapsing [data-note-list] {
+  transition: width 200ms ease-out,
+              opacity 200ms ease-out,
+              border-color 200ms ease-out;
 }
 
 /* Suppress sidebar transition during drag resize */

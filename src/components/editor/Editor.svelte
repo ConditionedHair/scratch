@@ -1668,16 +1668,15 @@
     </div>
   {/if}
 {:else}
-  <div class="flex-1 flex flex-col bg-bg overflow-hidden relative">
+  <div data-editor-column class="flex-1 flex flex-col bg-bg overflow-hidden relative">
     <!-- Braun Sub-header Tooling Strip -->
     <div
       class={cn(
-        "h-10 px-6 border-b shrink-0 flex items-center justify-between select-none bg-bg-secondary border-border transition-all duration-300",
-        focusMode && "opacity-0 pointer-events-none !h-0 !p-0 overflow-hidden border-b-0"
+        "h-10 px-6 border-b shrink-0 flex items-center justify-between select-none bg-bg-secondary border-border",
+        focusMode && "transition-all duration-300 ease-out opacity-0 pointer-events-none !h-0 !p-0 overflow-hidden border-b-0"
       )}
-      data-tauri-drag-region
     >
-      <div class="flex items-center gap-2 text-xs text-text-muted min-w-0 flex-1 mr-3 overflow-hidden" data-tauri-drag-region>
+      <div class="flex items-center gap-2 text-xs text-text-muted min-w-0 flex-1 mr-3 overflow-hidden">
         {#if onToggleSidebar}
           <IconButton
             onclick={onToggleSidebar}

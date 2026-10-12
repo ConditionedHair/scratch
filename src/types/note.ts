@@ -33,17 +33,8 @@ export interface EditorFontSettings {
   lineHeight?: number; // default 1.6
 }
 
-// Customizable theme color keys (maps to CSS --color-* variables)
-export type ThemeColorKey =
-  | "bg"
-  | "bg-secondary"
-  | "bg-muted"
-  | "bg-emphasis"
-  | "text"
-  | "text-muted"
-  | "border"
-  | "accent"
-  | "selection";
+export type { SemanticColorKey, LegacyColorKey, ThemeColorKey } from "../tokens";
+import type { ThemeColorKey } from "../tokens";
 
 // Partial map of color overrides (hex strings)
 export type CustomColors = Partial<Record<ThemeColorKey, string>>;

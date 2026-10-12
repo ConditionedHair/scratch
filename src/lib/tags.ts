@@ -1,37 +1,7 @@
-// Rich palette of 24 saturated, distinguishable, and Braun-inspired colors for tags.
-export const TAG_PALETTE: string[] = [
-  // Reds & Corals
-  "#ef4444", // Red
-  "#f43f5e", // Rose
-  "#e11d48", // Crimson
-  // Oranges & Braun Accents
-  "#f97316", // Orange
-  "#e65100", // Braun Signal Orange
-  "#f5a623", // Braun Signal Yellow
-  "#f59e0b", // Amber
-  "#eab308", // Yellow
-  // Greens & Mints
-  "#84cc16", // Lime
-  "#22c55e", // Green
-  "#2e7d32", // Braun Functional Green
-  "#10b981", // Emerald
-  // Cyans & Teals
-  "#14b8a6", // Teal
-  "#06b6d4", // Cyan
-  "#0ea5e9", // Sky Blue
-  // Blues & Indigos
-  "#0066cc", // Braun Dial Blue
-  "#3b82f6", // Blue
-  "#6366f1", // Indigo
-  // Purples & Pinks
-  "#8b5cf6", // Violet
-  "#a855f7", // Purple
-  "#d946ef", // Fuchsia
-  "#ec4899", // Pink
-  // Neutrals & Earth tones
-  "#64748b", // Slate
-  "#78716c", // Stone
-];
+import { tokens } from "../tokens";
+
+// Rich palette of 24 saturated, distinguishable, and Braun-inspired colors for tags sourced from master tokens.
+export const TAG_PALETTE: string[] = tokens.colors.tags;
 
 // Simple deterministic string hash (djb2-ish) so a tag always maps to the same
 // palette entry without needing a persisted color assignment.

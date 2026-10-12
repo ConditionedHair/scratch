@@ -1,13 +1,48 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { compileTokensToCss } from "./src/tokens/compiler";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function designTokensPlugin(): Plugin {
+  const outputPath = path.resolve(__dirname, "src/styles/tokens.generated.css");
+
+  function regenerate() {
+    try {
+      const css = compileTokensToCss();
+      const existing = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, "utf8") : "";
+      if (existing !== css) {
+        fs.writeFileSync(outputPath, css, "utf8");
+      }
+    } catch (err) {
+      console.error("[designTokensPlugin] Failed to generate tokens CSS:", err);
+    }
+  }
+
+  return {
+    name: "vite-plugin-design-tokens",
+    buildStart() {
+      regenerate();
+    },
+    handleHotUpdate({ file, server }) {
+      if (file.includes("src/tokens/")) {
+        regenerate();
+        server.ws.send({ type: "full-reload" });
+      }
+    },
+  };
+}
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [svelte(), tailwindcss()],
+  plugins: [designTokensPlugin(), svelte(), tailwindcss()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

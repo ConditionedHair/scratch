@@ -31,16 +31,16 @@
 
   const colorLabels: { key: ThemeColorKey; label: string; group: string }[] = [
     // Surfaces
-    { key: "bg", label: "Background", group: "Surfaces" },
-    { key: "bg-secondary", label: "Sidebar", group: "Surfaces" },
-    { key: "bg-muted", label: "Hover & Subtle Fill", group: "Surfaces" },
-    { key: "bg-emphasis", label: "Strong Fill", group: "Surfaces" },
+    { key: "surface-primary", label: "Background", group: "Surfaces" },
+    { key: "surface-secondary", label: "Sidebar", group: "Surfaces" },
+    { key: "surface-muted", label: "Hover & Subtle Fill", group: "Surfaces" },
+    { key: "surface-emphasis", label: "Strong Fill", group: "Surfaces" },
     // Text & UI
-    { key: "text", label: "Text", group: "Text & UI" },
-    { key: "text-muted", label: "Secondary Text", group: "Text & UI" },
-    { key: "accent", label: "Primary & Buttons", group: "Text & UI" },
-    { key: "border", label: "Borders", group: "Text & UI" },
-    { key: "selection", label: "Selection Highlight", group: "Text & UI" },
+    { key: "content-primary", label: "Text", group: "Text & UI" },
+    { key: "content-muted", label: "Secondary Text", group: "Text & UI" },
+    { key: "accent-primary", label: "Primary & Buttons", group: "Text & UI" },
+    { key: "border-default", label: "Borders", group: "Text & UI" },
+    { key: "accent-selection", label: "Selection Highlight", group: "Text & UI" },
   ];
 
   let defaults = $derived(defaultThemeColors[mode]);

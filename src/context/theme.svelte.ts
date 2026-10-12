@@ -1,6 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getSettings, updateSettings } from "../services/notes";
 import { SIDEBAR_MIN_PX, SIDEBAR_MAX_PX } from "../lib/sidebar";
+import {
+  tokens,
+  LEGACY_TO_SEMANTIC_KEY_MAP,
+  SEMANTIC_TO_LEGACY_KEY_MAP,
+  type SemanticColorKey,
+  type LegacyColorKey,
+  type ThemeColorKey,
+} from "../tokens";
 import type {
   ThemeSettings,
   EditorFontSettings,
@@ -8,66 +16,79 @@ import type {
   TextDirection,
   EditorWidth,
   CustomColors,
-  ThemeColorKey,
 } from "../types/note";
 
 export type ThemeMode = "light" | "dark" | "system";
 
-// Font family CSS values
+// Font family CSS values from master tokens
 const fontFamilyMap: Record<FontFamily, string> = {
-  "neue-haas":
-    '"Neue Haas Grotesk Text Pro", "Neue Haas Grotesk Text", "Neue Haas Grotesk", "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif',
-  "system-sans":
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-  monospace:
-    "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, 'Courier New', monospace",
+  "neue-haas": tokens.typography.fonts.sans,
+  "system-sans": tokens.typography.fonts.systemSans,
+  serif: tokens.typography.fonts.serif,
+  monospace: tokens.typography.fonts.mono,
 };
 
-// Editor width CSS values for presets
+// Editor width CSS values for presets from master tokens
 const editorWidthMap: Record<Exclude<EditorWidth, "custom">, string> = {
-  narrow: "36rem",
-  normal: "48rem",
-  wide: "64rem",
-  full: "100%",
+  narrow: tokens.layout.editorWidths.narrow,
+  normal: tokens.layout.editorWidths.normal,
+  wide: tokens.layout.editorWidths.wide,
+  full: tokens.layout.editorWidths.full,
 };
 
 // Default custom width in px
-const DEFAULT_CUSTOM_WIDTH_PX = 768;
+const DEFAULT_CUSTOM_WIDTH_PX = tokens.layout.editorWidths.defaultCustomWidthPx;
 
-// Default editor font settings (simplified)
+// Default editor font settings from master tokens
 export const defaultEditorFontSettings: Required<EditorFontSettings> = {
-  baseFontFamily: "neue-haas",
-  baseFontSize: 15,
-  boldWeight: 600,
-  lineHeight: 1.6,
+  baseFontFamily: tokens.typography.editorDefaults.baseFontFamily,
+  baseFontSize: tokens.typography.editorDefaults.baseFontSize,
+  boldWeight: tokens.typography.editorDefaults.boldWeight,
+  lineHeight: tokens.typography.editorDefaults.lineHeight,
 };
 
-// Default theme colors (Braun-inspired: Alabaster / Anodized Graphite with Signal Yellow)
+// Default theme colors from master tokens with backward compatibility mappings
 export const defaultThemeColors: Record<"light" | "dark", Record<ThemeColorKey, string>> = {
   light: {
-    bg: "#F4F3EE",
-    "bg-secondary": "#EBEAE4",
-    "bg-muted": "rgba(29, 29, 31, 0.05)",
-    "bg-emphasis": "rgba(29, 29, 31, 0.08)",
-    text: "#1D1D1F",
-    "text-muted": "#6E6D70",
-    border: "#D8D6CE",
-    accent: "#F5A623",
-    selection: "rgba(245, 166, 35, 0.25)",
+    ...tokens.colors.semantic.light,
+    bg: tokens.colors.semantic.light["surface-primary"],
+    "bg-secondary": tokens.colors.semantic.light["surface-secondary"],
+    "bg-muted": tokens.colors.semantic.light["surface-muted"],
+    "bg-emphasis": tokens.colors.semantic.light["surface-emphasis"],
+    text: tokens.colors.semantic.light["content-primary"],
+    "text-muted": tokens.colors.semantic.light["content-muted"],
+    "text-inverse": tokens.colors.semantic.light["content-inverse"],
+    border: tokens.colors.semantic.light["border-default"],
+    accent: tokens.colors.semantic.light["accent-primary"],
+    selection: tokens.colors.semantic.light["accent-selection"],
   },
   dark: {
-    bg: "#18191B",
-    "bg-secondary": "#202225",
-    "bg-muted": "rgba(238, 238, 240, 0.06)",
-    "bg-emphasis": "rgba(238, 238, 240, 0.10)",
-    text: "#EEEEF0",
-    "text-muted": "#9FA0A5",
-    border: "#2E3137",
-    accent: "#F5A623",
-    selection: "rgba(245, 166, 35, 0.35)",
+    ...tokens.colors.semantic.dark,
+    bg: tokens.colors.semantic.dark["surface-primary"],
+    "bg-secondary": tokens.colors.semantic.dark["surface-secondary"],
+    "bg-muted": tokens.colors.semantic.dark["surface-muted"],
+    "bg-emphasis": tokens.colors.semantic.dark["surface-emphasis"],
+    text: tokens.colors.semantic.dark["content-primary"],
+    "text-muted": tokens.colors.semantic.dark["content-muted"],
+    "text-inverse": tokens.colors.semantic.dark["content-inverse"],
+    border: tokens.colors.semantic.dark["border-default"],
+    accent: tokens.colors.semantic.dark["accent-primary"],
+    selection: tokens.colors.semantic.dark["accent-selection"],
   },
 };
+
+function migrateCustomColors(custom?: Record<string, string>): CustomColors {
+  if (!custom) return {};
+  const result: CustomColors = {};
+  for (const [key, val] of Object.entries(custom)) {
+    if (key in LEGACY_TO_SEMANTIC_KEY_MAP) {
+      result[LEGACY_TO_SEMANTIC_KEY_MAP[key as LegacyColorKey]] = val;
+    } else {
+      result[key as ThemeColorKey] = val;
+    }
+  }
+  return result;
+}
 
 // Normalize any CSS color string (hex, rgb(), rgba(), hsl(), named) to an RGB
 // triple by letting the browser parse it via getComputedStyle.
@@ -179,10 +200,10 @@ export class ThemeState {
         this.sidebarWidthPx = settings.sidebarWidthPx;
       }
       if (settings.customColorsLight) {
-        this.customColorsLight = settings.customColorsLight;
+        this.customColorsLight = migrateCustomColors(settings.customColorsLight);
       }
       if (settings.customColorsDark) {
-        this.customColorsDark = settings.customColorsDark;
+        this.customColorsDark = migrateCustomColors(settings.customColorsDark);
       }
       if (typeof settings.animationsEnabled === "boolean") {
         this.animationsEnabled = settings.animationsEnabled;
@@ -279,16 +300,34 @@ export class ThemeState {
     const root = document.documentElement;
     const activeColors = this.resolvedTheme === "dark" ? this.customColorsDark : this.customColorsLight;
     const defaults = defaultThemeColors[this.resolvedTheme];
-    const keys: ThemeColorKey[] = [
-      "bg", "bg-secondary", "bg-muted", "bg-emphasis",
-      "text", "text-muted", "border", "accent", "selection",
+    const semanticKeys: SemanticColorKey[] = [
+      "surface-primary",
+      "surface-secondary",
+      "surface-muted",
+      "surface-emphasis",
+      "content-primary",
+      "content-muted",
+      "content-inverse",
+      "border-default",
+      "accent-primary",
+      "accent-selection",
     ];
-    for (const key of keys) {
-      const value = activeColors[key] ?? defaults[key];
-      root.style.setProperty(`--color-${key}`, value);
+
+    for (const key of semanticKeys) {
+      const legacyKey = SEMANTIC_TO_LEGACY_KEY_MAP[key];
+      const value = activeColors[key] ?? (legacyKey ? activeColors[legacyKey] : undefined) ?? defaults[key];
+      if (value) {
+        root.style.setProperty(`--color-${key}`, value);
+        if (legacyKey) {
+          root.style.setProperty(`--color-${legacyKey}`, value);
+        }
+      }
     }
 
-    const captionColor = activeColors["bg-secondary"] ?? defaults["bg-secondary"];
+    const captionColor =
+      activeColors["surface-secondary"] ??
+      activeColors["bg-secondary"] ??
+      defaults["surface-secondary"];
     const rgb = parseCssColorToRgb(captionColor);
     if (rgb) {
       invoke("set_title_bar_theme", {
@@ -461,10 +500,14 @@ export class ThemeState {
   }
 
   async setCustomColor(mode: "light" | "dark", key: ThemeColorKey, value: string) {
+    const semanticKey = (key in LEGACY_TO_SEMANTIC_KEY_MAP
+      ? LEGACY_TO_SEMANTIC_KEY_MAP[key as LegacyColorKey]
+      : key) as ThemeColorKey;
+
     if (mode === "light") {
-      this.customColorsLight = { ...this.customColorsLight, [key]: value };
+      this.customColorsLight = { ...this.customColorsLight, [semanticKey]: value };
     } else {
-      this.customColorsDark = { ...this.customColorsDark, [key]: value };
+      this.customColorsDark = { ...this.customColorsDark, [semanticKey]: value };
     }
     this.applyCustomColors();
     const settingsKey = mode === "light" ? "customColorsLight" : "customColorsDark";
@@ -475,13 +518,24 @@ export class ThemeState {
   }
 
   async resetCustomColor(mode: "light" | "dark", key: ThemeColorKey) {
+    const semanticKey = (key in LEGACY_TO_SEMANTIC_KEY_MAP
+      ? LEGACY_TO_SEMANTIC_KEY_MAP[key as LegacyColorKey]
+      : key) as ThemeColorKey;
+    const legacyKey = (key in SEMANTIC_TO_LEGACY_KEY_MAP
+      ? SEMANTIC_TO_LEGACY_KEY_MAP[key as SemanticColorKey]
+      : undefined) as ThemeColorKey | undefined;
+
     if (mode === "light") {
       const updated = { ...this.customColorsLight };
       delete updated[key];
+      delete updated[semanticKey];
+      if (legacyKey) delete updated[legacyKey];
       this.customColorsLight = updated;
     } else {
       const updated = { ...this.customColorsDark };
       delete updated[key];
+      delete updated[semanticKey];
+      if (legacyKey) delete updated[legacyKey];
       this.customColorsDark = updated;
     }
     this.applyCustomColors();

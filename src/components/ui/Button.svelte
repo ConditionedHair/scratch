@@ -15,12 +15,12 @@
   };
 
   const buttonVariants: Record<ButtonVariant, string> = {
-    primary: "bg-accent text-text-inverse hover:bg-accent/90 rounded-md",
-    default: "bg-bg-muted text-text hover:bg-bg-emphasis rounded-md",
-    secondary: "bg-bg-muted text-text hover:bg-bg-emphasis rounded-md",
-    ghost: "hover:bg-bg-muted text-text-muted hover:text-text rounded-md",
-    outline: "border border-border bg-transparent hover:bg-bg-muted text-text rounded-md",
-    link: "text-text-muted hover:text-text underline-offset-4 hover:underline",
+    primary: "bg-accent-primary text-content-inverse hover:bg-accent-primary/90 rounded-md",
+    default: "bg-surface-muted text-content-primary hover:bg-surface-emphasis rounded-md",
+    secondary: "bg-surface-muted text-content-primary hover:bg-surface-emphasis rounded-md",
+    ghost: "hover:bg-surface-muted text-content-muted hover:text-content-primary rounded-md",
+    outline: "border border-border-default bg-transparent hover:bg-surface-muted text-content-primary rounded-md",
+    link: "text-content-muted hover:text-content-primary underline-offset-4 hover:underline",
   };
 
   interface Props extends HTMLButtonAttributes {
@@ -44,7 +44,7 @@
   type={type}
   class={cn(
     "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors",
-    "focus-visible:outline focus-visible:outline-accent",
+    "focus-visible:outline focus-visible:outline-accent-primary",
     "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
     buttonSizes[size],
     buttonVariants[variant],

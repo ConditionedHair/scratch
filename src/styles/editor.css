@@ -1,0 +1,578 @@
+/* TipTap / ProseMirror Editor & Markdown Typography Styling */
+
+/* Link tooltip in editor */
+.prose a {
+  position: relative;
+}
+
+.prose a::after {
+  content: "Ctrl + click to open";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-content-inverse);
+  background-color: var(--color-content-primary);
+  border-radius: 0.25rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  margin-bottom: 0.25rem;
+  z-index: 50;
+}
+
+.platform-mac .prose a::after {
+  content: "⌘ + click to open";
+}
+
+.prose a:hover::after {
+  opacity: 1;
+}
+
+/* Editor layout - max-width from settings */
+.ProseMirror {
+  max-width: var(--editor-max-width, 48rem) !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Editor font customization */
+.prose {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-base-font-size);
+  font-weight: 400;
+  line-height: var(--editor-line-height);
+  color: var(--color-content-primary);
+}
+
+/* Ensure prose text color follows theme */
+.prose
+  :where(p, li, blockquote, code, pre, td, th):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
+  color: var(--color-content-primary);
+}
+
+.prose
+  :where(h1, h2, h3, h4, h5, h6):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ) {
+  color: var(--color-content-primary);
+}
+
+/* Headings - all use the same font family with computed sizes */
+.prose h1 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h1-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.2;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+}
+
+.prose h2 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h2-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.3;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+}
+
+.prose h3 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h3-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.3;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+}
+
+.prose h4 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h4-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 0.35em;
+}
+
+.prose h5 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h5-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.4;
+  margin-top: 0.85em;
+  margin-bottom: 0.25em;
+}
+
+.prose h6 {
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-h6-size);
+  font-weight: var(--editor-bold-weight);
+  line-height: 1.4;
+  margin-top: 0.85em;
+  margin-bottom: 0.25em;
+}
+
+/* Bold text uses the same weight as headings */
+.prose strong,
+.prose b {
+  font-weight: var(--editor-bold-weight);
+  color: var(--color-content-primary);
+}
+
+/* Code blocks and inline code */
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  color: var(--color-code);
+  background-color: var(--color-surface-muted);
+  padding: 0.15em 0.3em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+/* Remove backticks from inline code */
+.prose
+  :where(code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  )::before,
+.prose
+  :where(code):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  )::after {
+  content: "";
+}
+
+/* Code blocks via NodeView wrapper */
+.code-block-wrapper {
+  position: relative;
+  margin: 1em 0;
+}
+
+.code-block-wrapper pre {
+  background-color: var(--color-surface-muted);
+  color: var(--color-content-primary);
+  border-radius: 0.5rem;
+  padding: 2rem 1rem 0.75rem;
+  overflow-x: auto;
+}
+
+.code-block-wrapper pre code {
+  background-color: transparent;
+  color: var(--color-content-primary);
+  padding: 0;
+  font-size: 0.933em;
+  font-weight: 400;
+}
+
+/* Language selector */
+.code-block-language-selector {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.5rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.code-block-wrapper:hover .code-block-language-selector,
+.code-block-language-selector:focus-within {
+  opacity: 1;
+}
+
+/* Mermaid diagram */
+.mermaid-wrapper {
+  margin: 1em 0;
+  position: relative;
+}
+
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fallback for code blocks not using NodeView (e.g. frontmatter pre) */
+.prose
+  :where(pre):not(
+    :where(
+      .code-block-wrapper pre,
+      [class~="not-prose"],
+      [class~="not-prose"] *
+    )
+  ) {
+  background-color: var(--color-surface-muted);
+  color: var(--color-content-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+
+.prose
+  :where(pre code):not(
+    :where(
+      .code-block-wrapper pre code,
+      [class~="not-prose"],
+      [class~="not-prose"] *
+    )
+  ) {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.933em;
+  font-weight: 400;
+}
+
+/* KaTeX math */
+.prose .tiptap-mathematics-render {
+  color: var(--color-content-primary);
+}
+
+.prose .tiptap-mathematics-render[data-type="block-math"] {
+  display: block;
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.prose
+  .tiptap-mathematics-render[data-type="block-math"].ProseMirror-selectednode {
+  outline: 2px solid var(--color-surface-emphasis);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+.prose .tiptap-mathematics-render--editable {
+  cursor: pointer;
+}
+
+.prose .katex-display {
+  margin: 0;
+}
+
+.prose .block-math-error {
+  color: #dc2626;
+  font-family: var(--font-mono);
+}
+
+/* Frontmatter block (YAML metadata) — hidden in visual editor */
+.prose
+  :where(pre.frontmatter):not(
+    :where([class~="not-prose"], [class~="not-prose"] *)
+  ),
+pre.frontmatter,
+[data-frontmatter] {
+  display: none !important;
+}
+
+/* Links - solid bottom border, muted at rest */
+.prose :where(a):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  color: var(--color-content-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid currentcolor;
+  transition: color 0.15s;
+}
+.prose
+  :where(a):not(:where([class~="not-prose"], [class~="not-prose"] *)):hover {
+  color: var(--color-content-muted);
+}
+
+/* Wikilinks - dashed bottom border to distinguish from external links */
+.prose span[data-wikilink] {
+  color: var(--color-content-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px dashed currentcolor;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.prose span[data-wikilink]:hover {
+  color: var(--color-content-muted);
+}
+
+/* Blockquotes */
+.prose
+  :where(blockquote):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  color: var(--color-content-muted);
+  border-left-color: var(--color-border-default);
+  border-inline-start-color: var(--color-border-default);
+}
+
+/* Search match highlighting - uses the selection color */
+.search-match {
+  background-color: color-mix(in srgb, var(--color-accent-selection), transparent 50%);
+}
+.search-match-active {
+  background-color: var(--color-accent-selection);
+}
+
+/* Horizontal rules */
+.prose :where(hr):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  border-color: color-mix(in srgb, var(--color-content-primary) 15%, transparent);
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
+}
+
+/* Prose spacing - fixed paragraph spacing */
+.prose p {
+  margin-top: 0;
+  margin-bottom: var(--editor-paragraph-spacing);
+}
+
+/* Prevent empty paragraphs from inflating vertical spacing */
+.prose p:empty,
+.prose p:has(> br.ProseMirror-trailingBreak:only-child) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose ul,
+.prose ol {
+  margin-top: 0;
+  margin-bottom: var(--editor-paragraph-spacing);
+  padding-left: 1.25em;
+  padding-inline-start: 1.25em;
+}
+
+/* Remove extra margins from nested lists */
+.prose li > ul,
+.prose li > ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose li {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 0.25em;
+  padding-inline-start: 0.25em;
+}
+
+/* List markers - use muted stone color */
+.prose :where(ul > li)::marker {
+  color: var(--color-content-muted);
+}
+
+.prose :where(ol > li)::marker {
+  color: var(--color-content-muted);
+}
+
+.prose li > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+/* Task list checkbox styles */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0 !important;
+  padding-inline-start: 0 !important;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+}
+
+ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  height: 1.6em; /* Match text line height */
+}
+
+ul[data-type="taskList"] li > label input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  border: 1.5px solid color-mix(in srgb, var(--color-content-primary) 25%, transparent);
+  border-radius: 3px;
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}
+
+ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-content-inverse);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.5 6L5 8.5L9.5 3.5' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: 10px;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.5 6L5 8.5L9.5 3.5' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: 10px;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+ul[data-type="taskList"] li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+ul[data-type="taskList"] li > div > p {
+  margin: 0;
+}
+
+ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Task list spacing - breathing room between items */
+ul[data-type="taskList"] > li {
+  padding-top: 0.125em;
+  padding-bottom: 0.125em;
+}
+
+/* Space around nested task lists */
+ul[data-type="taskList"] ul[data-type="taskList"] {
+  margin-top: 0.2em;
+  margin-bottom: 0em;
+}
+
+/* Table styles */
+.prose table,
+table.not-prose {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--color-content-primary) 15%, transparent);
+  border-radius: 6px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  font-size: var(--editor-base-font-size);
+  color: var(--color-content-primary);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.prose table::-webkit-scrollbar,
+table.not-prose::-webkit-scrollbar {
+  display: none;
+}
+
+.prose table th,
+.prose table td,
+table.not-prose th,
+table.not-prose td {
+  border: 0;
+  border-right: 1px solid color-mix(in srgb, var(--color-content-primary) 15%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-content-primary) 15%, transparent);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  vertical-align: top;
+  min-width: 120px;
+}
+
+/* Avoid double lines with separate border model */
+.prose table th:last-child,
+.prose table td:last-child,
+table.not-prose th:last-child,
+table.not-prose td:last-child {
+  border-right: none;
+}
+
+.prose table tr:last-child th,
+.prose table tr:last-child td,
+table.not-prose tr:last-child th,
+table.not-prose tr:last-child td {
+  border-bottom: none;
+}
+
+.prose table th,
+table.not-prose th {
+  font-weight: var(--editor-bold-weight);
+  background-color: var(--color-surface-muted);
+}
+
+/* Remove all margins inside table cells - cell padding handles spacing */
+.prose table td > *,
+.prose table th > *,
+table.not-prose td > *,
+table.not-prose th > * {
+  margin: 0;
+}
+
+/* TipTap table selection styles */
+.selectedCell::after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--color-accent-selection);
+  pointer-events: none;
+}
+
+/* Table wrapper */
+.tableWrapper {
+  margin: 1em 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: none;
+  border-radius: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tableWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.tableWrapper table {
+  margin: 0;
+  width: max-content !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.prose table td,
+.prose table th,
+table.not-prose td,
+table.not-prose th {
+  position: relative;
+}

@@ -132,6 +132,7 @@
 /* Base styles */
 html,
 body,
+#app,
 #root {
   height: 100%;
   margin: 0;
@@ -142,6 +143,7 @@ body,
 
 /* Windows keeps its native title bar (no in-app titlebar spacer); a top border
    separates the app content from the themed caption. */
+.platform-windows #app,
 .platform-windows #root {
   border-top: 1px solid var(--color-border);
 }
@@ -1113,7 +1115,8 @@ table.not-prose th {
 }
 
 /* Suppress sidebar transition during drag resize */
-.sidebar-no-transition [data-sidebar] {
+.sidebar-no-transition [data-sidebar],
+.sidebar-no-transition [data-note-list] {
   transition: none !important;
 }
 
@@ -1146,8 +1149,11 @@ table.not-prose th {
   /* Remove all height/overflow constraints to allow multi-page printing */
   html,
   body,
+  #app,
   #root,
+  #app > div,
   #root > div,
+  #app > div > div,
   #root > div > div,
   .flex-1,
   .flex-1 > div {
@@ -1181,6 +1187,7 @@ table.not-prose th {
   .dialog,
   [role="dialog"],
   [data-radix-portal],
+  [data-portal],
   nav,
   header,
   footer {

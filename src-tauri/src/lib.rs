@@ -6,10 +6,6 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
-use tantivy::collector::TopDocs;
-use tantivy::query::QueryParser;
-use tantivy::schema::*;
-use tantivy::{doc, Index, IndexReader, IndexWriter, ReloadPolicy};
 use tauri::{AppHandle, Emitter, Manager, State, WebviewUrl};
 use tauri::webview::WebviewWindowBuilder;
 use tauri_plugin_clipboard_manager::ClipboardExt;
@@ -18,6 +14,9 @@ use tokio::io::AsyncWriteExt;
 
 mod git;
 mod icloud;
+mod search;
+
+pub use search::{SearchIndex, SearchResult};
 
 // Note metadata for list display
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -147,16 +146,6 @@ pub struct Settings {
     pub tag_colors: Option<std::collections::HashMap<String, String>>,
 }
 
-// Search result
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchResult {
-    pub id: String,
-    pub title: String,
-    pub preview: String,
-    pub modified: i64,
-    pub score: f32,
-}
-
 // AI execution result
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -172,175 +161,6 @@ pub struct FileWatcherState {
     watcher: RecommendedWatcher,
 }
 
-// Tantivy search index state
-pub struct SearchIndex {
-    index: Index,
-    reader: IndexReader,
-    writer: Mutex<IndexWriter>,
-    #[allow(dead_code)]
-    schema: Schema,
-    id_field: Field,
-    title_field: Field,
-    content_field: Field,
-    modified_field: Field,
-}
-
-impl SearchIndex {
-    fn new(index_path: &PathBuf) -> Result<Self> {
-        // Build schema
-        let mut schema_builder = Schema::builder();
-        let id_field = schema_builder.add_text_field("id", STRING | STORED);
-        let title_field = schema_builder.add_text_field("title", TEXT | STORED);
-        let content_field = schema_builder.add_text_field("content", TEXT | STORED);
-        let modified_field = schema_builder.add_i64_field("modified", INDEXED | STORED);
-        let schema = schema_builder.build();
-
-        // Create or open index
-        std::fs::create_dir_all(index_path)?;
-        let index = Index::create_in_dir(index_path, schema.clone())
-            .or_else(|_| Index::open_in_dir(index_path))?;
-
-        let reader = index
-            .reader_builder()
-            .reload_policy(ReloadPolicy::OnCommitWithDelay)
-            .try_into()?;
-
-        let writer = index.writer(50_000_000)?; // 50MB buffer
-
-        Ok(Self {
-            index,
-            reader,
-            writer: Mutex::new(writer),
-            schema,
-            id_field,
-            title_field,
-            content_field,
-            modified_field,
-        })
-    }
-
-    fn index_note(&self, id: &str, title: &str, content: &str, modified: i64) -> Result<()> {
-        let mut writer = self.writer.lock().expect("search writer mutex");
-
-        // Delete existing document with this ID
-        let id_term = tantivy::Term::from_field_text(self.id_field, id);
-        writer.delete_term(id_term);
-
-        // Add new document
-        writer.add_document(doc!(
-            self.id_field => id,
-            self.title_field => title,
-            self.content_field => content,
-            self.modified_field => modified,
-        ))?;
-
-        writer.commit()?;
-        Ok(())
-    }
-
-    fn delete_note(&self, id: &str) -> Result<()> {
-        let mut writer = self.writer.lock().expect("search writer mutex");
-        let id_term = tantivy::Term::from_field_text(self.id_field, id);
-        writer.delete_term(id_term);
-        writer.commit()?;
-        Ok(())
-    }
-
-    fn search(&self, query_str: &str, limit: usize) -> Result<Vec<SearchResult>> {
-        let searcher = self.reader.searcher();
-        let query_parser =
-            QueryParser::for_index(&self.index, vec![self.title_field, self.content_field]);
-
-        // Parse query, fall back to prefix query if parsing fails
-        let query = query_parser
-            .parse_query(query_str)
-            .or_else(|_| query_parser.parse_query(&format!("{}*", query_str)))?;
-
-        let top_docs = searcher.search(&query, &TopDocs::with_limit(limit))?;
-
-        let mut results = Vec::with_capacity(top_docs.len());
-        for (score, doc_address) in top_docs {
-            let doc: TantivyDocument = searcher.doc(doc_address)?;
-
-            let id = doc
-                .get_first(self.id_field)
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string();
-
-            let title = doc
-                .get_first(self.title_field)
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string();
-
-            let content = doc
-                .get_first(self.content_field)
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-
-            let modified = doc
-                .get_first(self.modified_field)
-                .and_then(|v| v.as_i64())
-                .unwrap_or(0);
-
-            let preview = generate_preview(content);
-
-            results.push(SearchResult {
-                id,
-                title,
-                preview,
-                modified,
-                score,
-            });
-        }
-
-        Ok(results)
-    }
-
-    fn rebuild_index(&self, notes_folder: &PathBuf, ignored_dirs: &[String]) -> Result<()> {
-        let mut writer = self.writer.lock().expect("search writer mutex");
-        writer.delete_all_documents()?;
-
-        if notes_folder.exists() {
-            use walkdir::WalkDir;
-            for entry in WalkDir::new(notes_folder)
-                .max_depth(10)
-                .into_iter()
-                .filter_entry(|e| is_visible_notes_entry(e, ignored_dirs))
-                .flatten()
-            {
-                let file_path = entry.path();
-                if !file_path.is_file() {
-                    continue;
-                }
-                if let Some(id) = id_from_abs_path(notes_folder, file_path, ignored_dirs) {
-                    if let Ok(content) = std::fs::read_to_string(file_path) {
-                        let modified = entry
-                            .metadata()
-                            .ok()
-                            .and_then(|m| m.modified().ok())
-                            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                            .map(|d| d.as_secs() as i64)
-                            .unwrap_or(0);
-
-                        let title = extract_title(&content);
-
-                        writer.add_document(doc!(
-                            self.id_field => id.as_str(),
-                            self.title_field => title,
-                            self.content_field => content.as_str(),
-                            self.modified_field => modified,
-                        ))?;
-                    }
-                }
-            }
-        }
-
-        writer.commit()?;
-        Ok(())
-    }
-}
 
 // App state with improved structure
 pub struct AppState {
@@ -479,7 +299,7 @@ fn strip_frontmatter(content: &str) -> &str {
 }
 
 // Utility: Extract title from markdown content
-fn extract_title(content: &str) -> String {
+pub(crate) fn extract_title(content: &str) -> String {
     let body = strip_frontmatter(content);
     for line in body.lines() {
         let trimmed = line.trim();
@@ -497,7 +317,7 @@ fn extract_title(content: &str) -> String {
 }
 
 // Utility: Generate preview from content (strip markdown formatting)
-fn generate_preview(content: &str) -> String {
+pub(crate) fn generate_preview(content: &str) -> String {
     let body = strip_frontmatter(content);
     // Skip the first line (title), find first non-empty line
     for line in body.lines().skip(1) {
@@ -766,7 +586,7 @@ fn get_effective_ignored_dirs(settings: &Settings) -> Vec<String> {
 }
 
 /// Filter for WalkDir: skips excluded and user-ignored directories.
-fn is_visible_notes_entry(entry: &walkdir::DirEntry, ignored_dirs: &[String]) -> bool {
+pub(crate) fn is_visible_notes_entry(entry: &walkdir::DirEntry, ignored_dirs: &[String]) -> bool {
     if entry.file_type().is_dir() {
         let name = entry.file_name().to_str().unwrap_or("");
         return !EXCLUDED_DIRS.contains(&name) && !ignored_dirs.iter().any(|d| d == name);
@@ -776,7 +596,7 @@ fn is_visible_notes_entry(entry: &walkdir::DirEntry, ignored_dirs: &[String]) ->
 
 /// Convert an absolute file path to a note ID (relative path from notes root, no .md extension, POSIX separators).
 /// Returns None if the path is outside the root, not a .md file, or in an excluded/ignored directory.
-fn id_from_abs_path(notes_root: &Path, file_path: &Path, ignored_dirs: &[String]) -> Option<String> {
+pub(crate) fn id_from_abs_path(notes_root: &Path, file_path: &Path, ignored_dirs: &[String]) -> Option<String> {
     let rel = file_path.strip_prefix(notes_root).ok()?;
 
     // Skip files inside excluded or ignored directories.
@@ -1045,7 +865,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
     let path_clone = path.clone();
     let discovered = tokio::task::spawn_blocking(move || {
         use walkdir::WalkDir;
-        let mut results: Vec<(String, String, String, i64, Vec<String>, bool, usize)> = Vec::new();
+        let mut results: Vec<NoteMetadata> = Vec::new();
         for entry in WalkDir::new(&path_clone)
             .max_depth(10)
             .into_iter()
@@ -1069,7 +889,15 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                     let preview = generate_preview(&content);
                     let tags = parse_frontmatter_tags(&content);
                     let word_count = count_words(&content);
-                    results.push((id, title, preview, modified, tags, false, word_count));
+                    results.push(NoteMetadata {
+                        id,
+                        title,
+                        preview,
+                        modified,
+                        tags,
+                        downloading: false,
+                        word_count,
+                    });
                 }
             } else if icloud::is_placeholder(file_path) {
                 // Not-yet-downloaded iCloud file: synthesize a placeholder entry
@@ -1080,15 +908,15 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
                         if let Some(id) = id_from_abs_path(&path_clone, &real_path, &ignored_dirs) {
                             icloud::trigger_download(&real_path);
                             let title = real_name.strip_suffix(".md").unwrap_or(&real_name).to_string();
-                            results.push((
+                            results.push(NoteMetadata {
                                 id,
                                 title,
-                                "Downloading from iCloud…".to_string(),
-                                0,
-                                Vec::new(),
-                                true,
-                                0,
-                            ));
+                                preview: "Downloading from iCloud…".to_string(),
+                                modified: 0,
+                                tags: Vec::new(),
+                                downloading: true,
+                                word_count: 0,
+                            });
                         }
                     }
                 }
@@ -1099,18 +927,7 @@ async fn list_notes(state: State<'_, AppState>) -> Result<Vec<NoteMetadata>, Str
     .await
     .map_err(|e| e.to_string())?;
 
-    let mut notes: Vec<NoteMetadata> = discovered
-        .into_iter()
-        .map(|(id, title, preview, modified, tags, downloading, word_count)| NoteMetadata {
-            id,
-            title,
-            preview,
-            modified,
-            tags,
-            downloading,
-            word_count,
-        })
-        .collect();
+    let mut notes: Vec<NoteMetadata> = discovered;
 
     // Load pinned note IDs from settings
     let pinned_ids: HashSet<String> = {

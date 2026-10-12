@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 import tailwindcss from "@tailwindcss/vite";
 
 // @ts-expect-error process is a nodejs global
@@ -7,7 +7,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react(), tailwindcss()],
+  plugins: [svelte(), tailwindcss()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -43,34 +43,33 @@ export default defineConfig(async () => ({
     // Optimize chunk splitting
     rollupOptions: {
       output: {
-        // Manual chunk splitting for better caching
-        manualChunks: {
-          // TipTap and related editor libraries
-          "tiptap": [
-            "@tiptap/react",
-            "@tiptap/starter-kit",
-            "@tiptap/markdown",
-            "@tiptap/extension-link",
-            "@tiptap/extension-image",
-            "@tiptap/extension-placeholder",
-            "@tiptap/extension-task-list",
-            "@tiptap/extension-task-item",
-            "@tiptap/extension-table",
-            "@tiptap/extension-table-row",
-            "@tiptap/extension-table-cell",
-            "@tiptap/extension-table-header",
-            "@tiptap/extension-code-block-lowlight",
-          ],
-          // Syntax highlighting
-          "highlight": ["lowlight", "highlight.js"],
-          // React core
-          "react-vendor": ["react", "react-dom"],
-          // Tauri APIs
-          "tauri": [
-            "@tauri-apps/api",
-            "@tauri-apps/plugin-dialog",
-            "@tauri-apps/plugin-opener",
-          ],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("beautiful-mermaid")) {
+              return "vendor-mermaid";
+            }
+            if (id.includes("katex")) {
+              return "vendor-katex";
+            }
+            if (id.includes("highlight.js") || id.includes("lowlight")) {
+              return "vendor-highlight";
+            }
+            if (id.includes("@tiptap") || id.includes("prosemirror")) {
+              return "vendor-tiptap";
+            }
+            if (id.includes("bits-ui")) {
+              return "vendor-bits-ui";
+            }
+            if (id.includes("@tauri-apps")) {
+              return "vendor-tauri";
+            }
+            if (
+              id.includes("/node_modules/svelte/") ||
+              id.includes(".pnpm/svelte@")
+            ) {
+              return "vendor-svelte";
+            }
+          }
         },
       },
     },
@@ -82,11 +81,10 @@ export default defineConfig(async () => ({
 
   // Optimize dependencies
   optimizeDeps: {
+    exclude: ["bits-ui", "svelte-sonner"],
     // Pre-bundle these dependencies for faster dev startup
     include: [
-      "react",
-      "react-dom",
-      "@tiptap/react",
+      "@tiptap/core",
       "@tiptap/starter-kit",
       "@tiptap/markdown",
       "lowlight",

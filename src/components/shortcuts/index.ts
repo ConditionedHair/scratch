@@ -1,1 +1,1 @@
-export { default as KeyboardShortcutsModal } from "./KeyboardShortcutsModal.svelte";
+export { default as KeyboardShortcutsModal } from './KeyboardShortcutsModal.svelte'

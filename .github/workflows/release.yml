@@ -1,142 +1,142 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
-  workflow_dispatch:
+    push:
+        tags:
+            - 'v*'
+    workflow_dispatch:
 
 permissions:
-  contents: write
+    contents: write
 
 jobs:
-  build-and-release:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: macos-latest
-            args: "--target universal-apple-darwin"
-            rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
-          - platform: ubuntu-22.04
-            args: ""
-            rust_targets: ""
-          - platform: windows-latest
-            args: ""
-            rust_targets: ""
+    build-and-release:
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - platform: macos-latest
+                      args: '--target universal-apple-darwin'
+                      rust_targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+                    - platform: ubuntu-22.04
+                      args: ''
+                      rust_targets: ''
+                    - platform: windows-latest
+                      args: ''
+                      rust_targets: ''
 
-    runs-on: ${{ matrix.platform }}
+        runs-on: ${{ matrix.platform }}
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Install system dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev \
-            libappindicator3-dev librsvg2-dev patchelf
+            - name: Install system dependencies (Ubuntu only)
+              if: matrix.platform == 'ubuntu-22.04'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev \
+                    libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: npm
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.rust_targets }}
+            - name: Install Rust stable
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ matrix.rust_targets }}
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: ./src-tauri -> target
+            - name: Rust cache
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: ./src-tauri -> target
 
-      - name: Install frontend dependencies
-        run: npm ci
+            - name: Install frontend dependencies
+              run: npm ci
 
-      - name: Build and release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          tagName: v__VERSION__
-          releaseName: "Scratch v__VERSION__"
-          releaseBody: "See the release page for full details. Download the app for your platform below."
-          releaseDraft: true
-          prerelease: false
-          updaterJsonPreferNsis: true
-          args: ${{ matrix.args }}
+            - name: Build and release
+              uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+                  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+              with:
+                  tagName: v__VERSION__
+                  releaseName: 'Scratch v__VERSION__'
+                  releaseBody: 'See the release page for full details. Download the app for your platform below.'
+                  releaseDraft: true
+                  prerelease: false
+                  updaterJsonPreferNsis: true
+                  args: ${{ matrix.args }}
 
-  # The deb ships as "scratch", which collides with an unrelated package in
-  # the Ubuntu repos (#119). Repack it as "scratch-notes" after all platform
-  # builds finish, re-sign it, and point the updater manifest at the new
-  # asset. Runs last so the latest.json swap can't race the matrix jobs.
-  rename-deb-package:
-    needs: build-and-release
-    runs-on: ubuntu-22.04
+    # The deb ships as "scratch", which collides with an unrelated package in
+    # the Ubuntu repos (#119). Repack it as "scratch-notes" after all platform
+    # builds finish, re-sign it, and point the updater manifest at the new
+    # asset. Runs last so the latest.json swap can't race the matrix jobs.
+    rename-deb-package:
+        needs: build-and-release
+        runs-on: ubuntu-22.04
 
-    steps:
-      # Don't persist the git token: npm ci runs lifecycle scripts, and the
-      # gh/signer steps below only use env vars
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        steps:
+            # Don't persist the git token: npm ci runs lifecycle scripts, and the
+            # gh/signer steps below only use env vars
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: npm
 
-      - name: Install frontend dependencies
-        run: npm ci
+            - name: Install frontend dependencies
+              run: npm ci
 
-      - name: Repack deb as scratch-notes and update release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: |
-          set -euo pipefail
-          version=$(node -p "require('./package.json').version")
-          tag="v${version}"
-          old_deb="Scratch_${version}_amd64.deb"
-          new_deb="scratch-notes_${version}_amd64.deb"
-          work=$(mktemp -d)
+            - name: Repack deb as scratch-notes and update release assets
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+              run: |
+                  set -euo pipefail
+                  version=$(node -p "require('./package.json').version")
+                  tag="v${version}"
+                  old_deb="Scratch_${version}_amd64.deb"
+                  new_deb="scratch-notes_${version}_amd64.deb"
+                  work=$(mktemp -d)
 
-          gh release download "$tag" --pattern "$old_deb" --dir "$work"
-          gh release download "$tag" --pattern latest.json --dir "$work"
+                  gh release download "$tag" --pattern "$old_deb" --dir "$work"
+                  gh release download "$tag" --pattern latest.json --dir "$work"
 
-          # Replaces (without Conflicts) lets dpkg take over the files of an
-          # installed old-name deb, so in-app updates keep working for
-          # existing users.
-          dpkg-deb -R "$work/$old_deb" "$work/pkg"
-          sed -i 's/^Package: scratch$/Package: scratch-notes/' "$work/pkg/DEBIAN/control"
-          grep -q '^Package: scratch-notes$' "$work/pkg/DEBIAN/control"
-          echo "Replaces: scratch" >> "$work/pkg/DEBIAN/control"
-          dpkg-deb -b --root-owner-group "$work/pkg" "$work/$new_deb"
+                  # Replaces (without Conflicts) lets dpkg take over the files of an
+                  # installed old-name deb, so in-app updates keep working for
+                  # existing users.
+                  dpkg-deb -R "$work/$old_deb" "$work/pkg"
+                  sed -i 's/^Package: scratch$/Package: scratch-notes/' "$work/pkg/DEBIAN/control"
+                  grep -q '^Package: scratch-notes$' "$work/pkg/DEBIAN/control"
+                  echo "Replaces: scratch" >> "$work/pkg/DEBIAN/control"
+                  dpkg-deb -b --root-owner-group "$work/pkg" "$work/$new_deb"
 
-          # Re-sign the repacked deb and swap the updater manifest entry;
-          # the signer CLI reads the key and password from the env vars.
-          npm run tauri -- signer sign "$work/$new_deb"
-          jq --arg sig "$(cat "$work/${new_deb}.sig")" \
-             --arg url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${new_deb}" \
-             '.platforms["linux-x86_64-deb"].url = $url
-              | .platforms["linux-x86_64-deb"].signature = $sig' \
-             "$work/latest.json" > "$work/latest.json.new"
-          mv "$work/latest.json.new" "$work/latest.json"
+                  # Re-sign the repacked deb and swap the updater manifest entry;
+                  # the signer CLI reads the key and password from the env vars.
+                  npm run tauri -- signer sign "$work/$new_deb"
+                  jq --arg sig "$(cat "$work/${new_deb}.sig")" \
+                     --arg url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${new_deb}" \
+                     '.platforms["linux-x86_64-deb"].url = $url
+                      | .platforms["linux-x86_64-deb"].signature = $sig' \
+                     "$work/latest.json" > "$work/latest.json.new"
+                  mv "$work/latest.json.new" "$work/latest.json"
 
-          gh release upload "$tag" "$work/$new_deb" "$work/${new_deb}.sig" --clobber
-          gh release upload "$tag" "$work/latest.json" --clobber
-          gh release delete-asset "$tag" "$old_deb" -y
-          gh release delete-asset "$tag" "${old_deb}.sig" -y
+                  gh release upload "$tag" "$work/$new_deb" "$work/${new_deb}.sig" --clobber
+                  gh release upload "$tag" "$work/latest.json" --clobber
+                  gh release delete-asset "$tag" "$old_deb" -y
+                  gh release delete-asset "$tag" "${old_deb}.sig" -y

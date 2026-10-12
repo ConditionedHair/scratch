@@ -1,1 +1,1 @@
-export { default as SettingsPage } from "./SettingsPage.svelte";
+export { default as SettingsPage } from './SettingsPage.svelte'

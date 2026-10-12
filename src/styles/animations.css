@@ -2,11 +2,15 @@
 
 /* Smooth theme transitions */
 html {
-  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+	transition:
+		background-color 0.15s ease-out,
+		color 0.15s ease-out;
 }
 
 html.dark {
-  transition: background-color 0.15s ease-out, color 0.15s ease-out;
+	transition:
+		background-color 0.15s ease-out,
+		color 0.15s ease-out;
 }
 
 /* User-disabled animations */
@@ -14,170 +18,171 @@ html.dark {
 .no-animations *,
 .no-animations *::before,
 .no-animations *::after {
-  animation: none !important;
-  transition: none !important;
+	animation: none !important;
+	transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 /* Radix UI & Bits UI tooltip animations */
 @keyframes tooltip-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes tooltip-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
 }
 
 @keyframes tooltip-zoom-in {
-  from {
-    transform: scale(0.95);
-  }
-  to {
-    transform: scale(1);
-  }
+	from {
+		transform: scale(0.95);
+	}
+	to {
+		transform: scale(1);
+	}
 }
 
 @keyframes tooltip-zoom-out {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(0.95);
-  }
+	from {
+		transform: scale(1);
+	}
+	to {
+		transform: scale(0.95);
+	}
 }
 
 @keyframes tooltip-slide-in-from-top {
-  from {
-    transform: translateY(-2px);
-  }
-  to {
-    transform: translateY(0);
-  }
+	from {
+		transform: translateY(-2px);
+	}
+	to {
+		transform: translateY(0);
+	}
 }
 
 @keyframes tooltip-slide-in-from-top-4 {
-  from {
-    transform: translateY(-4px);
-  }
-  to {
-    transform: translateY(0);
-  }
+	from {
+		transform: translateY(-4px);
+	}
+	to {
+		transform: translateY(0);
+	}
 }
 
 @keyframes tooltip-slide-in-from-bottom {
-  from {
-    transform: translateY(2px);
-  }
-  to {
-    transform: translateY(0);
-  }
+	from {
+		transform: translateY(2px);
+	}
+	to {
+		transform: translateY(0);
+	}
 }
 
 @keyframes tooltip-slide-in-from-left {
-  from {
-    transform: translateX(-2px);
-  }
-  to {
-    transform: translateX(0);
-  }
+	from {
+		transform: translateX(-2px);
+	}
+	to {
+		transform: translateX(0);
+	}
 }
 
 @keyframes tooltip-slide-in-from-right {
-  from {
-    transform: translateX(2px);
-  }
-  to {
-    transform: translateX(0);
-  }
+	from {
+		transform: translateX(2px);
+	}
+	to {
+		transform: translateX(0);
+	}
 }
 
 .animate-in {
-  animation-duration: 150ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  animation-fill-mode: both;
+	animation-duration: 150ms;
+	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+	animation-fill-mode: both;
 }
 
 .animate-out {
-  animation-duration: 100ms;
-  animation-timing-function: ease-out;
-  animation-fill-mode: both;
+	animation-duration: 100ms;
+	animation-timing-function: ease-out;
+	animation-fill-mode: both;
 }
 
 .fade-in-0 {
-  animation-name: tooltip-fade-in;
+	animation-name: tooltip-fade-in;
 }
 
 .fade-out-0 {
-  animation-name: tooltip-fade-out;
+	animation-name: tooltip-fade-out;
 }
 
 .zoom-in-95 {
-  animation-name: tooltip-zoom-in;
+	animation-name: tooltip-zoom-in;
 }
 
 .zoom-out-95 {
-  animation-name: tooltip-zoom-out;
+	animation-name: tooltip-zoom-out;
 }
 
 .slide-in-from-top-2 {
-  animation-name: tooltip-slide-in-from-top;
+	animation-name: tooltip-slide-in-from-top;
 }
 
 .slide-in-from-top-4 {
-  animation-name: tooltip-slide-in-from-top-4;
+	animation-name: tooltip-slide-in-from-top-4;
 }
 
 .slide-in-from-bottom-2 {
-  animation-name: tooltip-slide-in-from-bottom;
+	animation-name: tooltip-slide-in-from-bottom;
 }
 
 .slide-in-from-left-2 {
-  animation-name: tooltip-slide-in-from-left;
+	animation-name: tooltip-slide-in-from-left;
 }
 
 .slide-in-from-right-2 {
-  animation-name: tooltip-slide-in-from-right;
+	animation-name: tooltip-slide-in-from-right;
 }
 
 /* Suppress all transitions during interface zoom changes */
 .zoom-no-transition *,
 .zoom-no-transition *::before,
 .zoom-no-transition *::after {
-  transition: none !important;
+	transition: none !important;
 }
 
 /* Sidebar transitions only when collapsing or expanding */
 .sidebar-collapsing [data-sidebar],
 .sidebar-collapsing [data-note-list] {
-  transition: width 200ms ease-out,
-              opacity 200ms ease-out,
-              border-color 200ms ease-out;
+	transition:
+		width 200ms ease-out,
+		opacity 200ms ease-out,
+		border-color 200ms ease-out;
 }
 
 /* Suppress sidebar transition during drag resize */
 .sidebar-no-transition [data-sidebar],
 .sidebar-no-transition [data-note-list] {
-  transition: none !important;
+	transition: none !important;
 }
 
 /*
@@ -186,17 +191,17 @@ html.dark {
  * menu item due to coordinate mismatch. Briefly disabling pointer-events
  * ensures the stale pointerup is ignored.
  */
-[data-radix-menu-content][data-state="open"] {
-  pointer-events: none;
-  animation: radixMenuEnablePointer 100ms linear forwards;
+[data-radix-menu-content][data-state='open'] {
+	pointer-events: none;
+	animation: radixMenuEnablePointer 100ms linear forwards;
 }
 
 @keyframes radixMenuEnablePointer {
-  0%,
-  99% {
-    pointer-events: none;
-  }
-  100% {
-    pointer-events: auto;
-  }
+	0%,
+	99% {
+		pointer-events: none;
+	}
+	100% {
+		pointer-events: auto;
+	}
 }

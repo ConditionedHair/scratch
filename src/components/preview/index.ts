@@ -1,1 +1,1 @@
-export { default as PreviewApp } from "./PreviewApp.svelte";
+export { default as PreviewApp } from './PreviewApp.svelte'

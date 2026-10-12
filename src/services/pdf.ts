@@ -1,6 +1,6 @@
-import type { Editor } from "@tiptap/core";
-import { save } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import type { Editor } from '@tiptap/core'
+import { save } from '@tauri-apps/plugin-dialog'
+import { invoke } from '@tauri-apps/api/core'
 /**
  * Triggers the native print dialog for the editor content.
  * Users can save as PDF or print to a physical printer.
@@ -10,12 +10,12 @@ import { invoke } from "@tauri-apps/api/core";
  * @param _noteTitle - The note title (currently unused, but kept for API consistency)
  */
 export async function downloadPdf(
-  editor: Editor,
-  _noteTitle: string
+	editor: Editor,
+	_noteTitle: string
 ): Promise<void> {
-  if (!editor) throw new Error("Editor not available");
+	if (!editor) throw new Error('Editor not available')
 
-  window.print();
+	window.print()
 }
 
 /**
@@ -26,28 +26,28 @@ export async function downloadPdf(
  * @returns Promise<boolean> - Returns true if file was saved successfully, false if user cancelled
  */
 export async function downloadMarkdown(
-  markdown: string,
-  noteTitle: string
+	markdown: string,
+	noteTitle: string
 ): Promise<boolean> {
-  const sanitizedTitle = sanitizeFilename(noteTitle);
+	const sanitizedTitle = sanitizeFilename(noteTitle)
 
-  // Show native save dialog
-  const filePath = await save({
-    defaultPath: `${sanitizedTitle}.md`,
-    filters: [{ name: "Markdown", extensions: ["md"] }],
-  });
+	// Show native save dialog
+	const filePath = await save({
+		defaultPath: `${sanitizedTitle}.md`,
+		filters: [{ name: 'Markdown', extensions: ['md'] }]
+	})
 
-  if (!filePath) return false; // User cancelled
+	if (!filePath) return false // User cancelled
 
-  // Convert string to bytes and write file using Tauri command
-  const encoder = new TextEncoder();
-  const uint8Array = encoder.encode(markdown);
-  await invoke("write_file", {
-    path: filePath,
-    contents: Array.from(uint8Array)
-  });
+	// Convert string to bytes and write file using Tauri command
+	const encoder = new TextEncoder()
+	const uint8Array = encoder.encode(markdown)
+	await invoke('write_file', {
+		path: filePath,
+		contents: Array.from(uint8Array)
+	})
 
-  return true;
+	return true
 }
 
 /**
@@ -58,5 +58,5 @@ export async function downloadMarkdown(
  * @returns A filesystem-safe filename
  */
 function sanitizeFilename(name: string): string {
-  return name.replace(/[/\\?%*:|"<>]/g, "-").trim() || "note";
+	return name.replace(/[/\\?%*:|"<>]/g, '-').trim() || 'note'
 }

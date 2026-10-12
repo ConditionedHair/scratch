@@ -9,6 +9,7 @@ Welcome to the Scratch codebase. This document is written specifically for AI co
 **Scratch** is a high-performance, offline-first, cross-platform markdown note-taking instrument for macOS, Windows, and Linux.
 
 ### Key Tenets
+
 1. **Plain Markdown Files You Own**: Notes are stored directly as standard `.md` files on the local filesystem. There is no proprietary database, no lock-in, and no mandatory cloud service.
 2. **Braun / Dieter Rams Design Ethos**: The interface embodies minimalist industrial design inspired by classic Dieter Rams field instruments — matte hardware textures, subtle tactile feedback, signal yellow/orange accents, and strict elimination of visual clutter.
 3. **Seamless WYSIWYG + Transparent Raw Source**: Users write in a fluid rich-text editor (powered by TipTap/ProseMirror), but can toggle into raw Markdown source mode (`Cmd+Shift+M`) at any moment.
@@ -18,14 +19,14 @@ Welcome to the Scratch codebase. This document is written specifically for AI co
 
 ## 2. Tech Stack Architecture
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Desktop Shell** | [Tauri v2](https://tauri.app/) (Rust backend) |
-| **Frontend UI** | [Svelte 5](https://svelte.dev/) (Runes), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/) |
-| **Editor Core** | [TipTap v3](https://tiptap.dev/) / [ProseMirror](https://prosemirror.net/) |
-| **Search Engine** | [Tantivy](https://github.com/quickwit-oss/tantivy) (Embedded Rust full-text search index) |
-| **Math & Diagrams** | [KaTeX](https://katex.org/) (Block & inline math), [Mermaid](https://mermaid.js.org/) (Diagrams) |
-| **Design Components** | [Bits UI](https://bits-ui.com/) primitives, [Lucide-style custom SVG icons](./src/components/icons) |
+| Layer                 | Technologies                                                                                                                        |
+| :-------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| **Desktop Shell**     | [Tauri v2](https://tauri.app/) (Rust backend)                                                                                       |
+| **Frontend UI**       | [Svelte 5](https://svelte.dev/) (Runes), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/) |
+| **Editor Core**       | [TipTap v3](https://tiptap.dev/) / [ProseMirror](https://prosemirror.net/)                                                          |
+| **Search Engine**     | [Tantivy](https://github.com/quickwit-oss/tantivy) (Embedded Rust full-text search index)                                           |
+| **Math & Diagrams**   | [KaTeX](https://katex.org/) (Block & inline math), [Mermaid](https://mermaid.js.org/) (Diagrams)                                    |
+| **Design Components** | [Bits UI](https://bits-ui.com/) primitives, [Lucide-style custom SVG icons](./src/components/icons)                                 |
 
 ---
 
@@ -78,43 +79,49 @@ scratch/
 ## 4. Key Subsystems & Design Invariants
 
 ### 4.1 Frontmatter & Tags System
-* **File Storage**: Tags are serialized directly into the `.md` file as flow-style YAML frontmatter:
-  ```markdown
-  ---
-  tags: [Personal, Research]
-  ---
 
-  # Note Title
-  Note body...
-  ```
-* **Editor Representation**:
-  * In WYSIWYG mode, [`Frontmatter.ts`](./src/components/editor/Frontmatter.ts) defines frontmatter as an **atomic, unselectable, and non-draggable** TipTap node (`atom: true`, `selectable: false`, `draggable: false`).
-  * In CSS, `.prose pre.frontmatter` is styled with `display: none !important`. This completely hides the raw frontmatter block from the visual editor canvas, preventing accidental cursor trapping or backspace deletions.
-  * In raw Source Mode (`Cmd+Shift+M`), the raw markdown source is shown directly in the editor textarea, allowing users to view and edit YAML frontmatter.
-  * In PDF Export and Plain Text / HTML copy, frontmatter is automatically stripped. In `.md` file export, frontmatter is preserved.
-  * Tags are actively viewed, added, removed, reordered, and recolored via [`TagBar.svelte`](./src/components/editor/TagBar.svelte) at the top of the editor.
+- **File Storage**: Tags are serialized directly into the `.md` file as flow-style YAML frontmatter:
+    ```markdown
+    ---
+    tags: [Personal, Research]
+    ---
+
+    # Note Title
+
+    Note body...
+    ```
+- **Editor Representation**:
+    - In WYSIWYG mode, [`Frontmatter.ts`](./src/components/editor/Frontmatter.ts) defines frontmatter as an **atomic, unselectable, and non-draggable** TipTap node (`atom: true`, `selectable: false`, `draggable: false`).
+    - In CSS, `.prose pre.frontmatter` is styled with `display: none !important`. This completely hides the raw frontmatter block from the visual editor canvas, preventing accidental cursor trapping or backspace deletions.
+    - In raw Source Mode (`Cmd+Shift+M`), the raw markdown source is shown directly in the editor textarea, allowing users to view and edit YAML frontmatter.
+    - In PDF Export and Plain Text / HTML copy, frontmatter is automatically stripped. In `.md` file export, frontmatter is preserved.
+    - Tags are actively viewed, added, removed, reordered, and recolored via [`TagBar.svelte`](./src/components/editor/TagBar.svelte) at the top of the editor.
 
 ### 4.2 Hovering Formatting Toolbar (`FloatingFormatBar`)
-* Sits at the bottom center of the editor canvas.
-* **Compact Dropdowns**:
-  * **Headings**: A single trigger dynamically showing `H` (normal text) or `H1` / `H2` / `H3` (with accent highlight).
-  * **Lists**: A single trigger dynamically showing `ListIcon`, `ListOrderedIcon`, or `CheckSquareIcon` depending on the active block.
-* **Responsive Collapse**: Monitored via a `ResizeObserver`. When the editor container width is under 700px, secondary tools (Blockquote, Code, Block Math, Horizontal Rule, Wikilink, Image, Table picker) collapse into a sleek **More (`...`)** overflow menu. Primary tools remain always accessible.
+
+- Sits at the bottom center of the editor canvas.
+- **Compact Dropdowns**:
+    - **Headings**: A single trigger dynamically showing `H` (normal text) or `H1` / `H2` / `H3` (with accent highlight).
+    - **Lists**: A single trigger dynamically showing `ListIcon`, `ListOrderedIcon`, or `CheckSquareIcon` depending on the active block.
+- **Responsive Collapse**: Monitored via a `ResizeObserver`. When the editor container width is under 700px, secondary tools (Blockquote, Code, Block Math, Horizontal Rule, Wikilink, Image, Table picker) collapse into a sleek **More (`...`)** overflow menu. Primary tools remain always accessible.
 
 ### 4.3 Command Palette vs. Link Shortcuts
-* **`Cmd+P` (`Ctrl+P`)**: Global shortcut for **Search or Jump / Command Palette**.
-* **`Cmd+K` (`Ctrl+K`)**: Editor shortcut for **Add / Edit Hyperlink**.
-* *Agent Warning*: Never assign `Cmd+K` to the command palette, as it conflicts with universal markdown link insertion.
+
+- **`Cmd+P` (`Ctrl+P`)**: Global shortcut for **Search or Jump / Command Palette**.
+- **`Cmd+K` (`Ctrl+K`)**: Editor shortcut for **Add / Edit Hyperlink**.
+- _Agent Warning_: Never assign `Cmd+K` to the command palette, as it conflicts with universal markdown link insertion.
 
 ### 4.4 Multi-Device Sync
+
 1. **iCloud Drive (macOS only)**: Operates at the filesystem layer inside `~/Library/Mobile Documents/com~apple~CloudDocs/`. Detects `.icloud` placeholder files on demand and invokes `brctl download` via [`icloud.rs`](./src-tauri/src/icloud.rs).
 2. **Git Sync**: Built-in git repo detection, stage, commit, and remote push/pull via [`git.rs`](./src-tauri/src/git.rs).
 
 ### 4.5 Svelte 5 Runes State Management
-* [`notes.svelte.ts`](./src/context/notes.svelte.ts) encapsulates note state using Svelte 5 runes:
-  1. Reactive states (`notesState.notes`, `notesState.currentNote`, `notesState.selectedNoteId`) are declared with `$state`.
-  2. Actions and helpers (`saveNote`, `deleteNote`, `selectNote`, `setTags`) are methods on the singleton `notesState` instance.
-* *Agent Rule*: Import `notesState` directly from `./context/notes.svelte` in Svelte components.
+
+- [`notes.svelte.ts`](./src/context/notes.svelte.ts) encapsulates note state using Svelte 5 runes:
+    1. Reactive states (`notesState.notes`, `notesState.currentNote`, `notesState.selectedNoteId`) are declared with `$state`.
+    2. Actions and helpers (`saveNote`, `deleteNote`, `selectNote`, `setTags`) are methods on the singleton `notesState` instance.
+- _Agent Rule_: Import `notesState` directly from `./context/notes.svelte` in Svelte components.
 
 ---
 
@@ -146,10 +153,10 @@ npm run tauri build
 2. **No Dead Code**: Never commit commented-out code blocks or unaddressed `TODO` comments.
 3. **Preserve Documentation Integrity**: Retain all docstrings and comments in files you touch.
 4. **Fine-Grained Reactivity**:
-   - Leverage Svelte 5 `$derived` and `$state` rather than redundant manual subscribers.
-   - Use key blocks `{#each items as item (item.id)}` for optimized list rendering.
+    - Leverage Svelte 5 `$derived` and `$state` rather than redundant manual subscribers.
+    - Use key blocks `{#each items as item (item.id)}` for optimized list rendering.
 5. **Debounced Operations**: Debounce user-triggered writes and search queries:
-   - Auto-save: ~300ms
-   - Tantivy search: ~150ms
-   - Filesystem watcher: ~500ms
+    - Auto-save: ~300ms
+    - Tantivy search: ~150ms
+    - Filesystem watcher: ~500ms
 6. **Always Verify**: Run `npm run build` before concluding any turn modifying frontend code.

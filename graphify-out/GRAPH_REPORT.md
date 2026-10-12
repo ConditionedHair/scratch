@@ -1,20 +1,24 @@
-# Graph Report - scratch  (2026-08-06)
+# Graph Report - scratch (2026-08-06)
 
 ## Corpus Check
+
 - 81 files · ~134,120 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
+
 - 868 nodes · 2067 edges · 87 communities (41 shown, 46 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
+
 - Built from commit: `312c2f98`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+
 - lib.rs
 - ui/index.tsx
 - ThemeContext.tsx
@@ -100,6 +104,7 @@
 - FolderTreeView
 
 ## God Nodes (most connected - your core abstractions)
+
 1. `AppState` - 55 edges
 2. `cn()` - 25 edges
 3. `useNotes()` - 19 edges
@@ -112,184 +117,227 @@
 10. `extract_title()` - 14 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy)` --semantically_similar_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED] [semantically similar]
+
+- `Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy)` --semantically_similar_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED] [semantically similar]
   README.md → CLAUDE.md
-- `Dev Commands (npm run dev/build/tauri dev/tauri build)` --semantically_similar_to--> `Installation Instructions (Homebrew, manual download, from source)`  [INFERRED] [semantically similar]
+- `Dev Commands (npm run dev/build/tauri dev/tauri build)` --semantically_similar_to--> `Installation Instructions (Homebrew, manual download, from source)` [INFERRED] [semantically similar]
   CLAUDE.md → README.md
-- `Serena Project Config (scratch, typescript language server)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
+- `Serena Project Config (scratch, typescript language server)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
   .serena/project.yml → CLAUDE.md
-- `index.html App Entry Point (mounts #root, loads /src/main.tsx)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
+- `index.html App Entry Point (mounts #root, loads /src/main.tsx)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
   index.html → CLAUDE.md
-- `Features List` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
+- `Features List` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
   README.md → CLAUDE.md
 
 ## Import Cycles
+
 - 4-file cycle: `src/App.tsx -> src/components/settings/index.tsx -> src/components/settings/SettingsPage.tsx -> src/components/settings/AboutSettingsSection.tsx -> src/App.tsx`
 
 ## Hyperedges (group relationships)
+
 - **CI Validation Flow (frontend build + cargo check/clippy)** — github_workflows_ci_workflow, github_workflows_ci_checkjob, claude_ci_section [INFERRED 0.85]
 - **Release Process (tag push -> multi-platform build -> deb repack -> draft release)** — github_workflows_release_workflow, github_workflows_release_buildandreleasejob, github_workflows_release_renamedebpackagejob, claude_releasing_steps [INFERRED 0.85]
 
 ## Communities (87 total, 46 thin omitted)
 
 ### Community 0 - "lib.rs"
+
 Cohesion: 0.06
 Nodes (139): AppHandle, Arc, Default, DirEntry, Field, GitResult, GitStatus, HashMap (+131 more)
 
 ### Community 1 - "ui/index.tsx"
+
 Cohesion: 0.05
 Nodes (57): SuggestionListInner(), SortableTagPillProps, TagBar(), TagBarProps, ChevronDownIcon(), CopyIcon(), PlusIcon(), SwatchIcon() (+49 more)
 
 ### Community 2 - "ThemeContext.tsx"
+
 Cohesion: 0.08
 Nodes (39): EditorWidthHandles(), EditorWidthHandlesProps, PRESET_PX, MinusIcon(), applyWidthVar(), SidebarResizeHandle(), AppearanceSettingsSection(), boldWeightOptions (+31 more)
 
 ### Community 3 - "tauri.conf.json"
+
 Cohesion: 0.05
 Nodes (40): $HOME/**, https://github.com/erictli/scratch/releases/latest/download/latest.json, icons/128x128@2x.png, icons/128x128.png, icons/32x32.png, icons/icon.icns, icons/icon.ico, app (+32 more)
 
 ### Community 4 - "Sidebar.tsx"
+
 Cohesion: 0.15
 Nodes (12): AddNoteIcon(), FolderPlusIcon(), GitBranchDeletedIcon(), GitBranchIcon(), GitCommitIcon(), NoteIcon(), SearchIcon(), SearchOffIcon() (+4 more)
 
 ### Community 5 - "devDependencies"
+
 Cohesion: 0.07
 Nodes (28): devDependencies, tailwindcss, @tailwindcss/typography, @tailwindcss/vite, @tauri-apps/cli, @types/react, @types/react-dom, typescript (+20 more)
 
 ### Community 6 - "icons/index.tsx"
+
 Cohesion: 0.08
 Nodes (23): SLASH_COMMANDS, SlashCommand, slashCommandPluginKey, BlockMathIcon(), BracketsIcon(), CheckSquareIcon(), CircleCheckIcon(), CodeIcon() (+15 more)
 
 ### Community 7 - "git.rs"
+
 Cohesion: 0.26
 Nodes (24): add_remote(), commit_all(), fetch(), get_remote_url(), get_status(), git_cmd(), git_init(), GitResult (+16 more)
 
 ### Community 8 - "compilerOptions"
+
 Cohesion: 0.09
 Nodes (22): DOM, DOM.Iterable, ES2020, src, compilerOptions, allowImportingTsExtensions, isolatedModules, jsx (+14 more)
 
 ### Community 9 - "LinkEditor.tsx"
+
 Cohesion: 0.24
 Nodes (8): BlockMathEditor(), BlockMathEditorProps, LinkEditor(), LinkEditorProps, CheckIcon(), LinkOffIcon(), XIcon(), IconButton
 
 ### Community 10 - "NoteMetadata"
+
 Cohesion: 0.27
 Nodes (9): Wikilink, WikilinkStorage, WikilinkSuggestion, wikilinkSuggestionPluginKey, WikilinkSuggestionList, WikilinkSuggestionListProps, WikilinkSuggestionListRef, FileItemProps (+1 more)
 
 ### Community 11 - "permissions"
+
 Cohesion: 0.10
 Nodes (20): clipboard-manager:allow-write-text, core:default, core:menu:default, core:webview:allow-print, core:window:allow-close, core:window:allow-set-focus, core:window:allow-start-dragging, dialog:allow-open (+12 more)
 
 ### Community 12 - "AiResponseToast.tsx"
+
 Cohesion: 0.26
 Nodes (11): AiEditModal(), AiEditModalProps, AiResponseToast(), AiResponseToastProps, parseInlineMarkdown(), parseMarkdown(), ClaudeIcon(), CodexIcon() (+3 more)
 
 ### Community 13 - "notes.ts"
+
 Cohesion: 0.15
 Nodes (11): CommandPalette(), Sidebar(), createFolder(), createNote(), deleteNote(), duplicateNote(), moveFolder(), moveNote() (+3 more)
 
 ### Community 14 - "Editor.tsx"
+
 Cohesion: 0.09
 Nodes (27): blockIndexToPos(), Editor(), EditorProps, focusAndSelectTitle(), FormatBarProps, formatDateTime(), getMarkdownBlockOffsets(), GridPickerProps (+19 more)
 
 ### Community 15 - "SettingsPage.tsx"
+
 Cohesion: 0.22
 Nodes (8): ArrowLeftIcon(), InfoIcon(), IntegrationsIcon(), SettingsPage(), SettingsPageProps, SettingsTab, tabs, isMac
 
 ### Community 16 - "platform.ts"
+
 Cohesion: 0.12
 Nodes (11): settingsCategories, ShortcutsSettingsSection(), KeyboardShortcutsModal(), KeyboardShortcutsModalProps, modalCategories, alt, mod, shift (+3 more)
 
 ### Community 17 - "ToolsSettingsSection.tsx"
+
 Cohesion: 0.16
 Nodes (8): AI_PROVIDER_INFO, CliAction, cliInitialState, cliReducer(), CliState, ToolsSettingsSection(), AI_PROVIDER_ORDER, CliStatus
 
 ### Community 18 - "GeneralSettingsSection.tsx"
+
 Cohesion: 0.08
 Nodes (14): CloudPlusIcon(), ExternalLinkIcon(), FolderIcon(), FoldersIcon(), formatRemoteUrl(), GeneralSettingsSection(), getRemoteWebUrl(), GitContext (+6 more)
 
 ### Community 20 - "dependencies"
+
 Cohesion: 0.18
 Nodes (11): beautiful-mermaid, clsx, @dnd-kit/utilities, dependencies, beautiful-mermaid, clsx, @dnd-kit/utilities, react-dom (+3 more)
 
 ### Community 21 - "NoteList.tsx"
+
 Cohesion: 0.15
 Nodes (12): AppContent(), PinIcon(), TrashIcon(), NoteItem, NoteItemProps, NoteItemWithMenu, NoteItemWithMenuProps, NoteList() (+4 more)
 
 ### Community 22 - "App.tsx"
+
 Cohesion: 0.21
 Nodes (10): App(), getWindowMode(), showUpdateToast(), ViewState, GithubIcon(), RefreshCwIcon(), SpinnerIcon(), FolderPicker() (+2 more)
 
 ### Community 23 - "CodeBlockView.tsx"
+
 Cohesion: 0.24
 Nodes (7): CodeBlockView(), lowlight, SUPPORTED_LANGUAGES, MermaidRenderer(), MermaidRendererProps, EyeIcon(), PencilIcon()
 
 ### Community 24 - "compilerOptions"
+
 Cohesion: 0.22
 Nodes (8): vite.config.ts, compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, include
 
 ### Community 25 - "FolderTreeView.tsx"
+
 Cohesion: 0.26
 Nodes (11): FileItem, FolderItemComponent, FolderItemProps, FolderTreeViewProps, buildFolderTree(), countNotesInFolder(), FolderTreeData, getVisibleItems() (+3 more)
 
 ### Community 26 - "SuggestionList.tsx"
+
 Cohesion: 0.31
 Nodes (7): SlashCommandItem, SlashCommandList, SlashCommandListProps, SlashCommandListRef, SuggestionList, SuggestionListProps, SuggestionListRef
 
 ### Community 27 - "Scratch App Screenshot"
+
 Cohesion: 0.43
 Nodes (7): Scratch App Screenshot, Interactive Checklist (Task List), Editor Formatting Toolbar, Embedded Mermaid Diagram Rendering, Notes Sidebar UI, "Project Catnip" Sample Note, "Files changed" Version Control Indicator
 
 ### Community 29 - "SearchToolbar.tsx"
+
 Cohesion: 0.25
 Nodes (7): SearchToolbar(), SearchToolbarProps, ArrowDownIcon(), ArrowUpIcon(), ChevronRightIcon(), ReplaceAllIcon(), ReplaceIcon()
 
 ### Community 30 - "Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)"
+
 Cohesion: 0.40
 Nodes (5): Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy), index.html App Entry Point (mounts #root, loads /src/main.tsx), Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy), Features List, Serena Project Config (scratch, typescript language server)
 
 ### Community 31 - "Key Patterns Section"
+
 Cohesion: 0.50
 Nodes (4): Key Patterns Section, NotesContext Dual Context Pattern (data/actions separated for performance), Settings Storage Locations (app config.json + per-folder .scratch/settings.json), Tauri v2 Capabilities Permissions (src-tauri/capabilities/default.json)
 
 ### Community 32 - "Release Workflow"
+
 Cohesion: 0.67
 Nodes (4): Releasing Steps, Build and Release Job (macOS/Ubuntu/Windows matrix via tauri-action), Rename Deb Package Job (repacks 'scratch' deb as 'scratch-notes' to avoid Ubuntu name collision, issue #119), Release Workflow
 
 ### Community 33 - "Folders Dark Illustration (Cat holding folder)"
+
 Cohesion: 0.50
 Nodes (4): Dark Theme / Dark Mode, Empty-State Illustration (UI Design Pattern), Folders Dark Illustration (Cat holding folder), Scratch (note-taking app)
 
 ### Community 34 - "NotesContext.tsx"
+
 Cohesion: 0.32
 Nodes (7): NotesActionsContext, NotesActionsContextValue, NotesDataContext, NotesDataContextValue, NotesProvider(), SearchResult, Note
 
 ### Community 35 - "CI Workflow"
+
 Cohesion: 0.67
 Nodes (3): CI Description Section, Check Job (build + cargo check/clippy), CI Workflow
 
 ### Community 36 - "Note Dark Illustration (Cat Writing in Notepad)"
+
 Cohesion: 0.67
 Nodes (3): Note Dark Illustration (Cat Writing in Notepad), Note Light Illustration (light-mode counterpart), Scratch (App)
 
 ### Community 81 - "CommandPalette.tsx"
+
 Cohesion: 0.19
 Nodes (11): Command, CommandPaletteProps, DownloadIcon(), KeyboardIcon(), MarkdownIcon(), ZenIcon(), CommandItem(), plainTextFromMarkdown() (+3 more)
 
 ### Community 86 - "FolderTreeView"
+
 Cohesion: 0.40
 Nodes (5): FolderTreeView(), loadCollapsedFolders(), saveCollapsedFolders(), deleteFolder(), renameFolder()
 
 ## Ambiguous Edges - Review These
-- `Notes Sidebar UI` → `"Files changed" Version Control Indicator`  [AMBIGUOUS]
+
+- `Notes Sidebar UI` → `"Files changed" Version Control Indicator` [AMBIGUOUS]
   docs/screenshot.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
+
 - **225 isolated node(s):** `SortableTagPillProps`, `TagBarProps`, `Command`, `CommandPaletteProps`, `katexMacros` (+220 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **46 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
+
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Notes Sidebar UI` and `"Files changed" Version Control Indicator`?**

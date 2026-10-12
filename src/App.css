@@ -1,14 +1,14 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
 /* Master Design Tokens generated from src/tokens/tokens.ts */
-@import "./styles/tokens.generated.css";
+@import './styles/tokens.generated.css';
 
 /* Modular styles */
-@import "./styles/editor.css";
-@import "./styles/syntax.css";
-@import "./styles/animations.css";
-@import "./styles/print.css";
+@import './styles/editor.css';
+@import './styles/syntax.css';
+@import './styles/animations.css';
+@import './styles/print.css';
 
 /* Use class-based dark mode instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -18,89 +18,102 @@ html,
 body,
 #app,
 #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	overscroll-behavior: none;
 }
 
 /* Windows keeps its native title bar (no in-app titlebar spacer); a top border
    separates the app content from the themed caption. */
 .platform-windows #app,
 .platform-windows #root {
-  border-top: 1px solid var(--color-border-default);
+	border-top: 1px solid var(--color-border-default);
 }
 
 /* macOS transparent title bar support */
 .titlebar-drag-region {
-  -webkit-app-region: drag;
+	-webkit-app-region: drag;
 }
 
 .titlebar-no-drag {
-  -webkit-app-region: no-drag;
+	-webkit-app-region: no-drag;
 }
 
 body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.012em;
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	letter-spacing: -0.012em;
 }
 
 /* Text and image selection highlight */
 ::selection {
-  background-color: var(--color-accent-selection);
+	background-color: var(--color-accent-selection);
 }
 
 ::-moz-selection {
-  background-color: var(--color-accent-selection);
+	background-color: var(--color-accent-selection);
 }
 
 /* Braun Precision Scrollbars (Dieter Rams "Weniger, aber besser") */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--color-border-default) 70%, var(--color-content-muted) 30%) transparent;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(
+			in srgb,
+			var(--color-border-default) 70%,
+			var(--color-content-muted) 30%
+		)
+		transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+	width: 7px;
+	height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+	background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-border-default) 75%, var(--color-content-muted) 25%);
-  border-radius: 9999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  transition: background-color 0.15s ease;
+	background: color-mix(
+		in srgb,
+		var(--color-border-default) 75%,
+		var(--color-content-muted) 25%
+	);
+	border-radius: 9999px;
+	border: 2px solid transparent;
+	background-clip: padding-box;
+	transition: background-color 0.15s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--color-content-muted) 65%, var(--color-border-default) 35%);
-  border: 1px solid transparent;
-  background-clip: padding-box;
+	background: color-mix(
+		in srgb,
+		var(--color-content-muted) 65%,
+		var(--color-border-default) 35%
+	);
+	border: 1px solid transparent;
+	background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-corner {
-  background: transparent;
+	background: transparent;
 }
 
 /* Hide scrollbar while allowing scroll */
 .scrollbar-none {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE/Edge */
 }
 
 .scrollbar-none::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+	display: none; /* Chrome, Safari, Opera */
 }
 
 /* Keep layout width stable when vertical scrollbar appears */
 .scrollbar-gutter-stable {
-  scrollbar-gutter: stable;
+	scrollbar-gutter: stable;
 }

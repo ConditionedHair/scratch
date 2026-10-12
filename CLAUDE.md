@@ -25,17 +25,17 @@ Runs on every push to `main` and on PRs. Validates frontend build (`tsc` + Vite)
 - **Tauri IPC**: All backend operations go through Tauri commands in `src-tauri/src/lib.rs`. The frontend calls them via `invoke()` from `@tauri-apps/api/core`.
 - **Dual NotesContext**: `NotesContext.tsx` uses a split context pattern (`NotesStateContext` and `NotesActionsContext`) to prevent unnecessary re-renders when note content updates.
 - **Frontmatter & Tags**:
-  - Tags are serialized in Markdown files as flow YAML frontmatter (`--- \n tags: [...] \n ---`).
-  - In TipTap, `Frontmatter.ts` is an atomic, unselectable node (`atom: true`, `selectable: false`, `draggable: false`).
-  - `.prose pre.frontmatter` is styled `display: none !important` to hide frontmatter from the WYSIWYG editor canvas without cursor or selection issues.
-  - In raw Source Mode (`Cmd+Shift+M`), frontmatter is visible and directly editable in the textarea.
-  - Tags are visually managed in `TagBar.tsx` with drag-to-reorder, color swatch palette, and autocomplete.
+    - Tags are serialized in Markdown files as flow YAML frontmatter (`--- \n tags: [...] \n ---`).
+    - In TipTap, `Frontmatter.ts` is an atomic, unselectable node (`atom: true`, `selectable: false`, `draggable: false`).
+    - `.prose pre.frontmatter` is styled `display: none !important` to hide frontmatter from the WYSIWYG editor canvas without cursor or selection issues.
+    - In raw Source Mode (`Cmd+Shift+M`), frontmatter is visible and directly editable in the textarea.
+    - Tags are visually managed in `TagBar.tsx` with drag-to-reorder, color swatch palette, and autocomplete.
 - **Floating Toolbar**: `FloatingFormatBar` groups Headings (H1/H2/H3) and Lists into compact dropdowns. When editor width is < 700px, secondary tools collapse into an overflow `...` menu.
 - **Keyboard Shortcuts**:
-  - `Cmd+P` (`Ctrl+P`): Global Command Palette ("Search or jump...").
-  - `Cmd+K` (`Ctrl+K`): Insert / edit hyperlink.
-  - `Cmd+Shift+M`: Toggle raw Markdown source mode.
-  - `Cmd+Shift+Enter`: Toggle focus mode.
+    - `Cmd+P` (`Ctrl+P`): Global Command Palette ("Search or jump...").
+    - `Cmd+K` (`Ctrl+K`): Insert / edit hyperlink.
+    - `Cmd+Shift+M`: Toggle raw Markdown source mode.
+    - `Cmd+Shift+Enter`: Toggle focus mode.
 - **Settings Storage**: App config lives at `{APP_DATA}/config.json`; per-folder settings live at `{NOTES_FOLDER}/.scratch/settings.json`.
 - **Permissions**: Tauri v2 permissions go in `src-tauri/capabilities/default.json`.
 - **iCloud Drive Sync**: macOS only (`src-tauri/src/icloud.rs`). Filesystem-level folder sync with on-demand materialization of `.icloud` placeholders via `brctl download`.

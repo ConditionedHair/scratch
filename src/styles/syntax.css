@@ -4,71 +4,71 @@
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-built_in {
-  color: var(--color-syntax-keyword);
+	color: var(--color-syntax-keyword);
 }
 
 .hljs-string,
 .hljs-doctag,
 .hljs-regexp {
-  color: var(--color-syntax-string);
+	color: var(--color-syntax-string);
 }
 
 .hljs-number,
 .hljs-literal {
-  color: var(--color-syntax-number);
+	color: var(--color-syntax-number);
 }
 
 .hljs-comment {
-  color: var(--color-syntax-comment);
-  font-style: italic;
+	color: var(--color-syntax-comment);
+	font-style: italic;
 }
 
 .hljs-function,
 .hljs-title.function_ {
-  color: var(--color-syntax-function);
+	color: var(--color-syntax-function);
 }
 
 .hljs-variable,
 .hljs-template-variable,
 .hljs-tag {
-  color: var(--color-syntax-variable);
+	color: var(--color-syntax-variable);
 }
 
 .hljs-type,
 .hljs-title.class_ {
-  color: var(--color-syntax-type);
+	color: var(--color-syntax-type);
 }
 
 .hljs-meta,
 .hljs-symbol {
-  color: var(--color-syntax-operator);
+	color: var(--color-syntax-operator);
 }
 
 .hljs-attr,
 .hljs-attribute,
 .hljs-params {
-  color: var(--color-syntax-attr);
+	color: var(--color-syntax-attr);
 }
 
 .hljs-section,
 .hljs-name {
-  color: var(--color-syntax-variable);
+	color: var(--color-syntax-variable);
 }
 
 .hljs-deletion {
-  color: var(--color-syntax-variable);
-  background-color: rgba(224, 108, 117, 0.1);
+	color: var(--color-syntax-variable);
+	background-color: rgba(224, 108, 117, 0.1);
 }
 
 .hljs-addition {
-  color: var(--color-syntax-string);
-  background-color: rgba(152, 195, 121, 0.1);
+	color: var(--color-syntax-string);
+	background-color: rgba(152, 195, 121, 0.1);
 }
 
 .hljs-emphasis {
-  font-style: italic;
+	font-style: italic;
 }
 
 .hljs-strong {
-  font-weight: var(--editor-bold-weight);
+	font-weight: var(--editor-bold-weight);
 }

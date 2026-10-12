@@ -1,26 +1,36 @@
 <script lang="ts">
-  interface Props {
-    class?: string;
-    className?: string;
-    [key: string]: any;
-  }
-  let { class: klass = "w-4.5 h-4.5", className = klass, ...restProps }: Props = $props();
-  let finalClass = $derived(className || klass);
+	interface Props {
+		class?: string
+		className?: string
+		[key: string]: any
+	}
+	let {
+		class: klass = 'w-4.5 h-4.5',
+		className = klass,
+		...restProps
+	}: Props = $props()
+	let finalClass = $derived(className || klass)
 </script>
 
-<svg class={finalClass}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-     {...restProps}>
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-      <path d="M13 5h8"></path>
-      <path d="M13 9h5"></path>
-      <path d="M13 15h8"></path>
-      <path d="M13 19h5"></path>
-      <path d="M3 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"></path>
-      <path d="M3 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"></path>
-    </svg>
+<svg
+	class={finalClass}
+	fill="none"
+	stroke="currentColor"
+	viewBox="0 0 24 24"
+	stroke-width="2"
+	stroke-linecap="round"
+	stroke-linejoin="round"
+	{...restProps}
+>
+	<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+	<path d="M13 5h8"></path>
+	<path d="M13 9h5"></path>
+	<path d="M13 15h8"></path>
+	<path d="M13 19h5"></path>
+	<path
+		d="M3 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"
+	></path>
+	<path
+		d="M3 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"
+	></path>
+</svg>

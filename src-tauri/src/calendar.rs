@@ -201,7 +201,7 @@ impl CalendarManager {
         {
             let mut cache = self.cache.lock().await;
             *cache = CalendarCacheData::default();
-            self.persist_cache(&*cache)?;
+            self.persist_cache(&cache)?;
         }
         Ok(())
     }
@@ -213,7 +213,7 @@ impl CalendarManager {
                 c.selected = selected;
             }
         }
-        self.persist_cache(&*cache)?;
+        self.persist_cache(&cache)?;
         drop(cache);
         Ok(self.get_state().await)
     }
@@ -509,7 +509,7 @@ impl CalendarManager {
         {
             let mut cache = self.cache.lock().await;
             *cache = new_cache.clone();
-            self.persist_cache(&*cache)?;
+            self.persist_cache(&cache)?;
         }
 
         Ok(new_cache)
@@ -686,7 +686,7 @@ impl CalendarManager {
         {
             let mut cache = self.cache.lock().await;
             cache.events.retain(|e| e.id != event_id);
-            self.persist_cache(&*cache)?;
+            self.persist_cache(&cache)?;
         }
 
         Ok(())

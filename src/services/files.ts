@@ -18,10 +18,6 @@ export async function saveFileDirect(
   return invoke("save_file_direct", { path, content });
 }
 
-export async function openFilePreview(path: string): Promise<void> {
-  return invoke("open_file_preview", { path });
-}
-
 export interface ImportedNote {
   id: string;
   title: string;

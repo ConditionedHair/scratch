@@ -68,10 +68,3 @@ export interface Settings {
   customColorsDark?: CustomColors;
   tagColors?: Record<string, string>;
 }
-
-export interface FolderNode {
-  name: string;
-  path: string;
-  children: FolderNode[];
-  notes: NoteMetadata[];
-}

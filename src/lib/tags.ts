@@ -65,15 +65,6 @@ export function assignTagColor(
   };
 }
 
-export function tagPillStyle(hex: string): Record<string, string> {
-  const cleanHex = hex.replace("#", "").slice(0, 6);
-  return {
-    backgroundColor: `#${cleanHex}20`,
-    borderColor: `#${cleanHex}40`,
-    color: `#${cleanHex}`,
-  };
-}
-
 export function tagPillCss(hex: string): string {
   const cleanHex = hex.replace("#", "").slice(0, 6);
   return `background-color: #${cleanHex}20; border-color: #${cleanHex}40; color: #${cleanHex};`;

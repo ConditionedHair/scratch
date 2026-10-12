@@ -515,8 +515,3 @@ export class ThemeState {
 }
 
 export const themeState = new ThemeState();
-
-// Convenience hook-like function for backward compatibility
-export function useTheme() {
-  return themeState;
-}

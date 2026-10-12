@@ -29,10 +29,6 @@ export async function createNote(targetFolder?: string): Promise<Note> {
   return invoke("create_note", { targetFolder: targetFolder ?? null });
 }
 
-export async function listFolders(): Promise<string[]> {
-  return invoke("list_folders");
-}
-
 export async function createFolder(path: string): Promise<void> {
   return invoke("create_folder", { path });
 }
@@ -70,16 +66,6 @@ export async function getSettings(): Promise<Settings> {
 
 export async function updateSettings(settings: Settings): Promise<void> {
   return invoke("update_settings", { newSettings: settings });
-}
-
-export async function updateGitEnabled(
-  enabled: boolean,
-  expectedFolder: string,
-): Promise<void> {
-  return invoke("update_git_enabled", {
-    enabled,
-    expectedFolder,
-  });
 }
 
 export interface SearchResult {

@@ -514,12 +514,3 @@ export class NotesState {
 }
 
 export const notesState = new NotesState();
-
-// Convenience functions for backward compatibility
-export function useNotes() {
-  return notesState;
-}
-
-export function useNotesActions() {
-  return notesState;
-}

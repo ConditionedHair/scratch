@@ -352,7 +352,3 @@ export class GitState {
 }
 
 export const gitState = new GitState();
-
-export function useGit() {
-  return gitState;
-}

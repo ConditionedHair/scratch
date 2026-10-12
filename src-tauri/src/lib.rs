@@ -886,8 +886,8 @@ async fn toggle_maximize_clean(window: tauri::WebviewWindow) -> Result<bool, Str
             },
         );
 
-        let _ = window.set_position(tauri::Position::Physical(work_area.position.clone()));
-        let _ = window.set_size(tauri::Size::Physical(work_area.size.clone()));
+        let _ = window.set_position(tauri::Position::Physical(work_area.position));
+        let _ = window.set_size(tauri::Size::Physical(work_area.size));
         Ok(true)
     }
 }

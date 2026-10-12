@@ -21,11 +21,11 @@ Welcome to the Scratch codebase. This document is written specifically for AI co
 | Layer | Technologies |
 | :--- | :--- |
 | **Desktop Shell** | [Tauri v2](https://tauri.app/) (Rust backend) |
-| **Frontend UI** | [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/) |
+| **Frontend UI** | [Svelte 5](https://svelte.dev/) (Runes), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/) |
 | **Editor Core** | [TipTap v3](https://tiptap.dev/) / [ProseMirror](https://prosemirror.net/) |
 | **Search Engine** | [Tantivy](https://github.com/quickwit-oss/tantivy) (Embedded Rust full-text search index) |
 | **Math & Diagrams** | [KaTeX](https://katex.org/) (Block & inline math), [Mermaid](https://mermaid.js.org/) (Diagrams) |
-| **Design Components** | [Radix UI](https://www.radix-ui.com/) primitives, [Lucide-style custom SVG icons](./src/components/icons) |
+| **Design Components** | [Bits UI](https://bits-ui.com/) primitives, [Lucide-style custom SVG icons](./src/components/icons) |
 
 ---
 
@@ -33,25 +33,27 @@ Welcome to the Scratch codebase. This document is written specifically for AI co
 
 ```
 scratch/
-├── src/                          # Frontend React/TypeScript application
+├── src/                          # Frontend Svelte 5/TypeScript application
 │   ├── components/
 │   │   ├── ai/                   # AI pairing modal (Claude, Codex, Ollama)
 │   │   ├── command-palette/      # Global search & command palette (`Cmd+P`)
 │   │   ├── editor/               # TipTap editor & formatting toolbars
-│   │   │   ├── Editor.tsx        # Main editor view & floating toolbar
+│   │   │   ├── Editor.svelte     # Main editor view & floating toolbar
 │   │   │   ├── Frontmatter.ts    # Atomic frontmatter TipTap extension
-│   │   │   ├── TagBar.tsx        # Drag-and-drop tag management bar
-│   │   │   ├── CodeBlockView.tsx # Syntax highlighted code blocks
+│   │   │   ├── TagBar.svelte     # Drag-and-drop tag management bar
+│   │   │   ├── CodeBlockView.svelte # Syntax highlighted code blocks
 │   │   │   ├── MathExtensions.ts # KaTeX block math extensions
-│   │   │   └── SlashCommand.tsx  # Quick insert `/` command menu
+│   │   │   └── SlashCommand.ts   # Quick insert `/` command menu
 │   │   ├── layout/               # BraunHeader, BraunLibrary, Sidebar
 │   │   ├── notes/                # Note list items, folders, tag list
 │   │   ├── settings/             # Settings sections (General, Appearance, Tools)
 │   │   └── ui/                   # Reusable buttons, dialogs, dropdowns, tooltips
 │   ├── context/
-│   │   ├── NotesContext.tsx      # Dual-context state management for notes
-│   │   ├── ThemeContext.tsx      # Braun themes, typography, custom colors
-│   │   └── GitContext.tsx        # Git sync status & commit actions
+│   │   ├── notes.svelte.ts       # Svelte 5 state management for notes
+│   │   ├── theme.svelte.ts       # Braun themes, typography, custom colors
+│   │   ├── git.svelte.ts         # Git sync status & commit actions
+│   │   ├── calendar.svelte.ts    # Google Calendar integration state
+│   │   └── mail.svelte.ts        # Gmail integration state
 │   ├── lib/
 │   │   ├── markdownSpacing.ts    # Markdown AST spacing normalization
 │   │   ├── plainText.ts          # Frontmatter-stripping plain text parser
@@ -90,7 +92,7 @@ scratch/
   * In CSS, `.prose pre.frontmatter` is styled with `display: none !important`. This completely hides the raw frontmatter block from the visual editor canvas, preventing accidental cursor trapping or backspace deletions.
   * In raw Source Mode (`Cmd+Shift+M`), the raw markdown source is shown directly in the editor textarea, allowing users to view and edit YAML frontmatter.
   * In PDF Export and Plain Text / HTML copy, frontmatter is automatically stripped. In `.md` file export, frontmatter is preserved.
-  * Tags are actively viewed, added, removed, reordered, and recolored via [`TagBar.tsx`](./src/components/editor/TagBar.tsx) at the top of the editor.
+  * Tags are actively viewed, added, removed, reordered, and recolored via [`TagBar.svelte`](./src/components/editor/TagBar.svelte) at the top of the editor.
 
 ### 4.2 Hovering Formatting Toolbar (`FloatingFormatBar`)
 * Sits at the bottom center of the editor canvas.
@@ -108,11 +110,11 @@ scratch/
 1. **iCloud Drive (macOS only)**: Operates at the filesystem layer inside `~/Library/Mobile Documents/com~apple~CloudDocs/`. Detects `.icloud` placeholder files on demand and invokes `brctl download` via [`icloud.rs`](./src-tauri/src/icloud.rs).
 2. **Git Sync**: Built-in git repo detection, stage, commit, and remote push/pull via [`git.rs`](./src-tauri/src/git.rs).
 
-### 4.5 Dual Notes Context Pattern
-* [`NotesContext.tsx`](./src/context/NotesContext.tsx) divides note state into two separate React contexts:
-  1. `NotesStateContext`: Contains reactive states (`notes`, `currentNote`, `selectedNoteId`, `folders`).
-  2. `NotesActionsContext`: Contains stable action callbacks (`saveNote`, `deleteNote`, `selectNote`, `setTags`).
-* *Agent Rule*: When creating or refactoring components that only dispatch actions (like buttons or menus), consume `useNotesActions()` rather than `useNotes()` to prevent unnecessary re-renders when note content updates.
+### 4.5 Svelte 5 Runes State Management
+* [`notes.svelte.ts`](./src/context/notes.svelte.ts) encapsulates note state using Svelte 5 runes:
+  1. Reactive states (`notesState.notes`, `notesState.currentNote`, `notesState.selectedNoteId`) are declared with `$state`.
+  2. Actions and helpers (`saveNote`, `deleteNote`, `selectNote`, `setTags`) are methods on the singleton `notesState` instance.
+* *Agent Rule*: Import `notesState` directly from `./context/notes.svelte` in Svelte components.
 
 ---
 
@@ -143,9 +145,9 @@ npm run tauri build
 1. **Strict TypeScript & Zero `any`**: All new types, props, and IPC return types must be explicitly defined in [`src/types/`](./src/types).
 2. **No Dead Code**: Never commit commented-out code blocks or unaddressed `TODO` comments.
 3. **Preserve Documentation Integrity**: Retain all docstrings and comments in files you touch.
-4. **Performance Memoization**:
-   - Wrap expensive list items (like note cards and folder trees) in `React.memo`.
-   - Wrap callbacks passed to child components in `useCallback`.
+4. **Fine-Grained Reactivity**:
+   - Leverage Svelte 5 `$derived` and `$state` rather than redundant manual subscribers.
+   - Use key blocks `{#each items as item (item.id)}` for optimized list rendering.
 5. **Debounced Operations**: Debounce user-triggered writes and search queries:
    - Auto-save: ~300ms
    - Tantivy search: ~150ms

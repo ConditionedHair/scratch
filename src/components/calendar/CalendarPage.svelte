@@ -3,7 +3,6 @@
   import { invoke } from "@tauri-apps/api/core";
   import { getCurrentWindow } from "@tauri-apps/api/window";
   import { isMac } from "../../lib/platform";
-  import { DropdownMenu } from "bits-ui";
   import {
     calendarState,
     formatEventDateKey,
@@ -12,7 +11,6 @@
   import type { CalendarEvent } from "../../types/calendar";
   import {
     ArrowLeftIcon,
-    CalendarIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
     PlusIcon,
@@ -21,21 +19,21 @@
     ClockIcon,
     MapPinIcon,
     UsersIcon,
-    SwatchIcon,
-    CheckIcon,
   } from "../icons";
+  import CalendarNavigation from "./CalendarNavigation.svelte";
+  import CalendarAgenda from "./CalendarAgenda.svelte";
   import EventModal from "./EventModal.svelte";
 
   interface Props {
     onBack: () => void;
+    sidebarVisible?: boolean;
   }
 
-  let { onBack }: Props = $props();
+  let { onBack, sidebarVisible = true }: Props = $props();
 
   let eventModalOpen = $state<boolean>(false);
   let selectedEvent = $state<CalendarEvent | null>(null);
   let modalDate = $state<Date>(new Date());
-  let calendarFilterOpen = $state<boolean>(false);
 
   // Month navigation helpers
   let currentYear = $derived(calendarState.selectedDate.getFullYear());
@@ -199,7 +197,6 @@
     return cells;
   });
 
-  // Selected day events for agenda side-panel
   let selectedDayKey = $derived(formatEventDateKey(calendarState.selectedDate));
   let selectedDayEvents = $derived(calendarState.eventsByDate.get(selectedDayKey) || []);
 
@@ -251,10 +248,10 @@
 </script>
 
 <div class="h-full flex flex-col bg-bg text-text select-none overflow-hidden">
-  <!-- Top Braun Control Header Bar -->
+  <!-- Top Braun Control Header Bar (Standardized to h-11) -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <header
-    class={`h-12 border-b border-border bg-bg-secondary flex items-center justify-between shrink-0 z-20 select-none ${
+    class={`h-11 border-b border-border bg-bg-secondary flex items-center justify-between shrink-0 z-20 select-none ${
       isMac ? "pl-20 pr-4" : "px-4"
     }`}
     onpointerdown={handlePointerDown}
@@ -311,76 +308,8 @@
       </div>
     </div>
 
-    <!-- Center: View Mode Segmented Pill -->
-    <div class="flex items-center bg-bg border border-border rounded-lg p-0.5 shadow-2xs">
-      {#each (["day", "week", "month"] as const) as mode}
-        <button
-          type="button"
-          onclick={() => calendarState.setViewMode(mode)}
-          class={`px-3 py-1 rounded-md text-xs font-medium transition-all capitalize cursor-pointer ${
-            calendarState.viewMode === mode
-              ? "bg-bg-emphasis text-text font-bold shadow-2xs"
-              : "text-text-muted hover:text-text"
-          }`}
-        >
-          {mode}
-        </button>
-      {/each}
-    </div>
-
     <!-- Right Controls -->
     <div class="flex items-center gap-2.5">
-      <!-- Calendar Filter Dropdown -->
-      {#if calendarState.calendars.length > 0}
-        <DropdownMenu.Root bind:open={calendarFilterOpen}>
-          <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <button
-                {...props}
-                type="button"
-                class="h-7 px-2.5 rounded-lg border border-border bg-bg hover:bg-bg-emphasis text-text text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                title="Filter calendars"
-              >
-                <SwatchIcon class="w-3.5 h-3.5 stroke-[1.8] opacity-75" />
-                <span>Calendars</span>
-              </button>
-            {/snippet}
-          </DropdownMenu.Trigger>
-
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              class="w-56 bg-bg border border-border rounded-xl shadow-xl p-1.5 z-50 text-xs text-text select-none animate-in fade-in zoom-in-95 duration-150"
-              sideOffset={5}
-              align="end"
-            >
-              <div class="px-2 py-1 text-[10px] font-bold tracking-wider uppercase text-text-muted border-b border-border mb-1">
-                Google Calendars
-              </div>
-
-              {#each calendarState.calendars as cal (cal.id)}
-                <button
-                  type="button"
-                  onclick={() => calendarState.toggleVisibility(cal.id, !cal.selected)}
-                  class="w-full flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-bg-emphasis transition-colors text-left cursor-pointer"
-                >
-                  <div class="flex items-center gap-2 min-w-0">
-                    <span
-                      class="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
-                      style:background-color={cal.bgColor || "#eab308"}
-                    ></span>
-                    <span class="truncate font-medium">{cal.summary}</span>
-                  </div>
-
-                  {#if cal.selected}
-                    <CheckIcon class="w-3.5 h-3.5 stroke-[2.5] text-accent shrink-0 ml-1.5" />
-                  {/if}
-                </button>
-              {/each}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
-      {/if}
-
       <!-- Sync Button -->
       <button
         type="button"
@@ -410,398 +339,317 @@
     </div>
   </header>
 
-  <!-- Calendar Main Body -->
-  <main class="flex-1 min-h-0 flex overflow-hidden">
-    {#if calendarState.viewMode === "month"}
-      <!-- MONTH VIEW (Grid on Left + Agenda Panel on Right) -->
-      <div class="flex-1 min-w-0 flex flex-col border-r border-border overflow-hidden">
-        <!-- Weekday Labels -->
-        <div class="grid grid-cols-7 border-b border-border bg-bg-secondary text-[11px] font-bold tracking-[0.08em] text-text-muted/80 text-center py-2 shrink-0">
-          {#each DAY_LABELS as label}
-            <div>{label}</div>
-          {/each}
-        </div>
+  <!-- 3-Column Standardized Instrument Layout -->
+  <div class="flex-1 min-h-0 flex overflow-hidden">
+    <!-- Column 1: Calendar Navigation (Views & Calendars) -->
+    <div
+      data-sidebar
+      class={`w-48 shrink-0 border-r border-border bg-bg-secondary flex flex-col overflow-hidden ${
+        !sidebarVisible
+          ? "!w-0 opacity-0 pointer-events-none border-r-0"
+          : "opacity-100"
+      }`}
+    >
+      <CalendarNavigation onOpenCreateModal={() => openCreateModal()} />
+    </div>
 
-        <!-- 7x5 or 7x6 Month Grid -->
-        <div class="flex-1 grid grid-cols-7 grid-rows-5 md:grid-rows-6 min-h-0 divide-x divide-y divide-border/60 bg-border/20 overflow-hidden">
-          {#each monthCells as cell (cell.key)}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div
-              onclick={() => calendarState.setSelectedDate(cell.date)}
-              ondblclick={() => openCreateModal(cell.date)}
-              class={`flex flex-col p-1.5 bg-bg transition-colors cursor-pointer relative overflow-hidden group ${
-                cell.isSelected ? "ring-2 ring-accent ring-inset bg-bg-emphasis/30 z-10" : ""
-              } ${!cell.isCurrentMonth ? "opacity-40 bg-bg-secondary/40" : "hover:bg-bg-emphasis/40"}`}
-            >
-              <!-- Day Header -->
-              <div class="flex items-center justify-between mb-1">
-                <span
-                  class={`w-5 h-5 rounded-full flex items-center justify-center tabular-nums text-xs font-semibold ${
-                    cell.isToday
-                      ? "bg-accent text-slate-950 font-bold shadow-xs"
-                      : cell.isSelected
-                        ? "text-accent font-bold"
-                        : "text-text"
-                  }`}
-                >
-                  {cell.date.getDate()}
-                </span>
+    <!-- Column 2: Day Agenda / Events List -->
+    <div
+      data-calendar-agenda
+      style:width={!sidebarVisible ? "0px" : "var(--sidebar-width, 16rem)"}
+      class={`shrink-0 border-r border-border bg-bg flex flex-col overflow-hidden relative ${
+        !sidebarVisible
+          ? "!w-0 opacity-0 pointer-events-none border-r-0"
+          : "opacity-100"
+      }`}
+    >
+      <CalendarAgenda
+        onOpenCreateModal={(date) => openCreateModal(date)}
+        onOpenEditModal={(ev) => openEditModal(ev)}
+      />
+    </div>
 
-                <!-- Quick Plus button on hover -->
-                <button
-                  type="button"
-                  onclick={(e) => {
-                    e.stopPropagation();
-                    openCreateModal(cell.date);
-                  }}
-                  class="w-4 h-4 rounded hover:bg-bg-emphasis text-text-muted hover:text-text items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex cursor-pointer"
-                  title="Add event on this day"
-                >
-                  <PlusIcon class="w-3 h-3 stroke-[2]" />
-                </button>
-              </div>
-
-              <!-- Day Events Chips -->
-              <div class="flex-1 overflow-y-auto space-y-1 min-h-0">
-                {#each cell.events.slice(0, 3) as ev (ev.id)}
-                  <!-- svelte-ignore a11y_click_events_have_key_events -->
-                  <!-- svelte-ignore a11y_no_static_element_interactions -->
-                  <div
-                    onclick={(e) => {
-                      e.stopPropagation();
-                      openEditModal(ev);
-                    }}
-                    style:background-color={ev.color ? `${ev.color}20` : "rgba(234,179,8,0.15)"}
-                    style:border-color={ev.color || "var(--color-accent)"}
-                    class="px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate transition-all hover:brightness-95 hover:scale-[1.01] flex items-center gap-1 cursor-pointer select-none"
-                    title={`${ev.title} (${ev.allDay ? "All day" : formatTime(ev.startTime)})`}
-                  >
-                    {#if ev.meetLink}
-                      <VideoIcon class="w-2.5 h-2.5 stroke-[2] shrink-0 text-accent" />
-                    {/if}
-                    <span class="truncate text-text font-medium">{ev.title}</span>
-                  </div>
-                {/each}
-
-                {#if cell.events.length > 3}
-                  <div class="text-[9px] tabular-nums text-text-muted px-1">
-                    +{cell.events.length - 3} more
-                  </div>
-                {/if}
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      <!-- Right Side Agenda Panel (Braun Minimalist Schedule) -->
-      <aside class="w-80 md:w-96 bg-bg-secondary flex flex-col shrink-0 overflow-hidden select-none">
-        <!-- Panel Header -->
-        <div class="p-4 border-b border-border bg-bg flex items-center justify-between">
-          <div>
-            <h2 class="font-bold text-sm text-text">
-              {calendarState.selectedDate.toLocaleDateString([], {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-              })}
-            </h2>
-            <p class="text-[11px] text-text-muted tabular-nums mt-0.5">
-              {selectedDayEvents.length} event{selectedDayEvents.length === 1 ? "" : "s"} scheduled
-            </p>
+    <!-- Column 3: Main Calendar Canvas -->
+    <main class="flex-1 min-w-0 flex flex-col overflow-hidden bg-bg">
+      {#if calendarState.viewMode === "month"}
+        <!-- MONTH VIEW (Full Width Grid) -->
+        <div class="flex-1 min-w-0 flex flex-col overflow-hidden">
+          <!-- Weekday Labels -->
+          <div class="grid grid-cols-7 border-b border-border bg-bg-secondary text-[11px] font-bold tracking-[0.08em] text-text-muted/80 text-center py-2 shrink-0">
+            {#each DAY_LABELS as label}
+              <div>{label}</div>
+            {/each}
           </div>
 
-          <button
-            type="button"
-            onclick={() => openCreateModal(calendarState.selectedDate)}
-            class="px-2.5 py-1.5 rounded-lg bg-bg-secondary hover:bg-bg-emphasis border border-border text-xs font-semibold flex items-center gap-1.5 text-text transition-colors cursor-pointer shadow-2xs"
-          >
-            <PlusIcon class="w-3 h-3 stroke-[2]" />
-            <span>Add</span>
-          </button>
-        </div>
-
-        <!-- Timeline Schedule List -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3">
-          {#if selectedDayEvents.length === 0}
-            <div class="py-16 text-center text-text-muted">
-              <CalendarIcon class="w-8 h-8 stroke-[1.5] mx-auto mb-3 opacity-30" />
-              <p class="font-medium text-xs">No events on this day</p>
-              <p class="text-[11px] opacity-70 mt-1">Double click any day cell or click Add above to schedule.</p>
-            </div>
-          {:else}
-            {#each selectedDayEvents as ev (ev.id)}
-              <!-- Event Card -->
+          <!-- 7x5 or 7x6 Month Grid -->
+          <div class="flex-1 grid grid-cols-7 grid-rows-5 md:grid-rows-6 min-h-0 divide-x divide-y divide-border/60 bg-border/20 overflow-hidden">
+            {#each monthCells as cell (cell.key)}
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <div
-                onclick={() => openEditModal(ev)}
-                class="p-3.5 rounded-xl border border-border bg-bg hover:border-accent/80 transition-all cursor-pointer shadow-2xs group"
+                onclick={() => calendarState.setSelectedDate(cell.date)}
+                ondblclick={() => openCreateModal(cell.date)}
+                class={`flex flex-col p-1.5 bg-bg transition-colors cursor-pointer relative overflow-hidden group ${
+                  cell.isSelected ? "ring-2 ring-accent ring-inset bg-bg-emphasis/30 z-10" : ""
+                } ${!cell.isCurrentMonth ? "opacity-40 bg-bg-secondary/40" : "hover:bg-bg-emphasis/40"}`}
               >
-                <!-- Title Row -->
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <span
-                      class="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
-                      style:background-color={ev.color || "#eab308"}
-                    ></span>
-                    <h3 class="font-bold text-xs text-text truncate group-hover:text-accent transition-colors">
-                      {ev.title}
-                    </h3>
-                  </div>
-
-                  {#if ev.meetLink}
-                    <button
-                      type="button"
-                      onclick={(e) => {
-                        e.stopPropagation();
-                        ev.meetLink && calendarState.openMeeting(ev.meetLink);
-                      }}
-                      class="px-2 py-0.8 rounded-md bg-accent text-slate-950 font-bold text-[10px] flex items-center gap-1 hover:brightness-105 transition-all cursor-pointer shadow-2xs shrink-0"
-                    >
-                      <VideoIcon class="w-3 h-3 stroke-[2.2]" />
-                      <span>Join</span>
-                    </button>
-                  {/if}
-                </div>
-
-                <!-- Time & Location -->
-                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-text-muted tabular-nums">
-                  <span class="flex items-center gap-1">
-                    <ClockIcon class="w-3 h-3 stroke-[2] opacity-70" />
-                    {#if ev.allDay}
-                      All day
-                    {:else}
-                      {formatTime(ev.startTime)} – {formatTime(ev.endTime)}
-                    {/if}
+                <!-- Day Header -->
+                <div class="flex items-center justify-between mb-1">
+                  <span
+                    class={`w-5 h-5 rounded-full flex items-center justify-center tabular-nums text-xs font-semibold ${
+                      cell.isToday
+                        ? "bg-accent text-slate-950 font-bold shadow-xs"
+                        : cell.isSelected
+                          ? "text-accent font-bold"
+                          : "text-text"
+                    }`}
+                  >
+                    {cell.date.getDate()}
                   </span>
 
-                  {#if ev.location}
-                    <span class="flex items-center gap-1 truncate max-w-[180px]">
-                      <MapPinIcon class="w-3 h-3 stroke-[2] opacity-70" />
-                      {ev.location}
-                    </span>
-                  {/if}
-                </div>
-
-                <!-- Attendees -->
-                {#if ev.attendees.length > 0}
-                  <div class="mt-2 flex items-center gap-1.5 text-[10px] text-text-muted">
-                    <UsersIcon class="w-3 h-3 stroke-[2] opacity-70" />
-                    <span class="truncate">
-                      {ev.attendees.length} guest{ev.attendees.length > 1 ? "s" : ""}: {ev.attendees.slice(0, 2).join(", ")}{ev.attendees.length > 2 ? ` +${ev.attendees.length - 2}` : ""}
-                    </span>
-                  </div>
-                {/if}
-
-                <!-- Description Preview -->
-                {#if ev.description}
-                  <p class="mt-2 text-[11px] text-text-muted/90 line-clamp-2 leading-relaxed border-t border-border/40 pt-2 font-sans">
-                    {ev.description}
-                  </p>
-                {/if}
-              </div>
-            {/each}
-          {/if}
-        </div>
-      </aside>
-
-    {:else if calendarState.viewMode === "week"}
-      <!-- WEEK VIEW (Hourly 7-column time grid) -->
-      {@const weekDays = getWeekDays(calendarState.selectedDate)}
-      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Week Header -->
-        <div class="grid grid-cols-8 border-b border-border bg-bg-secondary shrink-0 text-center py-2 text-xs">
-          <div class="text-[10px] text-text-muted uppercase font-bold flex items-center justify-center">
-            GMT
-          </div>
-          {#each weekDays as d (d.toISOString())}
-            {@const isToday = formatEventDateKey(new Date()) === formatEventDateKey(d)}
-            <div class="flex flex-col items-center">
-              <span class="text-[10px] uppercase text-text-muted font-bold tracking-wider">
-                {DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}
-              </span>
-              <span
-                class={`w-6 h-6 rounded-full flex items-center justify-center tabular-nums font-bold mt-0.5 ${
-                  isToday ? "bg-accent text-slate-950" : "text-text"
-                }`}
-              >
-                {d.getDate()}
-              </span>
-            </div>
-          {/each}
-        </div>
-
-        <!-- Scrollable Hourly Grid -->
-        <div class="flex-1 overflow-y-auto">
-          <div class="grid grid-cols-8 divide-x divide-border min-h-[1440px]">
-            <!-- Hour Labels Column -->
-            <div class="space-y-[60px] pt-2 text-[10px] tabular-nums text-text-muted text-right pr-2">
-              {#each Array(24).fill(0) as _, h}
-                <div class="h-0 -translate-y-2">{String(h).padStart(2, "0")}:00</div>
-              {/each}
-            </div>
-
-            <!-- 7 Day Columns -->
-            {#each weekDays as d (d.toISOString())}
-              {@const dayKey = formatEventDateKey(d)}
-              {@const dayEvents = calendarState.eventsByDate.get(dayKey) || []}
-              <!-- svelte-ignore a11y_click_events_have_key_events -->
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <div
-                class="relative divide-y divide-border/30 hover:bg-bg-emphasis/10 transition-colors"
-                ondblclick={() => openCreateModal(d)}
-              >
-                {#each Array(24).fill(0) as _}
-                  <div class="h-[60px] border-b border-border/20"></div>
-                {/each}
-
-                <!-- Placed Events -->
-                {#each dayEvents as ev (ev.id)}
-                  {@const start = parseEventDate(ev.startTime)}
-                  {@const end = parseEventDate(ev.endTime)}
-                  {@const startHour = ev.allDay ? 0 : start.getHours() + start.getMinutes() / 60}
-                  {@const durationHours = ev.allDay ? 1 : Math.max(0.5, (end.getTime() - start.getTime()) / (1000 * 60 * 60))}
-                  <!-- svelte-ignore a11y_click_events_have_key_events -->
-                  <!-- svelte-ignore a11y_no_static_element_interactions -->
-                  <div
+                  <!-- Quick Plus button on hover -->
+                  <button
+                    type="button"
                     onclick={(e) => {
                       e.stopPropagation();
-                      openEditModal(ev);
+                      openCreateModal(cell.date);
                     }}
-                    style:top={`${startHour * 60}px`}
-                    style:height={`${Math.max(28, durationHours * 60 - 2)}px`}
-                    style:background-color={ev.color ? `${ev.color}25` : "rgba(234,179,8,0.2)"}
-                    style:border-left-color={ev.color || "var(--color-accent)"}
-                    class="absolute left-1 right-1 rounded p-1 text-[10px] border-l-2 overflow-hidden shadow-2xs hover:brightness-95 hover:z-20 cursor-pointer flex flex-col justify-between"
+                    class="w-4 h-4 rounded hover:bg-bg-emphasis text-text-muted hover:text-text items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex cursor-pointer"
+                    title="Add event on this day"
                   >
-                    <div class="font-bold text-text truncate leading-tight">
-                      {ev.title}
+                    <PlusIcon class="w-3 h-3 stroke-[2]" />
+                  </button>
+                </div>
+
+                <!-- Day Events Chips -->
+                <div class="flex-1 overflow-y-auto space-y-1 min-h-0">
+                  {#each cell.events.slice(0, 3) as ev (ev.id)}
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <div
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(ev);
+                      }}
+                      style:background-color={ev.color ? `${ev.color}20` : "rgba(234,179,8,0.15)"}
+                      style:border-color={ev.color || "var(--color-accent)"}
+                      class="px-1.5 py-0.5 rounded text-[10px] font-medium border-l-2 truncate transition-all hover:brightness-95 hover:scale-[1.01] flex items-center gap-1 cursor-pointer select-none"
+                      title={`${ev.title} (${ev.allDay ? "All day" : formatTime(ev.startTime)})`}
+                    >
+                      {#if ev.meetLink}
+                        <VideoIcon class="w-2.5 h-2.5 stroke-[2] shrink-0 text-accent" />
+                      {/if}
+                      <span class="truncate text-text font-medium">{ev.title}</span>
                     </div>
-                    <div class="tabular-nums text-[9px] text-text-muted truncate">
-                      {formatTime(ev.startTime)}
+                  {/each}
+
+                  {#if cell.events.length > 3}
+                    <div class="text-[9px] tabular-nums text-text-muted px-1">
+                      +{cell.events.length - 3} more
                     </div>
-                  </div>
-                {/each}
+                  {/if}
+                </div>
               </div>
             {/each}
           </div>
         </div>
-      </div>
 
-    {:else if calendarState.viewMode === "day"}
-      <!-- DAY VIEW (Detailed Single Day Chronological Timeline) -->
-      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- Day Banner -->
-        <div class="p-4 border-b border-border bg-bg-secondary flex items-center justify-between shrink-0">
-          <div>
-            <h2 class="font-bold text-sm text-text">
-              {calendarState.selectedDate.toLocaleDateString([], {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </h2>
-            <p class="text-[11px] text-text-muted tabular-nums mt-0.5">
-              {selectedDayEvents.length} event{selectedDayEvents.length === 1 ? "" : "s"} scheduled today
-            </p>
+      {:else if calendarState.viewMode === "week"}
+        <!-- WEEK VIEW (Hourly 7-column time grid) -->
+        {@const weekDays = getWeekDays(calendarState.selectedDate)}
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <!-- Week Header -->
+          <div class="grid grid-cols-8 border-b border-border bg-bg-secondary shrink-0 text-center py-2 text-xs">
+            <div class="text-[10px] text-text-muted uppercase font-bold flex items-center justify-center">
+              GMT
+            </div>
+            {#each weekDays as d (d.toISOString())}
+              {@const isToday = formatEventDateKey(new Date()) === formatEventDateKey(d)}
+              <div class="flex flex-col items-center">
+                <span class="text-[10px] uppercase text-text-muted font-bold tracking-wider">
+                  {DAY_LABELS[d.getDay() === 0 ? 6 : d.getDay() - 1]}
+                </span>
+                <span
+                  class={`w-6 h-6 rounded-full flex items-center justify-center tabular-nums font-bold mt-0.5 ${
+                    isToday ? "bg-accent text-slate-950" : "text-text"
+                  }`}
+                >
+                  {d.getDate()}
+                </span>
+              </div>
+            {/each}
           </div>
 
-          <button
-            type="button"
-            onclick={() => openCreateModal(calendarState.selectedDate)}
-            class="px-3 py-1.5 rounded-lg bg-accent text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:brightness-105 transition-all cursor-pointer shadow-sm"
-          >
-            <PlusIcon class="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Add Event</span>
-          </button>
-        </div>
-
-        <!-- Scrollable Hourly Day Grid -->
-        <div class="flex-1 overflow-y-auto p-6">
-          <div class="max-w-3xl mx-auto space-y-3">
-            {#if selectedDayEvents.length === 0}
-              <div class="py-24 text-center text-text-muted">
-                <ClockIcon class="w-10 h-10 stroke-[1.5] mx-auto mb-3 opacity-30" />
-                <p class="font-semibold text-sm">No events scheduled for this day</p>
-                <p class="text-xs opacity-70 mt-1">Click "Add Event" above to create an event directly in Google Calendar.</p>
+          <!-- Scrollable Hourly Grid -->
+          <div class="flex-1 overflow-y-auto">
+            <div class="grid grid-cols-8 divide-x divide-border min-h-[1440px]">
+              <!-- Hour Labels Column -->
+              <div class="space-y-[60px] pt-2 text-[10px] tabular-nums text-text-muted text-right pr-2">
+                {#each Array(24).fill(0) as _, h}
+                  <div class="h-0 -translate-y-2">{String(h).padStart(2, "0")}:00</div>
+                {/each}
               </div>
-            {:else}
-              {#each selectedDayEvents as ev (ev.id)}
+
+              <!-- 7 Day Columns -->
+              {#each weekDays as d (d.toISOString())}
+                {@const dayKey = formatEventDateKey(d)}
+                {@const dayEvents = calendarState.eventsByDate.get(dayKey) || []}
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
-                  onclick={() => openEditModal(ev)}
-                  class="p-4 rounded-xl border border-border bg-bg hover:border-accent transition-all cursor-pointer shadow-2xs flex items-start justify-between gap-4 group"
+                  class="relative divide-y divide-border/30 hover:bg-bg-emphasis/10 transition-colors"
+                  ondblclick={() => openCreateModal(d)}
                 >
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="w-3 h-3 rounded-full shrink-0 shadow-2xs"
-                        style:background-color={ev.color || "#eab308"}
-                      ></span>
-                      <h3 class="font-bold text-sm text-text truncate group-hover:text-accent transition-colors">
+                  {#each Array(24).fill(0) as _}
+                    <div class="h-[60px] border-b border-border/20"></div>
+                  {/each}
+
+                  <!-- Placed Events -->
+                  {#each dayEvents as ev (ev.id)}
+                    {@const start = parseEventDate(ev.startTime)}
+                    {@const end = parseEventDate(ev.endTime)}
+                    {@const startHour = ev.allDay ? 0 : start.getHours() + start.getMinutes() / 60}
+                    {@const durationHours = ev.allDay ? 1 : Math.max(0.5, (end.getTime() - start.getTime()) / (1000 * 60 * 60))}
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <div
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(ev);
+                      }}
+                      style:top={`${startHour * 60}px`}
+                      style:height={`${Math.max(28, durationHours * 60 - 2)}px`}
+                      style:background-color={ev.color ? `${ev.color}25` : "rgba(234,179,8,0.2)"}
+                      style:border-left-color={ev.color || "var(--color-accent)"}
+                      class="absolute left-1 right-1 rounded p-1 text-[10px] border-l-2 overflow-hidden shadow-2xs hover:brightness-95 hover:z-20 cursor-pointer flex flex-col justify-between"
+                    >
+                      <div class="font-bold text-text truncate leading-tight">
                         {ev.title}
-                      </h3>
+                      </div>
+                      <div class="tabular-nums text-[9px] text-text-muted truncate">
+                        {formatTime(ev.startTime)}
+                      </div>
                     </div>
+                  {/each}
+                </div>
+              {/each}
+            </div>
+          </div>
+        </div>
 
-                    <div class="mt-2 flex flex-wrap items-center gap-4 text-xs tabular-nums text-text-muted">
-                      <span class="flex items-center gap-1.5">
-                        <ClockIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
-                        {#if ev.allDay}
-                          All day
-                        {:else}
-                          {formatTime(ev.startTime)} – {formatTime(ev.endTime)}
-                        {/if}
-                      </span>
+      {:else if calendarState.viewMode === "day"}
+        <!-- DAY VIEW (Detailed Single Day Chronological Timeline) -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <!-- Day Banner -->
+          <div class="p-4 border-b border-border bg-bg-secondary flex items-center justify-between shrink-0">
+            <div>
+              <h2 class="font-bold text-sm text-text">
+                {calendarState.selectedDate.toLocaleDateString([], {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </h2>
+              <p class="text-[11px] text-text-muted tabular-nums mt-0.5">
+                {selectedDayEvents.length} event{selectedDayEvents.length === 1 ? "" : "s"} scheduled today
+              </p>
+            </div>
 
-                      {#if ev.location}
-                        <span class="flex items-center gap-1.5 truncate max-w-xs">
-                          <MapPinIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
-                          {ev.location}
+            <button
+              type="button"
+              onclick={() => openCreateModal(calendarState.selectedDate)}
+              class="px-3 py-1.5 rounded-lg bg-accent text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:brightness-105 transition-all cursor-pointer shadow-sm"
+            >
+              <PlusIcon class="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Add Event</span>
+            </button>
+          </div>
+
+          <!-- Scrollable Hourly Day Grid -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-3xl mx-auto space-y-3">
+              {#if selectedDayEvents.length === 0}
+                <div class="py-24 text-center text-text-muted">
+                  <ClockIcon class="w-10 h-10 stroke-[1.5] mx-auto mb-3 opacity-30" />
+                  <p class="font-semibold text-sm">No events scheduled for this day</p>
+                  <p class="text-xs opacity-70 mt-1">Click "Add Event" above to create an event directly in Google Calendar.</p>
+                </div>
+              {:else}
+                {#each selectedDayEvents as ev (ev.id)}
+                  <!-- svelte-ignore a11y_click_events_have_key_events -->
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    onclick={() => openEditModal(ev)}
+                    class="p-4 rounded-xl border border-border bg-bg hover:border-accent transition-all cursor-pointer shadow-2xs flex items-start justify-between gap-4 group"
+                  >
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2">
+                        <span
+                          class="w-3 h-3 rounded-full shrink-0 shadow-2xs"
+                          style:background-color={ev.color || "#eab308"}
+                        ></span>
+                        <h3 class="font-bold text-sm text-text truncate group-hover:text-accent transition-colors">
+                          {ev.title}
+                        </h3>
+                      </div>
+
+                      <div class="mt-2 flex flex-wrap items-center gap-4 text-xs tabular-nums text-text-muted">
+                        <span class="flex items-center gap-1.5">
+                          <ClockIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
+                          {#if ev.allDay}
+                            All day
+                          {:else}
+                            {formatTime(ev.startTime)} – {formatTime(ev.endTime)}
+                          {/if}
                         </span>
+
+                        {#if ev.location}
+                          <span class="flex items-center gap-1.5 truncate max-w-xs">
+                            <MapPinIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
+                            {ev.location}
+                          </span>
+                        {/if}
+                      </div>
+
+                      {#if ev.attendees.length > 0}
+                        <div class="mt-2 flex items-center gap-2 text-xs text-text-muted">
+                          <UsersIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
+                          <span class="truncate">
+                            Guests: {ev.attendees.join(", ")}
+                          </span>
+                        </div>
+                      {/if}
+
+                      {#if ev.description}
+                        <p class="mt-3 text-xs text-text-muted/90 leading-relaxed border-t border-border/50 pt-2 font-sans">
+                          {ev.description}
+                        </p>
                       {/if}
                     </div>
 
-                    {#if ev.attendees.length > 0}
-                      <div class="mt-2 flex items-center gap-2 text-xs text-text-muted">
-                        <UsersIcon class="w-3.5 h-3.5 stroke-[2] opacity-70" />
-                        <span class="truncate">
-                          Guests: {ev.attendees.join(", ")}
-                        </span>
-                      </div>
-                    {/if}
-
-                    {#if ev.description}
-                      <p class="mt-3 text-xs text-text-muted/90 leading-relaxed border-t border-border/50 pt-2 font-sans">
-                        {ev.description}
-                      </p>
+                    {#if ev.meetLink}
+                      <button
+                        type="button"
+                        onclick={(e) => {
+                          e.stopPropagation();
+                          ev.meetLink && calendarState.openMeeting(ev.meetLink);
+                        }}
+                        class="px-3 py-1.5 rounded-lg bg-accent text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:brightness-105 transition-all cursor-pointer shadow-sm shrink-0"
+                      >
+                        <VideoIcon class="w-3.5 h-3.5 stroke-[2.2]" />
+                        <span>Join Meeting</span>
+                      </button>
                     {/if}
                   </div>
-
-                  {#if ev.meetLink}
-                    <button
-                      type="button"
-                      onclick={(e) => {
-                        e.stopPropagation();
-                        ev.meetLink && calendarState.openMeeting(ev.meetLink);
-                      }}
-                      class="px-3 py-1.5 rounded-lg bg-accent text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:brightness-105 transition-all cursor-pointer shadow-sm shrink-0"
-                    >
-                      <VideoIcon class="w-3.5 h-3.5 stroke-[2.2]" />
-                      <span>Join Meeting</span>
-                    </button>
-                  {/if}
-                </div>
-              {/each}
-            {/if}
+                {/each}
+              {/if}
+            </div>
           </div>
         </div>
-      </div>
-    {/if}
-  </main>
+      {/if}
+    </main>
+  </div>
 </div>
 
 {#if eventModalOpen}

@@ -16,8 +16,10 @@ mod git;
 mod icloud;
 mod search;
 mod calendar;
+mod gmail;
 
 pub use calendar::*;
+pub use gmail::*;
 pub use search::{SearchIndex, SearchResult};
 
 // Note metadata for list display
@@ -4022,8 +4024,11 @@ pub fn run() {
             app.manage(state);
 
             let app_data = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
-            let calendar_manager = Arc::new(calendar::CalendarManager::new(app_data));
+            let calendar_manager = Arc::new(calendar::CalendarManager::new(app_data.clone()));
             app.manage(calendar_manager);
+
+            let gmail_manager = Arc::new(gmail::GmailManager::new(app_data));
+            app.manage(gmail_manager);
 
             // Add notes folder to asset protocol scope so images can be served
             if let Some(ref folder) = app.state::<AppState>().app_config.read().expect("app_config read lock").notes_folder.clone() {
@@ -4154,6 +4159,14 @@ pub fn run() {
             calendar_create_event,
             calendar_update_event,
             calendar_delete_event,
+            mail_start_auth,
+            mail_get_state,
+            mail_sync,
+            mail_disconnect,
+            mail_get_thread,
+            mail_modify_thread,
+            mail_trash_thread,
+            mail_send,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

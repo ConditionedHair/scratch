@@ -47,6 +47,7 @@
     PlusIcon,
     XIcon,
     CalendarIcon,
+    MailIcon,
   } from "../icons";
   import { mod, shift } from "../../lib/platform";
   import type { AiProvider } from "../../services/ai";
@@ -66,6 +67,7 @@
     onopenshortcuts?: () => void;
     onopenaimodal?: (provider: AiProvider) => void;
     onopencalendar?: () => void;
+    onopenmail?: () => void;
     focusMode?: boolean;
     ontogglefocusmode?: () => void;
     editor?: TiptapEditor | null;
@@ -78,6 +80,7 @@
     onopenshortcuts,
     onopenaimodal,
     onopencalendar,
+    onopenmail,
     focusMode = false,
     ontogglefocusmode,
     editor,
@@ -189,10 +192,20 @@
       {
         id: "open-calendar",
         label: "Open Calendar",
-        shortcut: `${mod} ${shift} C`,
+        shortcut: `${mod} 2`,
         icon: CalendarIcon,
         action: () => {
           onopencalendar?.();
+          onclose();
+        },
+      },
+      {
+        id: "open-mail",
+        label: "Open Mail",
+        shortcut: `${mod} 3`,
+        icon: MailIcon,
+        action: () => {
+          onopenmail?.();
           onclose();
         },
       },

@@ -14,8 +14,10 @@
     PencilIcon,
     SwatchIcon,
     ChevronRightIcon,
+    MailIcon,
   } from "../icons";
   import { calendarState } from "../../context/calendar.svelte";
+  import { mailState } from "../../context/mail.svelte";
   import { mod, isMac } from "../../lib/platform";
   import { cn } from "../../lib/utils";
   import { toast } from "svelte-sonner";
@@ -23,9 +25,10 @@
   interface Props {
     onOpenSettings?: () => void;
     onOpenCalendar?: () => void;
+    onOpenMail?: () => void;
   }
 
-  let { onOpenSettings, onOpenCalendar }: Props = $props();
+  let { onOpenSettings, onOpenCalendar, onOpenMail }: Props = $props();
 
   let settings = $state<Settings | null>(null);
   let plusMenuOpen = $state(false);
@@ -240,6 +243,22 @@
         {#if calendarState.connected}
           <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-bg-muted text-text-muted">
             {calendarState.todayEvents.length}
+          </span>
+        {/if}
+      </button>
+
+      <button
+        type="button"
+        onclick={onOpenMail}
+        class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text hover:bg-bg-muted/70 transition-colors text-left cursor-pointer group"
+      >
+        <div class="flex items-center gap-2">
+          <MailIcon class="w-4 h-4 opacity-75 stroke-[1.8] group-hover:text-accent transition-colors" />
+          <span>Mail</span>
+        </div>
+        {#if mailState.connected && mailState.unreadCount > 0}
+          <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-accent text-slate-950 shadow-2xs">
+            {mailState.unreadCount}
           </span>
         {/if}
       </button>

@@ -11,9 +11,11 @@
     OpenCodeIcon,
     OllamaIcon,
     CalendarIcon,
+    MailIcon,
     RefreshCwIcon,
   } from "../icons";
   import { calendarState } from "../../context/calendar.svelte";
+  import { mailState } from "../../context/mail.svelte";
   import { AI_PROVIDER_ORDER, type AiProvider } from "../../services/ai";
   import * as aiService from "../../services/ai";
   import { mod } from "../../lib/platform";
@@ -57,8 +59,26 @@
     if (customClientSecret) localStorage.setItem("scratch_gcal_client_secret", customClientSecret);
     try {
       await calendarState.startAuth(customClientId, customClientSecret);
+      await mailState.startAuth(customClientId, customClientSecret);
     } catch {
-      // toast is already handled in calendarState.startAuth
+      // toast is handled in services
+    }
+  }
+
+  async function handleStartMailAuth() {
+    if (!customClientSecret.trim()) {
+      showAdvancedCalendar = true;
+      toast.error(
+        "Please enter your Google OAuth Client Secret (starts with GOCSPX-...) before connecting."
+      );
+      return;
+    }
+    if (customClientId) localStorage.setItem("scratch_gcal_client_id", customClientId);
+    if (customClientSecret) localStorage.setItem("scratch_gcal_client_secret", customClientSecret);
+    try {
+      await mailState.startAuth(customClientId, customClientSecret);
+    } catch {
+      // toast is handled in services
     }
   }
 
@@ -254,6 +274,62 @@
             </div>
           </div>
         {/if}
+      </div>
+
+      <!-- Gmail Integration (when Calendar is connected) -->
+      <div class="rounded-[10px] border border-border p-4 space-y-4 bg-bg-secondary/40 mb-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <MailIcon class="w-5 h-5 stroke-[1.8] text-accent" />
+            <div>
+              <span class="text-sm font-semibold text-text block">
+                Gmail ({mailState.connected ? mailState.userEmail || "Connected" : "Not connected"})
+              </span>
+              {#if mailState.connected}
+                <span class="text-[11px] text-text-muted font-mono block">
+                  {mailState.unreadCount} unread • Last synced: {mailState.lastSynced ? new Date(mailState.lastSynced * 1000).toLocaleTimeString() : "Never"}
+                </span>
+              {/if}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            {#if mailState.connected}
+              <button
+                type="button"
+                onclick={() => mailState.refresh()}
+                disabled={mailState.isSyncing}
+                class="px-2.5 py-1.5 rounded-lg border border-border bg-bg hover:bg-bg-emphasis text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer text-text shadow-2xs"
+              >
+                <RefreshCwIcon class={`w-3.5 h-3.5 stroke-[1.8] ${mailState.isSyncing ? "animate-spin text-accent" : ""}`} />
+                <span>{mailState.isSyncing ? "Syncing..." : "Sync Mail"}</span>
+              </button>
+
+              <button
+                type="button"
+                onclick={() => mailState.disconnect()}
+                class="px-2.5 py-1.5 rounded-lg border border-red-500/30 hover:bg-red-500/10 text-xs font-medium text-red-500 transition-colors cursor-pointer"
+              >
+                Disconnect
+              </button>
+            {:else}
+              <Button
+                onclick={handleStartMailAuth}
+                disabled={mailState.isAuthenticating}
+                variant="default"
+                size="sm"
+                class="font-bold bg-accent text-slate-950 hover:brightness-105"
+              >
+                {#if mailState.isAuthenticating}
+                  <SpinnerIcon class="w-3.5 h-3.5 mr-2 animate-spin" />
+                  Connecting...
+                {:else}
+                  Connect Gmail
+                {/if}
+              </Button>
+            {/if}
+          </div>
+        </div>
       </div>
     {:else}
       <div class="rounded-[10px] border border-border p-4 space-y-4 bg-bg-secondary/40 mb-3">

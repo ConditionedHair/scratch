@@ -14,12 +14,14 @@ export const shortcutCategories: ShortcutCategory[] = [
   {
     title: "Navigation",
     shortcuts: [
+      { keys: [mod, "1"], description: "Notes mode" },
+      { keys: [mod, "2"], description: "Calendar mode" },
+      { keys: [mod, "3"], description: "Mail mode" },
       { keys: [mod, "P"], description: "Command palette" },
       { keys: [mod, shift, "F"], description: "Search notes" },
       { keys: [mod, "\\"], description: "Toggle sidebar" },
       { keys: [mod, ","], description: "Settings" },
       { keys: [mod, "/"], description: "Keyboard shortcuts" },
-      { keys: [mod, shift, "C"], description: "Calendar view" },
       { keys: [mod, "W"], description: "Close window" },
       { keys: [mod, "="], description: "Zoom in" },
       { keys: [mod, "-"], description: "Zoom out" },
@@ -37,6 +39,18 @@ export const shortcutCategories: ShortcutCategory[] = [
       { keys: ["↑", "↓"], description: "Navigate notes" },
       { keys: ["Enter"], description: "Focus editor" },
       { keys: ["Esc"], description: "Back to note list" },
+    ],
+  },
+  {
+    title: "Mail",
+    shortcuts: [
+      { keys: ["C"], description: "Compose email" },
+      { keys: ["J", "K"], description: "Navigate threads" },
+      { keys: ["E"], description: "Archive thread" },
+      { keys: ["#"], description: "Move to Trash" },
+      { keys: ["R"], description: "Reply to thread" },
+      { keys: ["U"], description: "Mark as unread" },
+      { keys: [mod, "Enter"], description: "Send reply or email" },
     ],
   },
   {

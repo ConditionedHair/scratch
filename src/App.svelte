@@ -25,6 +25,7 @@
   import { SidebarResizeHandle } from "./components/layout";
   import { SettingsPage } from "./components/settings";
   import { CalendarPage } from "./components/calendar";
+  import { MailPage } from "./components/mail";
   import { AiEditModal } from "./components/ai";
   import { KeyboardShortcutsModal } from "./components/shortcuts";
   import { showUpdateToast } from "./services/updater";
@@ -59,7 +60,7 @@
   const isPreview = windowMode.isPreview;
   const previewFile = windowMode.previewFile;
 
-  type ViewState = "notes" | "settings" | "calendar";
+  type ViewState = "notes" | "settings" | "calendar" | "mail";
 
   let paletteOpen = $state(false);
   let view = $state<ViewState>("notes");
@@ -101,6 +102,14 @@
 
   function toggleCalendar() {
     view = view === "calendar" ? "notes" : "calendar";
+  }
+
+  function openMail() {
+    view = "mail";
+  }
+
+  function closeMail() {
+    view = "notes";
   }
 
   function handleBackToPalette() {
@@ -258,6 +267,34 @@
         return;
       }
 
+      // Cmd+\ - Toggle sidebar (works globally across Notes, Calendar, Mail)
+      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+        e.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      // Cmd+1 - Notes instrument mode
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "1") {
+        e.preventDefault();
+        view = "notes";
+        return;
+      }
+
+      // Cmd+2 - Calendar instrument mode
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "2") {
+        e.preventDefault();
+        view = "calendar";
+        return;
+      }
+
+      // Cmd+3 - Mail instrument mode
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "3") {
+        e.preventDefault();
+        view = "mail";
+        return;
+      }
+
       // Block all other shortcuts when in settings or calendar view
       if (view === "settings") {
         return;
@@ -267,6 +304,14 @@
         if (e.key === "Escape") {
           e.preventDefault();
           closeCalendar();
+        }
+        return;
+      }
+
+      if (view === "mail") {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeMail();
         }
         return;
       }
@@ -307,6 +352,7 @@
         return;
       }
 
+
       // Cmd+P - Open command palette
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "p") {
         e.preventDefault();
@@ -340,12 +386,6 @@
         return;
       }
 
-      // Cmd+\ - Toggle sidebar
-      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
-        e.preventDefault();
-        toggleSidebar();
-        return;
-      }
 
       // Cmd+N - New note
       if ((e.metaKey || e.ctrlKey) && e.key === "n") {
@@ -501,14 +541,24 @@
           out:viewFadeOut
           class="absolute inset-0 z-10 bg-bg overflow-hidden"
         >
-          <CalendarPage onBack={closeCalendar} />
+          <CalendarPage onBack={closeCalendar} {sidebarVisible} />
+        </div>
+      {/if}
+
+      {#if view === "mail"}
+        <div
+          in:viewFadeIn
+          out:viewFadeOut
+          class="absolute inset-0 z-10 bg-bg overflow-hidden"
+        >
+          <MailPage onBack={closeMail} {sidebarVisible} />
         </div>
       {/if}
 
       <div
         class="h-full w-full flex overflow-hidden transition-opacity duration-200"
-        class:opacity-0={view === "settings" || view === "calendar"}
-        class:pointer-events-none={view === "settings" || view === "calendar"}
+        class:opacity-0={view === "settings" || view === "calendar" || view === "mail"}
+        class:pointer-events-none={view === "settings" || view === "calendar" || view === "mail"}
       >
         <!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
         <div
@@ -522,6 +572,7 @@
           <BraunLibrary
             onOpenSettings={toggleSettings}
             onOpenCalendar={openCalendar}
+            onOpenMail={openMail}
           />
         </div>
 
@@ -583,6 +634,7 @@
     onopensettings={toggleSettings}
     onopenshortcuts={() => { shortcutsOpen = true; }}
     onopencalendar={openCalendar}
+    onopenmail={openMail}
     onopenaimodal={(provider) => {
       aiProvider = provider;
       aiModalOpen = true;

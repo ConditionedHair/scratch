@@ -10,7 +10,10 @@
     CodexIcon,
     OpenCodeIcon,
     OllamaIcon,
+    CalendarIcon,
+    RefreshCwIcon,
   } from "../icons";
+  import { calendarState } from "../../context/calendar.svelte";
   import { AI_PROVIDER_ORDER, type AiProvider } from "../../services/ai";
   import * as aiService from "../../services/ai";
   import { mod } from "../../lib/platform";
@@ -25,6 +28,39 @@
 
   let aiProviders = $state<AiProvider[]>([]);
   let aiProvidersLoading = $state(true);
+
+  let showAdvancedCalendar = $state(true);
+  let customClientId = $state("");
+  let customClientSecret = $state("");
+
+  $effect(() => {
+    if (customClientId) {
+      localStorage.setItem("scratch_gcal_client_id", customClientId);
+    }
+  });
+
+  $effect(() => {
+    if (customClientSecret) {
+      localStorage.setItem("scratch_gcal_client_secret", customClientSecret);
+    }
+  });
+
+  async function handleStartAuth() {
+    if (!customClientSecret.trim()) {
+      showAdvancedCalendar = true;
+      toast.error(
+        "Please enter your Google OAuth Client Secret (starts with GOCSPX-...) before connecting."
+      );
+      return;
+    }
+    if (customClientId) localStorage.setItem("scratch_gcal_client_id", customClientId);
+    if (customClientSecret) localStorage.setItem("scratch_gcal_client_secret", customClientSecret);
+    try {
+      await calendarState.startAuth(customClientId, customClientSecret);
+    } catch {
+      // toast is already handled in calendarState.startAuth
+    }
+  }
 
   const AI_PROVIDER_INFO: Record<
     AiProvider,
@@ -57,6 +93,17 @@
   };
 
   onMount(() => {
+    const savedClientId = localStorage.getItem("scratch_gcal_client_id");
+    const savedClientSecret = localStorage.getItem("scratch_gcal_client_secret");
+    if (savedClientId) {
+      customClientId = savedClientId;
+    } else {
+      customClientId = "688447609926-eofijjrca2qvbt7e936ccu6d8c4fdrmh.apps.googleusercontent.com";
+    }
+    if (savedClientSecret) {
+      customClientSecret = savedClientSecret;
+    }
+
     cliService
       .getCliStatus()
       .then((status) => {
@@ -124,6 +171,187 @@
 {/snippet}
 
 <div class="space-y-8 py-8">
+  <!-- Google Calendar Integration -->
+  <section class="pb-2">
+    <div class="flex items-center justify-between mb-0.5">
+      <h2 class="text-xl font-medium">Google Calendar</h2>
+      {#if calendarState.connected}
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
+          Connected
+        </span>
+      {/if}
+    </div>
+    <p class="text-sm text-text-muted mb-4">
+      Two-way calendar sync, meeting schedules, and full-screen Braun calendar view.
+    </p>
+
+    {#if calendarState.connected}
+      <div class="rounded-[10px] border border-border p-4 space-y-4 bg-bg-secondary/40 mb-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <CalendarIcon class="w-5 h-5 stroke-[1.8] text-accent" />
+            <div>
+              <span class="text-sm font-semibold text-text block">
+                {calendarState.userEmail || "Google Account"}
+              </span>
+              {#if calendarState.lastSynced}
+                <span class="text-[11px] text-text-muted font-mono block">
+                  Last synced: {new Date(calendarState.lastSynced * 1000).toLocaleTimeString()}
+                </span>
+              {/if}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              onclick={() => calendarState.refresh()}
+              disabled={calendarState.isSyncing}
+              class="px-2.5 py-1.5 rounded-lg border border-border bg-bg hover:bg-bg-emphasis text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer text-text shadow-2xs"
+            >
+              <RefreshCwIcon class={`w-3.5 h-3.5 stroke-[1.8] ${calendarState.isSyncing ? "animate-spin text-accent" : ""}`} />
+              <span>{calendarState.isSyncing ? "Syncing..." : "Sync Now"}</span>
+            </button>
+
+            <button
+              type="button"
+              onclick={() => calendarState.disconnect()}
+              class="px-2.5 py-1.5 rounded-lg border border-red-500/30 hover:bg-red-500/10 text-xs font-medium text-red-500 transition-colors cursor-pointer"
+            >
+              Disconnect
+            </button>
+          </div>
+        </div>
+
+        <!-- Detected Calendars List -->
+        {#if calendarState.calendars.length > 0}
+          <div class="pt-3 border-t border-border/60">
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-text-muted mb-2">
+              Synced Calendars ({calendarState.calendars.length})
+            </span>
+            <div class="space-y-1.5">
+              {#each calendarState.calendars as cal (cal.id)}
+                <label class="flex items-center justify-between p-2 rounded-lg hover:bg-bg-emphasis/60 border border-transparent hover:border-border/60 transition-colors cursor-pointer text-xs">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span
+                      class="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                      style:background-color={cal.bgColor || "#eab308"}
+                    ></span>
+                    <span class="font-medium text-text truncate">
+                      {cal.summary} {cal.primary ? "(Primary)" : ""}
+                    </span>
+                  </div>
+
+                  <input
+                    type="checkbox"
+                    checked={cal.selected}
+                    onchange={(e) => calendarState.toggleVisibility(cal.id, (e.target as HTMLInputElement).checked)}
+                    class="rounded border-border accent-accent cursor-pointer"
+                  />
+                </label>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="rounded-[10px] border border-border p-4 space-y-4 bg-bg-secondary/40 mb-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0">
+              <CalendarIcon class="w-5 h-5 stroke-[2] text-accent" />
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-text">Connect your Google Account</h3>
+              <p class="text-xs text-text-muted leading-relaxed mt-0.5">
+                Sign in with Google to view upcoming events in the tag bar, join Meet links with one click, and manage schedules in full screen.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onclick={handleStartAuth}
+            disabled={calendarState.isAuthenticating}
+            variant="default"
+            size="md"
+            class="shrink-0 font-bold bg-accent text-slate-950 hover:brightness-105"
+          >
+            {#if calendarState.isAuthenticating}
+              <SpinnerIcon class="w-3.5 h-3.5 mr-2 animate-spin" />
+              Connecting...
+            {:else}
+              Sign in with Google
+            {/if}
+          </Button>
+        </div>
+
+        <!-- OAuth Credentials Configuration -->
+        <div class="pt-3 border-t border-border/60">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-text">OAuth 2.0 Credentials</span>
+            <button
+              type="button"
+              onclick={() => { showAdvancedCalendar = !showAdvancedCalendar; }}
+              class="text-[11px] font-medium text-text-muted hover:text-text cursor-pointer transition-colors"
+            >
+              {showAdvancedCalendar ? "Hide Configuration" : "Edit Credentials"}
+            </button>
+          </div>
+
+          {#if showAdvancedCalendar}
+            <div class="mt-2.5 space-y-3 p-3.5 rounded-lg bg-bg border border-border text-xs">
+              <p class="text-[11px] text-text-muted leading-relaxed">
+                Scratch connects directly to Google Calendar from your desktop. Google OAuth requires both the <strong>Client ID</strong> and the matching <strong>Client Secret</strong> (starts with <code class="text-accent font-mono">GOCSPX-</code>) to verify Desktop clients.
+              </p>
+
+              <div>
+                <label for="custom-client-id" class="block text-[10px] font-bold uppercase tracking-wider text-text-muted mb-1">
+                  OAuth Client ID (Type: Desktop)
+                </label>
+                <input
+                  id="custom-client-id"
+                  type="text"
+                  bind:value={customClientId}
+                  placeholder="e.g. 688447609926-xxxx.apps.googleusercontent.com"
+                  class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
+                />
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="custom-client-secret" class="block text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                    OAuth Client Secret <span class="text-accent font-normal">(Required by Google Cloud)</span>
+                  </label>
+                  <a
+                    href="https://console.cloud.google.com/apis/credentials"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="text-[10px] text-accent hover:underline flex items-center gap-1"
+                  >
+                    Google Cloud Console &rarr;
+                  </a>
+                </div>
+                <input
+                  id="custom-client-secret"
+                  type="password"
+                  bind:value={customClientSecret}
+                  placeholder="Paste your Client Secret (starts with GOCSPX-...)"
+                  class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
+                />
+                <span class="block text-[10px] text-text-muted mt-1 leading-normal">
+                  In Google Cloud Console, navigate to <strong>APIs &amp; Services &rarr; Credentials</strong>, click on your OAuth 2.0 Client ID, and copy the <strong>Client secret</strong>.
+                </span>
+              </div>
+            </div>
+          {/if}
+        </div>
+      </div>
+    {/if}
+  </section>
+
+  <div class="border-t border-border border-dashed"></div>
+
   <!-- AI Providers -->
   <section class="pb-2">
     <h2 class="text-xl font-medium mb-0.5">AI Providers</h2>

@@ -15,7 +15,9 @@ use tokio::io::AsyncWriteExt;
 mod git;
 mod icloud;
 mod search;
+mod calendar;
 
+pub use calendar::*;
 pub use search::{SearchIndex, SearchResult};
 
 // Note metadata for list display
@@ -4019,6 +4021,10 @@ pub fn run() {
             };
             app.manage(state);
 
+            let app_data = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
+            let calendar_manager = Arc::new(calendar::CalendarManager::new(app_data));
+            app.manage(calendar_manager);
+
             // Add notes folder to asset protocol scope so images can be served
             if let Some(ref folder) = app.state::<AppState>().app_config.read().expect("app_config read lock").notes_folder.clone() {
                 let _ = app.asset_protocol_scope().allow_directory(folder, true);
@@ -4140,6 +4146,14 @@ pub fn run() {
             uninstall_cli,
             get_cli_status,
             set_title_bar_theme,
+            calendar_start_auth,
+            calendar_get_state,
+            calendar_sync,
+            calendar_disconnect,
+            calendar_toggle_visibility,
+            calendar_create_event,
+            calendar_update_event,
+            calendar_delete_event,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

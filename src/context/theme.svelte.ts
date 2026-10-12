@@ -15,6 +15,8 @@ export type ThemeMode = "light" | "dark" | "system";
 
 // Font family CSS values
 const fontFamilyMap: Record<FontFamily, string> = {
+  "neue-haas":
+    '"Neue Haas Grotesk Text Pro", "Neue Haas Grotesk Text", "Neue Haas Grotesk", "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif',
   "system-sans":
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
@@ -35,7 +37,7 @@ const DEFAULT_CUSTOM_WIDTH_PX = 768;
 
 // Default editor font settings (simplified)
 export const defaultEditorFontSettings: Required<EditorFontSettings> = {
-  baseFontFamily: "system-sans",
+  baseFontFamily: "neue-haas",
   baseFontSize: 15,
   boldWeight: 600,
   lineHeight: 1.6,

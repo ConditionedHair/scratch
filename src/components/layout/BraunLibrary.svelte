@@ -9,20 +9,23 @@
     AddNoteIcon,
     FolderPlusIcon,
     PinIcon,
+    CalendarIcon,
     SettingsIcon,
     PencilIcon,
     SwatchIcon,
     ChevronRightIcon,
   } from "../icons";
+  import { calendarState } from "../../context/calendar.svelte";
   import { mod, isMac } from "../../lib/platform";
   import { cn } from "../../lib/utils";
   import { toast } from "svelte-sonner";
 
   interface Props {
     onOpenSettings?: () => void;
+    onOpenCalendar?: () => void;
   }
 
-  let { onOpenSettings }: Props = $props();
+  let { onOpenSettings, onOpenCalendar }: Props = $props();
 
   let settings = $state<Settings | null>(null);
   let plusMenuOpen = $state(false);
@@ -223,6 +226,22 @@
         <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-bg-muted text-text-muted">
           {notesState.notes.length}
         </span>
+      </button>
+
+      <button
+        type="button"
+        onclick={onOpenCalendar}
+        class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text hover:bg-bg-muted/70 transition-colors text-left cursor-pointer group"
+      >
+        <div class="flex items-center gap-2">
+          <CalendarIcon class="w-4 h-4 opacity-75 stroke-[1.8] group-hover:text-accent transition-colors" />
+          <span>Calendar</span>
+        </div>
+        {#if calendarState.connected}
+          <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-bg-muted text-text-muted">
+            {calendarState.todayEvents.length}
+          </span>
+        {/if}
       </button>
 
       <button

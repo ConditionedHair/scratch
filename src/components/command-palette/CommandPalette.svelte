@@ -46,6 +46,7 @@
     KeyboardIcon,
     PlusIcon,
     XIcon,
+    CalendarIcon,
   } from "../icons";
   import { mod, shift } from "../../lib/platform";
   import type { AiProvider } from "../../services/ai";
@@ -64,6 +65,7 @@
     onopensettings?: () => void;
     onopenshortcuts?: () => void;
     onopenaimodal?: (provider: AiProvider) => void;
+    onopencalendar?: () => void;
     focusMode?: boolean;
     ontogglefocusmode?: () => void;
     editor?: TiptapEditor | null;
@@ -75,6 +77,7 @@
     onopensettings,
     onopenshortcuts,
     onopenaimodal,
+    onopencalendar,
     focusMode = false,
     ontogglefocusmode,
     editor,
@@ -181,6 +184,16 @@
         action: () => {
           onclose();
           window.dispatchEvent(new CustomEvent("create-new-folder"));
+        },
+      },
+      {
+        id: "open-calendar",
+        label: "Open Calendar",
+        shortcut: `${mod} ${shift} C`,
+        icon: CalendarIcon,
+        action: () => {
+          onopencalendar?.();
+          onclose();
         },
       },
     ];

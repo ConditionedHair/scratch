@@ -27,7 +27,8 @@
 
   // Font family options
   const fontFamilyOptions: { value: FontFamily; label: string }[] = [
-    { value: "system-sans", label: "Sans" },
+    { value: "neue-haas", label: "Neue Haas Grotesk" },
+    { value: "system-sans", label: "System Sans" },
     { value: "serif", label: "Serif" },
     { value: "monospace", label: "Mono" },
   ];
@@ -53,7 +54,8 @@
   }
 
   let hasCustomFonts = $derived(
-    themeState.editorFontSettings.baseFontFamily !== "system-sans" ||
+    (themeState.editorFontSettings.baseFontFamily !== "neue-haas" &&
+      themeState.editorFontSettings.baseFontFamily !== "system-sans") ||
     themeState.editorFontSettings.baseFontSize !== 15 ||
     themeState.editorFontSettings.boldWeight !== 600 ||
     themeState.editorFontSettings.lineHeight !== 1.6 ||

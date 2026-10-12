@@ -50,6 +50,7 @@
   import { WikilinkSuggestion } from "./WikilinkSuggestion";
   import EditorWidthHandles from "./EditorWidthHandle.svelte";
   import TagBar from "./TagBar.svelte";
+  import CalendarWidget from "./CalendarWidget.svelte";
   import { SearchHighlight, searchHighlightPluginKey } from "./SearchHighlight";
   import FloatingFormatBar from "./FloatingFormatBar.svelte";
   import { ScratchBlockMath, normalizeBlockMath } from "./MathExtensions";
@@ -89,6 +90,8 @@
     onEditorReady?: (editor: TiptapEditor | null) => void;
     onSaveToFolder?: () => void;
     saveToFolderDisabled?: boolean;
+    onOpenCalendar?: () => void;
+    onOpenSettings?: () => void;
   }
 
   let {
@@ -100,6 +103,8 @@
     onEditorReady,
     onSaveToFolder,
     saveToFolderDisabled = false,
+    onOpenCalendar,
+    onOpenSettings,
   }: Props = $props();
 
   function normalizeUrl(url: string): string {
@@ -1698,6 +1703,11 @@
           noteId={currentNote.id}
           tags={currentNote.tags || []}
           tagColors={settings?.tagColors}
+        />
+
+        <CalendarWidget
+          {onOpenCalendar}
+          {onOpenSettings}
         />
 
         <!-- Saving / Sync status -->

@@ -24,6 +24,7 @@
   import { PreviewApp } from "./components/preview";
   import { SidebarResizeHandle } from "./components/layout";
   import { SettingsPage } from "./components/settings";
+  import { CalendarPage } from "./components/calendar";
   import { AiEditModal } from "./components/ai";
   import { KeyboardShortcutsModal } from "./components/shortcuts";
   import { showUpdateToast } from "./services/updater";
@@ -58,7 +59,7 @@
   const isPreview = windowMode.isPreview;
   const previewFile = windowMode.previewFile;
 
-  type ViewState = "notes" | "settings";
+  type ViewState = "notes" | "settings" | "calendar";
 
   let paletteOpen = $state(false);
   let view = $state<ViewState>("notes");
@@ -88,6 +89,18 @@
 
   function closeSettings() {
     view = "notes";
+  }
+
+  function openCalendar() {
+    view = "calendar";
+  }
+
+  function closeCalendar() {
+    view = "notes";
+  }
+
+  function toggleCalendar() {
+    view = view === "calendar" ? "notes" : "calendar";
   }
 
   function handleBackToPalette() {
@@ -234,8 +247,27 @@
         return;
       }
 
-      // Block all other shortcuts when in settings view
+      // Cmd/Ctrl+Shift+C - Toggle calendar view
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === "c"
+      ) {
+        e.preventDefault();
+        toggleCalendar();
+        return;
+      }
+
+      // Block all other shortcuts when in settings or calendar view
       if (view === "settings") {
+        return;
+      }
+
+      if (view === "calendar") {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeCalendar();
+        }
         return;
       }
 
@@ -463,10 +495,20 @@
         </div>
       {/if}
 
+      {#if view === "calendar"}
+        <div
+          in:viewFadeIn
+          out:viewFadeOut
+          class="absolute inset-0 z-10 bg-bg overflow-hidden"
+        >
+          <CalendarPage onBack={closeCalendar} />
+        </div>
+      {/if}
+
       <div
         class="h-full w-full flex overflow-hidden transition-opacity duration-200"
-        class:opacity-0={view === "settings"}
-        class:pointer-events-none={view === "settings"}
+        class:opacity-0={view === "settings" || view === "calendar"}
+        class:pointer-events-none={view === "settings" || view === "calendar"}
       >
         <!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
         <div
@@ -477,7 +519,10 @@
               : "opacity-100"
           }`}
         >
-          <BraunLibrary onOpenSettings={toggleSettings} />
+          <BraunLibrary
+            onOpenSettings={toggleSettings}
+            onOpenCalendar={openCalendar}
+          />
         </div>
 
         <!-- Column 2: Note Cards List -->
@@ -500,6 +545,8 @@
           sidebarVisible={sidebarVisible}
           {focusMode}
           onToggleFocusMode={toggleFocusMode}
+          onOpenCalendar={openCalendar}
+          onOpenSettings={toggleSettings}
           onEditorReady={(editor) => {
             editorInstance = editor;
           }}
@@ -535,6 +582,7 @@
     onclose={handleClosePalette}
     onopensettings={toggleSettings}
     onopenshortcuts={() => { shortcutsOpen = true; }}
+    onopencalendar={openCalendar}
     onopenaimodal={(provider) => {
       aiProvider = provider;
       aiModalOpen = true;

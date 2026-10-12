@@ -7,6 +7,7 @@ export interface NoteMetadata {
 	modified: number
 	tags: string[]
 	wordCount?: number
+	word_count?: number
 }
 
 export interface Note {

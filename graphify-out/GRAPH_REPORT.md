@@ -1,86 +1,80 @@
-# Graph Report - scratch (2026-08-06)
+# Graph Report - scratch  (2026-10-12)
 
 ## Corpus Check
-
-- 81 files · ~134,120 words
+- 214 files · ~171,389 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-
-- 868 nodes · 2067 edges · 87 communities (41 shown, 46 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.68)
+- 1105 nodes · 2363 edges · 92 communities (53 shown, 39 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 25 edges (avg confidence: 0.72)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-
-- Built from commit: `312c2f98`
+- Built from commit: `418f78df`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-
 - lib.rs
-- ui/index.tsx
-- ThemeContext.tsx
+- ui/index.ts
+- theme.svelte.ts
 - tauri.conf.json
-- Sidebar.tsx
 - devDependencies
-- icons/index.tsx
+- SlashCommand.ts
 - git.rs
 - compilerOptions
-- LinkEditor.tsx
-- NoteMetadata
+- gmail.rs
+- WikilinkSuggestion.ts
 - permissions
-- AiResponseToast.tsx
+- MailState
 - notes.ts
-- Editor.tsx
-- SettingsPage.tsx
+- Editor.svelte
+- calendar.svelte.ts
 - platform.ts
-- ToolsSettingsSection.tsx
-- GeneralSettingsSection.tsx
-- ai.ts
+- SettingsPage.svelte
+- git.ts
+- App.svelte
 - dependencies
-- NoteList.tsx
-- App.tsx
-- CodeBlockView.tsx
+- CalendarManager
+- NotesState
 - compilerOptions
-- FolderTreeView.tsx
-- SuggestionList.tsx
+- SearchIndex
+- GitState
 - Scratch App Screenshot
-- files.ts
-- SearchToolbar.tsx
+- icloud.rs
+- Scratch — Agent & Contributor Development Guide
 - Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)
 - Key Patterns Section
 - Release Workflow
 - Folders Dark Illustration (Cat holding folder)
-- NotesContext.tsx
+- CommandPalette.svelte
 - CI Workflow
 - Note Dark Illustration (Cat Writing in Notepad)
 - Dev Commands (npm run dev/build/tauri dev/tauri build)
-- @dnd-kit/core
-- @dnd-kit/sortable
+- BraunNoteList.svelte
+- markdownSpacing.ts
 - highlight.js
 - katex
 - lowlight
-- @radix-ui/react-alert-dialog
-- @radix-ui/react-context-menu
-- @radix-ui/react-dropdown-menu
-- @radix-ui/react-tooltip
-- react
-- react-colorful
-- sonner
+- tags.ts
+- CodeBlockNodeView.svelte.ts
+- SearchHighlight.ts
+- clsx
+- bits-ui
+- colord
+- svelte
 - tailwind-merge
 - @tauri-apps/api
 - @tauri-apps/plugin-clipboard-manager
-- @tauri-apps/plugin-dialog
+- svelte-dnd-action
 - @tauri-apps/plugin-opener
 - @tauri-apps/plugin-updater
-- tippy.js
+- svelte-sonner
 - @tiptap/extension-code-block-lowlight
 - @tiptap/extension-image
 - @tiptap/extension-link
 - @tiptap/extension-mathematics
-- @tiptap/extension-placeholder
+- @tiptap/core
 - @tiptap/extension-table
 - @tiptap/extension-table-cell
 - @tiptap/extension-table-header
@@ -89,268 +83,214 @@
 - @tiptap/extension-task-list
 - @tiptap/markdown
 - @tiptap/pm
-- @tiptap/react
 - @tiptap/starter-kit
 - @tiptap/suggestion
 - Coding Conventions
 - Contributing Guidelines
 - Keyboard Shortcuts Table
 - Scratch Project Description
-- CommandPalette.tsx
-- Option
-- Path
-- Result
-- String
-- FolderTreeView
+- pdf.ts
 
 ## God Nodes (most connected - your core abstractions)
-
 1. `AppState` - 55 edges
-2. `cn()` - 25 edges
-3. `useNotes()` - 19 edges
-4. `setup_file_watcher()` - 18 edges
-5. `useTheme()` - 17 edges
-6. `compilerOptions` - 16 edges
-7. `get_effective_ignored_dirs()` - 15 edges
-8. `run()` - 15 edges
-9. `Settings` - 14 edges
-10. `extract_title()` - 14 edges
+2. `ThemeState` - 30 edges
+3. `NotesState` - 29 edges
+4. `GmailManager` - 28 edges
+5. `CalendarManager` - 26 edges
+6. `GitState` - 19 edges
+7. `MailState` - 19 edges
+8. `permissions` - 16 edges
+9. `setup_file_watcher()` - 16 edges
+10. `CalendarCacheData` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
-
-- `Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy)` --semantically_similar_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED] [semantically similar]
+- `Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy)` --semantically_similar_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED] [semantically similar]
   README.md → CLAUDE.md
-- `Dev Commands (npm run dev/build/tauri dev/tauri build)` --semantically_similar_to--> `Installation Instructions (Homebrew, manual download, from source)` [INFERRED] [semantically similar]
+- `Dev Commands (npm run dev/build/tauri dev/tauri build)` --semantically_similar_to--> `Installation Instructions (Homebrew, manual download, from source)`  [INFERRED] [semantically similar]
   CLAUDE.md → README.md
-- `Serena Project Config (scratch, typescript language server)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
+- `Serena Project Config (scratch, typescript language server)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
   .serena/project.yml → CLAUDE.md
-- `index.html App Entry Point (mounts #root, loads /src/main.tsx)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
+- `index.html App Entry Point (mounts #root, loads /src/main.tsx)` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
   index.html → CLAUDE.md
-- `Features List` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)` [INFERRED]
+- `Features List` --conceptually_related_to--> `Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)`  [INFERRED]
   README.md → CLAUDE.md
 
 ## Import Cycles
-
-- 4-file cycle: `src/App.tsx -> src/components/settings/index.tsx -> src/components/settings/SettingsPage.tsx -> src/components/settings/AboutSettingsSection.tsx -> src/App.tsx`
+- None detected.
 
 ## Hyperedges (group relationships)
-
 - **CI Validation Flow (frontend build + cargo check/clippy)** — github_workflows_ci_workflow, github_workflows_ci_checkjob, claude_ci_section [INFERRED 0.85]
 - **Release Process (tag push -> multi-platform build -> deb repack -> draft release)** — github_workflows_release_workflow, github_workflows_release_buildandreleasejob, github_workflows_release_renamedebpackagejob, claude_releasing_steps [INFERRED 0.85]
 
-## Communities (87 total, 46 thin omitted)
+## Communities (92 total, 39 thin omitted)
 
 ### Community 0 - "lib.rs"
-
 Cohesion: 0.06
-Nodes (139): AppHandle, Arc, Default, DirEntry, Field, GitResult, GitStatus, HashMap (+131 more)
+Nodes (141): AppHandle, Default, DirEntry, GitResult, GitStatus, HashMap, IcloudStatus, Instant (+133 more)
 
-### Community 1 - "ui/index.tsx"
+### Community 1 - "ui/index.ts"
+Cohesion: 0.11
+Nodes (4): AlertDialog, AlertDialogPortal, AlertDialogTrigger, cn()
 
+### Community 2 - "theme.svelte.ts"
 Cohesion: 0.05
-Nodes (57): SuggestionListInner(), SortableTagPillProps, TagBar(), TagBarProps, ChevronDownIcon(), CopyIcon(), PlusIcon(), SwatchIcon() (+49 more)
-
-### Community 2 - "ThemeContext.tsx"
-
-Cohesion: 0.08
-Nodes (39): EditorWidthHandles(), EditorWidthHandlesProps, PRESET_PX, MinusIcon(), applyWidthVar(), SidebarResizeHandle(), AppearanceSettingsSection(), boldWeightOptions (+31 more)
+Nodes (31): defaultEditorFontSettings, defaultThemeColors, editorWidthMap, fontFamilyMap, isTextDirection(), migrateCustomColors(), parseCssColorToRgb(), ThemeMode (+23 more)
 
 ### Community 3 - "tauri.conf.json"
-
 Cohesion: 0.05
 Nodes (40): $HOME/**, https://github.com/erictli/scratch/releases/latest/download/latest.json, icons/128x128@2x.png, icons/128x128.png, icons/32x32.png, icons/icon.icns, icons/icon.ico, app (+32 more)
 
-### Community 4 - "Sidebar.tsx"
-
-Cohesion: 0.15
-Nodes (12): AddNoteIcon(), FolderPlusIcon(), GitBranchDeletedIcon(), GitBranchIcon(), GitCommitIcon(), NoteIcon(), SearchIcon(), SearchOffIcon() (+4 more)
-
 ### Community 5 - "devDependencies"
+Cohesion: 0.06
+Nodes (32): devDependencies, prettier, prettier-plugin-svelte, svelte-check, @sveltejs/vite-plugin-svelte, tailwindcss, @tailwindcss/typography, @tailwindcss/vite (+24 more)
 
-Cohesion: 0.07
-Nodes (28): devDependencies, tailwindcss, @tailwindcss/typography, @tailwindcss/vite, @tauri-apps/cli, @types/react, @types/react-dom, typescript (+20 more)
-
-### Community 6 - "icons/index.tsx"
-
-Cohesion: 0.08
-Nodes (23): SLASH_COMMANDS, SlashCommand, slashCommandPluginKey, BlockMathIcon(), BracketsIcon(), CheckSquareIcon(), CircleCheckIcon(), CodeIcon() (+15 more)
+### Community 6 - "SlashCommand.ts"
+Cohesion: 0.18
+Nodes (6): SLASH_COMMANDS, SlashCommand, SlashCommandItem, slashCommandPluginKey, SvelteRenderer, SvelteRendererOptions
 
 ### Community 7 - "git.rs"
-
-Cohesion: 0.26
-Nodes (24): add_remote(), commit_all(), fetch(), get_remote_url(), get_status(), git_cmd(), git_init(), GitResult (+16 more)
+Cohesion: 0.24
+Nodes (25): add_remote(), commit_all(), fetch(), get_remote_url(), get_status(), git_cmd(), git_init(), GitResult (+17 more)
 
 ### Community 8 - "compilerOptions"
+Cohesion: 0.08
+Nodes (24): DOM, DOM.Iterable, ES2020, src/**/*.d.ts, src/**/*.js, src/**/*.svelte, src/**/*.ts, compilerOptions (+16 more)
 
-Cohesion: 0.09
-Nodes (22): DOM, DOM.Iterable, ES2020, src, compilerOptions, allowImportingTsExtensions, isolatedModules, jsx (+14 more)
+### Community 9 - "gmail.rs"
+Cohesion: 0.17
+Nodes (35): decode_base64_url(), extract_body_and_attachments(), get_header(), GmailAuth, GmailManager, html_to_clean_markdown(), mail_disconnect(), mail_get_state() (+27 more)
 
-### Community 9 - "LinkEditor.tsx"
-
-Cohesion: 0.24
-Nodes (8): BlockMathEditor(), BlockMathEditorProps, LinkEditor(), LinkEditorProps, CheckIcon(), LinkOffIcon(), XIcon(), IconButton
-
-### Community 10 - "NoteMetadata"
-
-Cohesion: 0.27
-Nodes (9): Wikilink, WikilinkStorage, WikilinkSuggestion, wikilinkSuggestionPluginKey, WikilinkSuggestionList, WikilinkSuggestionListProps, WikilinkSuggestionListRef, FileItemProps (+1 more)
+### Community 10 - "WikilinkSuggestion.ts"
+Cohesion: 0.43
+Nodes (5): Wikilink, WikilinkStorage, WikilinkSuggestion, wikilinkSuggestionPluginKey, NoteMetadata
 
 ### Community 11 - "permissions"
+Cohesion: 0.09
+Nodes (22): clipboard-manager:allow-write-text, core:default, core:menu:default, core:webview:allow-print, core:window:allow-close, core:window:allow-is-maximized, core:window:allow-set-focus, core:window:allow-start-dragging (+14 more)
 
-Cohesion: 0.10
-Nodes (20): clipboard-manager:allow-write-text, core:default, core:menu:default, core:webview:allow-print, core:window:allow-close, core:window:allow-set-focus, core:window:allow-start-dragging, dialog:allow-open (+12 more)
-
-### Community 12 - "AiResponseToast.tsx"
-
-Cohesion: 0.26
-Nodes (11): AiEditModal(), AiEditModalProps, AiResponseToast(), AiResponseToastProps, parseInlineMarkdown(), parseMarkdown(), ClaudeIcon(), CodexIcon() (+3 more)
+### Community 12 - "MailState"
+Cohesion: 0.09
+Nodes (8): MailState, MailAttachment, MailLabel, MailMessage, MailSyncState, MailThread, ModifyThreadPayload, SendMailPayload
 
 ### Community 13 - "notes.ts"
+Cohesion: 0.12
+Nodes (5): createNote(), duplicateNote(), readNote(), saveNote(), Settings
 
-Cohesion: 0.15
-Nodes (11): CommandPalette(), Sidebar(), createFolder(), createNote(), deleteNote(), duplicateNote(), moveFolder(), moveNote() (+3 more)
+### Community 14 - "Editor.svelte"
+Cohesion: 0.08
+Nodes (7): addInputRules(), normalizeUrl(), Frontmatter, lowlight, SUPPORTED_LANGUAGES, normalizeBlockMath(), ScratchBlockMath
 
-### Community 14 - "Editor.tsx"
-
+### Community 15 - "calendar.svelte.ts"
 Cohesion: 0.09
-Nodes (27): blockIndexToPos(), Editor(), EditorProps, focusAndSelectTitle(), FormatBarProps, formatDateTime(), getMarkdownBlockOffsets(), GridPickerProps (+19 more)
-
-### Community 15 - "SettingsPage.tsx"
-
-Cohesion: 0.22
-Nodes (8): ArrowLeftIcon(), InfoIcon(), IntegrationsIcon(), SettingsPage(), SettingsPageProps, SettingsTab, tabs, isMac
+Nodes (9): if(), CalendarState, formatEventDateKey(), CalendarEntry, CalendarEvent, CalendarSyncState, CalendarViewMode, CreateEventPayload (+1 more)
 
 ### Community 16 - "platform.ts"
-
-Cohesion: 0.12
-Nodes (11): settingsCategories, ShortcutsSettingsSection(), KeyboardShortcutsModal(), KeyboardShortcutsModalProps, modalCategories, alt, mod, shift (+3 more)
-
-### Community 17 - "ToolsSettingsSection.tsx"
-
 Cohesion: 0.16
-Nodes (8): AI_PROVIDER_INFO, CliAction, cliInitialState, cliReducer(), CliState, ToolsSettingsSection(), AI_PROVIDER_ORDER, CliStatus
+Nodes (8): alt, isMac, isWindows, mod, shift, Shortcut, shortcutCategories, ShortcutCategory
 
-### Community 18 - "GeneralSettingsSection.tsx"
-
-Cohesion: 0.08
-Nodes (14): CloudPlusIcon(), ExternalLinkIcon(), FolderIcon(), FoldersIcon(), formatRemoteUrl(), GeneralSettingsSection(), getRemoteWebUrl(), GitContext (+6 more)
+### Community 19 - "App.svelte"
+Cohesion: 0.05
+Nodes (17): displayItems, handleKeyDown(), backdropIn(), backdropOut(), modalIn(), ModalMotionParams, modalOut(), shouldReduceMotion() (+9 more)
 
 ### Community 20 - "dependencies"
+Cohesion: 0.22
+Nodes (9): dependencies, beautiful-mermaid, @tauri-apps/plugin-dialog, tippy.js, @tiptap/extension-placeholder, beautiful-mermaid, tippy.js, @tauri-apps/plugin-dialog (+1 more)
 
-Cohesion: 0.18
-Nodes (11): beautiful-mermaid, clsx, @dnd-kit/utilities, dependencies, beautiful-mermaid, clsx, @dnd-kit/utilities, react-dom (+3 more)
-
-### Community 21 - "NoteList.tsx"
-
-Cohesion: 0.15
-Nodes (12): AppContent(), PinIcon(), TrashIcon(), NoteItem, NoteItemProps, NoteItemWithMenu, NoteItemWithMenuProps, NoteList() (+4 more)
-
-### Community 22 - "App.tsx"
-
+### Community 21 - "CalendarManager"
 Cohesion: 0.21
-Nodes (10): App(), getWindowMode(), showUpdateToast(), ViewState, GithubIcon(), RefreshCwIcon(), SpinnerIcon(), FolderPicker() (+2 more)
-
-### Community 23 - "CodeBlockView.tsx"
-
-Cohesion: 0.24
-Nodes (7): CodeBlockView(), lowlight, SUPPORTED_LANGUAGES, MermaidRenderer(), MermaidRendererProps, EyeIcon(), PencilIcon()
+Nodes (27): calendar_create_event(), calendar_delete_event(), calendar_disconnect(), calendar_get_state(), calendar_start_auth(), calendar_sync(), calendar_toggle_visibility(), calendar_update_event() (+19 more)
 
 ### Community 24 - "compilerOptions"
-
 Cohesion: 0.22
 Nodes (8): vite.config.ts, compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, include
 
-### Community 25 - "FolderTreeView.tsx"
-
-Cohesion: 0.26
-Nodes (11): FileItem, FolderItemComponent, FolderItemProps, FolderTreeViewProps, buildFolderTree(), countNotesInFolder(), FolderTreeData, getVisibleItems() (+3 more)
-
-### Community 26 - "SuggestionList.tsx"
-
-Cohesion: 0.31
-Nodes (7): SlashCommandItem, SlashCommandList, SlashCommandListProps, SlashCommandListRef, SuggestionList, SuggestionListProps, SuggestionListRef
+### Community 25 - "SearchIndex"
+Cohesion: 0.18
+Nodes (13): Field, Index, IndexReader, IndexWriter, Schema, Mutex, PathBuf, Result (+5 more)
 
 ### Community 27 - "Scratch App Screenshot"
-
 Cohesion: 0.43
 Nodes (7): Scratch App Screenshot, Interactive Checklist (Task List), Editor Formatting Toolbar, Embedded Mermaid Diagram Rendering, Notes Sidebar UI, "Project Catnip" Sample Note, "Files changed" Version Control Indicator
 
-### Community 29 - "SearchToolbar.tsx"
+### Community 28 - "icloud.rs"
+Cohesion: 0.29
+Nodes (14): container_dir(), ensure_default_folder(), get_status(), IcloudStatus, is_inside_icloud(), is_placeholder(), placeholder_path(), real_name_from_placeholder() (+6 more)
 
-Cohesion: 0.25
-Nodes (7): SearchToolbar(), SearchToolbarProps, ArrowDownIcon(), ArrowUpIcon(), ChevronRightIcon(), ReplaceAllIcon(), ReplaceIcon()
+### Community 29 - "Scratch — Agent & Contributor Development Guide"
+Cohesion: 0.14
+Nodes (13): 1. Project Overview & Philosophy, 2. Tech Stack Architecture, 3. Directory Layout, 4.1 Frontmatter & Tags System, 4.2 Hovering Formatting Toolbar (`FloatingFormatBar`), 4.3 Command Palette vs. Link Shortcuts, 4.4 Multi-Device Sync, 4.5 Svelte 5 Runes State Management (+5 more)
 
 ### Community 30 - "Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy)"
-
 Cohesion: 0.40
 Nodes (5): Project Overview (Tauri v2 + React/TypeScript/Tailwind + TipTap + Tantivy), index.html App Entry Point (mounts #root, loads /src/main.tsx), Built With (Tauri, React, TipTap, Tailwind CSS, Tantivy), Features List, Serena Project Config (scratch, typescript language server)
 
 ### Community 31 - "Key Patterns Section"
-
 Cohesion: 0.50
 Nodes (4): Key Patterns Section, NotesContext Dual Context Pattern (data/actions separated for performance), Settings Storage Locations (app config.json + per-folder .scratch/settings.json), Tauri v2 Capabilities Permissions (src-tauri/capabilities/default.json)
 
 ### Community 32 - "Release Workflow"
-
 Cohesion: 0.67
 Nodes (4): Releasing Steps, Build and Release Job (macOS/Ubuntu/Windows matrix via tauri-action), Rename Deb Package Job (repacks 'scratch' deb as 'scratch-notes' to avoid Ubuntu name collision, issue #119), Release Workflow
 
 ### Community 33 - "Folders Dark Illustration (Cat holding folder)"
-
 Cohesion: 0.50
 Nodes (4): Dark Theme / Dark Mode, Empty-State Illustration (UI Design Pattern), Folders Dark Illustration (Cat holding folder), Scratch (note-taking app)
 
-### Community 34 - "NotesContext.tsx"
-
-Cohesion: 0.32
-Nodes (7): NotesActionsContext, NotesActionsContextValue, NotesDataContext, NotesDataContextValue, NotesProvider(), SearchResult, Note
+### Community 34 - "CommandPalette.svelte"
+Cohesion: 0.22
+Nodes (9): allItems, filteredCommands, filteredNotes, countMarkdownWords(), countWords(), plainTextFromMarkdown(), stripFrontmatter(), SearchResult (+1 more)
 
 ### Community 35 - "CI Workflow"
-
 Cohesion: 0.67
 Nodes (3): CI Description Section, Check Job (build + cargo check/clippy), CI Workflow
 
 ### Community 36 - "Note Dark Illustration (Cat Writing in Notepad)"
-
 Cohesion: 0.67
 Nodes (3): Note Dark Illustration (Cat Writing in Notepad), Note Light Illustration (light-mode counterpart), Scratch (App)
 
-### Community 81 - "CommandPalette.tsx"
+### Community 39 - "markdownSpacing.ts"
+Cohesion: 0.31
+Nodes (9): if(), cleanSerializedMarkdown(), hasHardBreak(), isHorizontalRule(), isListContinuation(), isListItem(), isTableRow(), LineType (+1 more)
 
-Cohesion: 0.19
-Nodes (11): Command, CommandPaletteProps, DownloadIcon(), KeyboardIcon(), MarkdownIcon(), ZenIcon(), CommandItem(), plainTextFromMarkdown() (+3 more)
+### Community 43 - "tags.ts"
+Cohesion: 0.27
+Nodes (5): #each(), assignTagColor(), getTagColor(), hashTag(), TAG_PALETTE
 
-### Community 86 - "FolderTreeView"
+### Community 44 - "CodeBlockNodeView.svelte.ts"
+Cohesion: 0.29
+Nodes (3): CodeBlockNodeView, SvelteCodeBlockNodeViewRenderer(), addNodeView()
 
-Cohesion: 0.40
-Nodes (5): FolderTreeView(), loadCollapsedFolders(), saveCollapsedFolders(), deleteFolder(), renameFolder()
+### Community 45 - "SearchHighlight.ts"
+Cohesion: 0.50
+Nodes (3): SearchHighlight, SearchHighlightOptions, searchHighlightPluginKey
+
+### Community 81 - "pdf.ts"
+Cohesion: 0.67
+Nodes (3): downloadMarkdown(), downloadPdf(), sanitizeFilename()
 
 ## Ambiguous Edges - Review These
-
-- `Notes Sidebar UI` → `"Files changed" Version Control Indicator` [AMBIGUOUS]
+- `Notes Sidebar UI` → `"Files changed" Version Control Indicator`  [AMBIGUOUS]
   docs/screenshot.png · relation: conceptually_related_to
 
 ## Knowledge Gaps
-
-- **225 isolated node(s):** `SortableTagPillProps`, `TagBarProps`, `Command`, `CommandPaletteProps`, `katexMacros` (+220 more)
+- **195 isolated node(s):** `name`, `private`, `version`, `type`, `dev` (+190 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **46 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
-
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Notes Sidebar UI` and `"Files changed" Version Control Indicator`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `dependencies` connect `dependencies` to `devDependencies`, `@dnd-kit/core`, `@dnd-kit/sortable`, `highlight.js`, `katex`, `lowlight`, `@radix-ui/react-alert-dialog`, `@radix-ui/react-context-menu`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-tooltip`, `react`, `react-colorful`, `sonner`, `tailwind-merge`, `@tauri-apps/api`, `@tauri-apps/plugin-clipboard-manager`, `@tauri-apps/plugin-dialog`, `@tauri-apps/plugin-opener`, `@tauri-apps/plugin-updater`, `tippy.js`, `@tiptap/extension-code-block-lowlight`, `@tiptap/extension-image`, `@tiptap/extension-link`, `@tiptap/extension-mathematics`, `@tiptap/extension-placeholder`, `@tiptap/extension-table`, `@tiptap/extension-table-cell`, `@tiptap/extension-table-header`, `@tiptap/extension-table-row`, `@tiptap/extension-task-item`, `@tiptap/extension-task-list`, `@tiptap/markdown`, `@tiptap/pm`, `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/suggestion`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `cn()` connect `ui/index.tsx` to `ThemeContext.tsx`, `SuggestionList.tsx`, `Sidebar.tsx`, `Editor.tsx`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **What connects `SortableTagPillProps`, `TagBarProps`, `Command` to the rest of the system?**
-  _225 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `NotesState` connect `NotesState` to `git.ts`, `CommandPalette.svelte`, `Editor.svelte`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+- **Why does `GitState` connect `GitState` to `git.ts`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `ThemeState` connect `theme.svelte.ts` to `App.svelte`, `Editor.svelte`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **What connects `name`, `private`, `version` to the rest of the system?**
+  _195 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `lib.rs` be split into smaller, more focused modules?**
-  _Cohesion score 0.06121893705786323 - nodes in this community are weakly interconnected._
-- **Should `ui/index.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05472837022132797 - nodes in this community are weakly interconnected._
-- **Should `ThemeContext.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.08405797101449275 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.058762399622106755 - nodes in this community are weakly interconnected._
+- **Should `ui/index.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.10685483870967742 - nodes in this community are weakly interconnected._

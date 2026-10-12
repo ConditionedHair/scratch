@@ -5,6 +5,7 @@
 	import type { Settings } from '../../types/note'
 	import { getTagColor } from '../../lib/tags'
 	import { cleanTitle } from '../../lib/utils'
+	import { countWords, countMarkdownWords } from '../../lib/plainText'
 	import { TrashIcon, CopyIcon } from '../icons'
 	import { toast } from 'svelte-sonner'
 	import {
@@ -41,15 +42,32 @@
 		})
 	}
 
-	function formatWordCount(count?: number, preview?: string): string {
+	function formatWordCount(
+		count?: number,
+		preview?: string,
+		title?: string
+	): string {
+		const titleWords = title ? countWords(title) : 0
+
 		if (typeof count === 'number') {
-			if (count === 0 && (!preview || !preview.trim())) return 'Empty'
-			return count === 1 ? '1 word' : `${count.toLocaleString()} words`
+			const effectiveCount =
+				count === 0 && titleWords > 0 ? titleWords : count
+			if (
+				effectiveCount === 0 &&
+				(!preview || !preview.trim()) &&
+				(!title || !title.trim())
+			) {
+				return 'Empty'
+			}
+			return effectiveCount === 1
+				? '1 word'
+				: `${effectiveCount.toLocaleString()} words`
 		}
-		if (!preview || !preview.trim()) return 'Empty'
-		const words = preview.trim().split(/\s+/).filter(Boolean).length
-		if (words === 0) return 'Empty'
-		return words === 1 ? '1 word' : `${words.toLocaleString()} words`
+
+		const previewWords = preview ? countWords(preview) : 0
+		const total = titleWords + previewWords
+		if (total === 0) return 'Empty'
+		return total === 1 ? '1 word' : `${total.toLocaleString()} words`
 	}
 
 	let settings = $state<Settings | null>(null)
@@ -140,19 +158,15 @@
 				{@const previewText =
 					note.preview || 'No content in this note yet...'}
 				{@const currentN = notesState.currentNote}
+				{@const rawWordCount = note.wordCount ?? note.word_count}
 				{@const noteWordCount =
 					isSelected &&
 					currentN &&
 					typeof currentN.content === 'string'
-						? currentN.content.trim()
-							? currentN.content
-									.trim()
-									.split(/\s+/)
-									.filter(Boolean)
-									.filter((w) => !/^[#*\-+>|~=_`]+$/.test(w))
-									.length
-							: 0
-						: note.wordCount}
+						? countMarkdownWords(currentN.content)
+						: typeof rawWordCount === 'number'
+							? rawWordCount
+							: undefined}
 
 				<ContextMenu.Root>
 					<ContextMenu.Trigger>
@@ -243,7 +257,8 @@
 									<span
 										>{formatWordCount(
 											noteWordCount,
-											note.preview
+											note.preview,
+											title
 										)}</span
 									>
 								</div>

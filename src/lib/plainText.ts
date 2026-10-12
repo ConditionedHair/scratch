@@ -1,12 +1,31 @@
-export function plainTextFromMarkdown(markdown: string): string {
-	// Strip frontmatter if present
-	let cleanedMarkdown = markdown
-	const frontmatterMatch = cleanedMarkdown.match(
+export function stripFrontmatter(markdown: string): string {
+	if (!markdown) return ''
+	const frontmatterMatch = markdown.match(
 		/^(?:\ufeff)?---[ \t]*\r?\n([\s\S]*?\r?\n)?---[ \t]*(?:\r?\n|$)/
 	)
 	if (frontmatterMatch) {
-		cleanedMarkdown = cleanedMarkdown.slice(frontmatterMatch[0].length)
+		return markdown.slice(frontmatterMatch[0].length)
 	}
+	return markdown
+}
+
+export function countWords(text: string): number {
+	if (!text || !text.trim()) return 0
+	return text
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.filter((w) => !/^[#*\-+>|~=_`]+$/.test(w))
+		.length
+}
+
+export function countMarkdownWords(markdown: string): number {
+	return countWords(stripFrontmatter(markdown))
+}
+
+export function plainTextFromMarkdown(markdown: string): string {
+	// Strip frontmatter if present
+	let cleanedMarkdown = stripFrontmatter(markdown)
 
 	let inCodeBlock = false
 	const lines = cleanedMarkdown.split(/\r?\n/)

@@ -3,6 +3,7 @@ import { toast } from 'svelte-sonner'
 import type { Note, NoteMetadata } from '../types/note'
 import * as notesService from '../services/notes'
 import type { SearchResult } from '../services/notes'
+import { countMarkdownWords } from '../lib/plainText'
 
 export class NotesState {
 	notes = $state<NoteMetadata[]>([])
@@ -222,6 +223,23 @@ export class NotesState {
 			if (this.selectedNoteId === savingNoteId) {
 				this.currentNote = updated
 				this.selectedNoteId = updated.id
+			}
+
+			const existingIndex = this.notes.findIndex(
+				(n) => n.id === savingNoteId || n.id === updated.id
+			)
+			if (existingIndex >= 0) {
+				const existing = this.notes[existingIndex]
+				const words = countMarkdownWords(content)
+				this.notes[existingIndex] = {
+					...existing,
+					id: updated.id,
+					title: updated.title,
+					modified: updated.modified,
+					tags: updated.tags,
+					wordCount: words,
+					word_count: words
+				}
 			}
 
 			this.scheduleRefresh()

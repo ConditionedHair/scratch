@@ -1,5 +1,5 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#[cfg(not(target_os = "macos"))]
+compile_error!("Scratch is only supported on macOS.");
 
 fn main() {
     scratch_lib::run()

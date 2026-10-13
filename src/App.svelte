@@ -31,7 +31,6 @@
 	import { showUpdateToast } from './services/updater'
 	import * as aiService from './services/ai'
 	import type { AiProvider } from './services/ai'
-	import { isMac, isWindows } from './lib/platform'
 	import {
 		viewFadeIn,
 		viewFadeOut,
@@ -195,9 +194,8 @@
 	)
 
 	onMount(() => {
-		// Add platform class for OS-specific styling
-		const os = isMac ? 'mac' : isWindows ? 'windows' : 'linux'
-		document.documentElement.classList.add(`platform-${os}`)
+		// Add platform class for macOS styling
+		document.documentElement.classList.add('platform-mac')
 
 		// Cmd/Ctrl+W — close window (works in both preview and folder mode)
 		const handleWindowCloseKey = (e: KeyboardEvent) => {

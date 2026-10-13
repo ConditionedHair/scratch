@@ -7,8 +7,6 @@
 
   <p>
     <a href="https://img.shields.io/badge/platform-macOS-lightgrey"><img src="https://img.shields.io/badge/platform-macOS-lightgrey" alt="macOS" /></a>
-    <a href="https://img.shields.io/badge/platform-Windows-blue"><img src="https://img.shields.io/badge/platform-Windows-blue" alt="Windows" /></a>
-    <a href="https://img.shields.io/badge/platform-Linux-orange"><img src="https://img.shields.io/badge/platform-Linux-orange" alt="Linux" /></a>
     <a href="https://github.com/erictli/scratch/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" /></a>
   </p>
 
@@ -24,7 +22,7 @@
 
 ## Overview
 
-Scratch is a cross-platform desktop note-taking instrument built with **Tauri v2**, **React 19**, and **TipTap**. Drawing inspiration from Dieter Rams' design ethos, Scratch combines the tactile feel of precision hardware instruments with a modern, distraction-free markdown editing engine.
+Scratch is a macOS desktop note-taking instrument built with **Tauri v2**, **Svelte 5**, and **TipTap**. Drawing inspiration from Dieter Rams' design ethos, Scratch combines the tactile feel of precision hardware instruments with a modern, distraction-free markdown editing engine.
 
 Your notes live as plain `.md` files directly on your filesystem. No account required, no proprietary databases, and no cloud lock-in.
 

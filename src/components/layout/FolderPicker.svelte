@@ -3,7 +3,6 @@
 	import { notesState } from '../../context/notes.svelte'
 	import { themeState } from '../../context/theme.svelte'
 	import { Button } from '../ui'
-	import { isWindows } from '../../lib/platform'
 
 	async function handleSelectFolder() {
 		try {
@@ -25,9 +24,7 @@
 
 <div class="h-full flex flex-col bg-bg-secondary">
 	<!-- Draggable title bar area -->
-	{#if !isWindows}
-		<div class="h-10 shrink-0" data-tauri-drag-region></div>
-	{/if}
+	<div class="h-10 shrink-0" data-tauri-drag-region></div>
 
 	<div class="flex-1 flex items-center justify-center">
 		<div class="text-center p-8 max-w-lg select-none">

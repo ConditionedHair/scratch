@@ -1,3 +1,6 @@
+#[cfg(not(target_os = "macos"))]
+compile_error!("Scratch is only supported on macOS.");
+
 use anyhow::Result;
 use base64::Engine;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
@@ -2714,35 +2717,10 @@ async fn open_in_file_manager(path: String) -> Result<(), String> {
         return Err("Path does not exist or is not a directory".to_string());
     }
 
-    #[cfg(target_os = "macos")]
-    {
-        std::process::Command::new("open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        let windows_path = path.replace("/", "\\");
-        std::process::Command::new("explorer")
-            .arg(&windows_path)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        std::process::Command::new("xdg-open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        return Err("Unsupported platform".to_string());
-    }
+    std::process::Command::new("open")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -3059,30 +3037,8 @@ fn get_expanded_path() -> String {
     expanded.join(":")
 }
 
-/// Create a `Command` that hides the console window on Windows.
-fn no_window_cmd(program: &str) -> std::process::Command {
-    let cmd = std::process::Command::new(program);
-    #[cfg(target_os = "windows")]
-    {
-        use std::os::windows::process::CommandExt;
-        let mut cmd = cmd;
-        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
-        cmd
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        cmd
-    }
-}
-
 fn check_cli_exists(command_name: &str, path: &str) -> Result<bool, String> {
-    let which_cmd = if cfg!(target_os = "windows") {
-        "where"
-    } else {
-        "which"
-    };
-
-    let check_output = no_window_cmd(which_cmd)
+    let check_output = std::process::Command::new("which")
         .arg(command_name)
         .env("PATH", path)
         .output()
@@ -3093,14 +3049,12 @@ fn check_cli_exists(command_name: &str, path: &str) -> Result<bool, String> {
 
 /// Marker comment embedded in CLI wrapper scripts installed by Scratch.
 /// Used to identify and validate our own wrapper before modifying or removing it.
-#[cfg(target_os = "macos")]
 const SCRATCH_CLI_MARKER: &str = "# SCRATCH_CLI_WRAPPER";
 
 /// Returns the path where the CLI script should be installed (macOS only).
 /// Checks PATH for Homebrew bin first, then falls back to architecture detection.
 /// Apple Silicon: /opt/homebrew/bin/scratch
 /// Intel: /usr/local/bin/scratch
-#[cfg(target_os = "macos")]
 fn cli_target_path() -> PathBuf {
     // Check if the user's PATH contains /opt/homebrew/bin (Homebrew on Apple Silicon)
     if let Ok(path_var) = std::env::var("PATH") {
@@ -3117,115 +3071,97 @@ fn cli_target_path() -> PathBuf {
 
 #[tauri::command]
 fn get_cli_status() -> Result<CliStatus, String> {
-    #[cfg(not(target_os = "macos"))]
-    return Ok(CliStatus { supported: false, installed: false, path: None });
-
-    #[cfg(target_os = "macos")]
-    {
-        let target = cli_target_path();
-        if !target.exists() && target.symlink_metadata().is_err() {
-            return Ok(CliStatus { supported: true, installed: false, path: None });
-        }
-        // Verify this is our wrapper (has marker) and points to the current binary
-        let content = std::fs::read_to_string(&target).unwrap_or_default();
-        if !content.contains(SCRATCH_CLI_MARKER) {
-            // Foreign binary at this path — don't claim it as ours
-            return Ok(CliStatus { supported: true, installed: false, path: None });
-        }
-        let current_exe = std::env::current_exe()
-            .map(|p| p.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        if !current_exe.is_empty() && !content.contains(&current_exe) {
-            // Our wrapper but points to a moved/deleted binary — needs reinstall
-            return Ok(CliStatus { supported: true, installed: false, path: None });
-        }
-        Ok(CliStatus {
-            supported: true,
-            installed: true,
-            path: Some(target.to_string_lossy().into_owned()),
-        })
+    let target = cli_target_path();
+    if !target.exists() && target.symlink_metadata().is_err() {
+        return Ok(CliStatus { supported: true, installed: false, path: None });
     }
+    // Verify this is our wrapper (has marker) and points to the current binary
+    let content = std::fs::read_to_string(&target).unwrap_or_default();
+    if !content.contains(SCRATCH_CLI_MARKER) {
+        // Foreign binary at this path — don't claim it as ours
+        return Ok(CliStatus { supported: true, installed: false, path: None });
+    }
+    let current_exe = std::env::current_exe()
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    if !current_exe.is_empty() && !content.contains(&current_exe) {
+        // Our wrapper but points to a moved/deleted binary — needs reinstall
+        return Ok(CliStatus { supported: true, installed: false, path: None });
+    }
+    Ok(CliStatus {
+        supported: true,
+        installed: true,
+        path: Some(target.to_string_lossy().into_owned()),
+    })
 }
 
 #[tauri::command]
 fn install_cli() -> Result<String, String> {
-    #[cfg(not(target_os = "macos"))]
-    return Err("CLI install is only supported on macOS".to_string());
+    use std::os::unix::fs::PermissionsExt;
 
-    #[cfg(target_os = "macos")]
-    {
-        use std::os::unix::fs::PermissionsExt;
+    let target = cli_target_path();
 
-        let target = cli_target_path();
-
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent)
-                .map_err(|e| format!("Failed to create directory {}: {}", parent.display(), e))?;
-        }
-
-        if target.exists() || target.symlink_metadata().is_ok() {
-            // Only remove if it's our wrapper (contains marker)
-            let content = std::fs::read_to_string(&target).unwrap_or_default();
-            if !content.contains(SCRATCH_CLI_MARKER) {
-                return Err(format!(
-                    "A different 'scratch' command already exists at {}. Remove it manually to install the Scratch CLI.",
-                    target.display()
-                ));
-            }
-            std::fs::remove_file(&target)
-                .map_err(|e| format!("Failed to remove existing file: {}", e))?;
-        }
-
-        let exe_path = std::env::current_exe()
-            .map_err(|e| format!("Cannot find exe path: {}", e))?;
-
-        // Shell-escape the exe path using single quotes to prevent
-        // interpretation of $, `, ", and other metacharacters.
-        let exe_str = exe_path.to_string_lossy();
-        let escaped_exe = format!("'{}'", exe_str.replace('\'', "'\\''"));
-
-        // Write a wrapper script that launches the binary in the background so
-        // the terminal is not blocked waiting for the GUI app to exit.
-        let script = format!(
-            "#!/bin/sh\n{}\nnohup {} \"$@\" >/dev/null 2>&1 &\n",
-            SCRATCH_CLI_MARKER,
-            escaped_exe
-        );
-        std::fs::write(&target, script.as_bytes())
-            .map_err(|e| format!("Failed to write CLI script: {}", e))?;
-
-        let mut perms = std::fs::metadata(&target)
-            .map_err(|e| format!("Failed to read permissions: {}", e))?
-            .permissions();
-        perms.set_mode(0o755);
-        std::fs::set_permissions(&target, perms)
-            .map_err(|e| format!("Failed to set permissions: {}", e))?;
-
-        Ok(target.to_string_lossy().into_owned())
+    if let Some(parent) = target.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create directory {}: {}", parent.display(), e))?;
     }
+
+    if target.exists() || target.symlink_metadata().is_ok() {
+        // Only remove if it's our wrapper (contains marker)
+        let content = std::fs::read_to_string(&target).unwrap_or_default();
+        if !content.contains(SCRATCH_CLI_MARKER) {
+            return Err(format!(
+                "A different 'scratch' command already exists at {}. Remove it manually to install the Scratch CLI.",
+                target.display()
+            ));
+        }
+        std::fs::remove_file(&target)
+            .map_err(|e| format!("Failed to remove existing file: {}", e))?;
+    }
+
+    let exe_path = std::env::current_exe()
+        .map_err(|e| format!("Cannot find exe path: {}", e))?;
+
+    // Shell-escape the exe path using single quotes to prevent
+    // interpretation of $, `, ", and other metacharacters.
+    let exe_str = exe_path.to_string_lossy();
+    let escaped_exe = format!("'{}'", exe_str.replace('\'', "'\\''"));
+
+    // Write a wrapper script that launches the binary in the background so
+    // the terminal is not blocked waiting for the GUI app to exit.
+    let script = format!(
+        "#!/bin/sh\n{}\nnohup {} \"$@\" >/dev/null 2>&1 &\n",
+        SCRATCH_CLI_MARKER,
+        escaped_exe
+    );
+    std::fs::write(&target, script.as_bytes())
+        .map_err(|e| format!("Failed to write CLI script: {}", e))?;
+
+    let mut perms = std::fs::metadata(&target)
+        .map_err(|e| format!("Failed to read permissions: {}", e))?
+        .permissions();
+    perms.set_mode(0o755);
+    std::fs::set_permissions(&target, perms)
+        .map_err(|e| format!("Failed to set permissions: {}", e))?;
+
+    Ok(target.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
 fn uninstall_cli() -> Result<(), String> {
-    #[cfg(not(target_os = "macos"))]
-    return Ok(());
-
-    #[cfg(target_os = "macos")]
-    {
-        let target = cli_target_path();
-        if target.exists() || target.symlink_metadata().is_ok() {
-            let content = std::fs::read_to_string(&target).unwrap_or_default();
-            if !content.contains(SCRATCH_CLI_MARKER) {
-                return Err(format!(
-                    "File at {} was not installed by Scratch. Refusing to remove.",
-                    target.display()
-                ));
-            }
-            std::fs::remove_file(&target)
-                .map_err(|e| format!("Failed to remove CLI script: {}", e))?;
+    let target = cli_target_path();
+    if target.exists() || target.symlink_metadata().is_ok() {
+        let content = std::fs::read_to_string(&target).unwrap_or_default();
+        if !content.contains(SCRATCH_CLI_MARKER) {
+            return Err(format!(
+                "File at {} was not installed by Scratch. Refusing to remove.",
+                target.display()
+            ));
         }
-        Ok(())
+        std::fs::remove_file(&target)
+            .map_err(|e| format!("Failed to remove CLI script: {}", e))?;
     }
+    Ok(())
 }
 
 #[tauri::command]
@@ -3299,7 +3235,7 @@ async fn execute_ai_cli(
             Ok(true) => {}
         }
 
-        let mut cmd = no_window_cmd(&command);
+        let mut cmd = std::process::Command::new(&command);
         cmd.env("PATH", &path);
         if let Some(dir) = &current_dir {
             cmd.current_dir(dir);
@@ -3656,7 +3592,7 @@ async fn ai_execute_ollama(
         let mn = model_name.clone();
         let available = tauri::async_runtime::spawn_blocking(move || {
             let path = get_expanded_path();
-            let mut cmd = no_window_cmd("ollama");
+            let mut cmd = std::process::Command::new("ollama");
             cmd.env("PATH", &path);
             cmd.args(["show", &mn]);
             cmd.stdout(std::process::Stdio::null())
@@ -3834,10 +3770,7 @@ fn create_preview_window(app: &AppHandle, file_path: &str) -> Result<(), String>
         .inner_size(800.0, 600.0)
         .min_inner_size(400.0, 300.0)
         .resizable(true)
-        .decorations(true);
-
-    #[cfg(target_os = "macos")]
-    let builder = builder
+        .decorations(true)
         .title_bar_style(tauri::TitleBarStyle::Overlay)
         .hidden_title(true);
 
@@ -3934,7 +3867,6 @@ fn handle_cli_args(app: &AppHandle, args: &[String], cwd: &str) -> bool {
 // Tauri app gets neither the red underline nor auto-replace even when the HTML
 // `spellcheck`/`autocorrect` attributes are set. Seed missing WebKit preferences
 // before the webview is constructed; existing user-toggled values still win.
-#[cfg(target_os = "macos")]
 fn enable_webview_spellcheck_defaults() {
     use objc2_foundation::{NSString, NSUserDefaults};
 
@@ -3955,7 +3887,6 @@ fn enable_webview_spellcheck_defaults() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    #[cfg(target_os = "macos")]
     enable_webview_spellcheck_defaults();
 
     let app = tauri::Builder::default()
@@ -4056,12 +3987,9 @@ pub fn run() {
             };
 
             if let Some(main_window) = app.get_webview_window("main") {
-                #[cfg(target_os = "macos")]
-                {
-                    if liquid_glass_enabled {
-                        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-                        let _ = apply_vibrancy(&main_window, NSVisualEffectMaterial::FullScreenUI, None, None);
-                    }
+                if liquid_glass_enabled {
+                    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+                    let _ = apply_vibrancy(&main_window, NSVisualEffectMaterial::FullScreenUI, None, None);
                 }
 
                 let has_notes_folder = app
@@ -4188,7 +4116,6 @@ pub fn run() {
     // Use .run() callback to handle macOS "Open With" file events
     // RunEvent::Opened is macOS-only in Tauri v2
     app.run(|_app_handle, _event| {
-        #[cfg(target_os = "macos")]
         if let tauri::RunEvent::Opened { urls } = _event {
             for url in urls {
                 if let Ok(path) = url.to_file_path() {
@@ -4204,103 +4131,28 @@ pub fn run() {
     });
 }
 
-#[cfg(target_os = "windows")]
-mod windows_title_bar {
-    use tauri::WebviewWindow;
-
-    #[allow(non_snake_case)]
-    mod dwm {
-        pub const DWMWA_USE_IMMERSIVE_DARK_MODE: u32 = 20;
-        pub const DWMWA_CAPTION_COLOR: u32 = 35;
-        pub const DWMWA_BORDER_COLOR: u32 = 34;
-
-        extern "system" {
-            pub fn DwmSetWindowAttribute(
-                hwnd: isize,
-                attr: u32,
-                value: *const std::ffi::c_void,
-                size: u32,
-            ) -> i32;
-        }
-    }
-
-    pub fn apply_title_bar_theme(window: &WebviewWindow, is_dark: bool, rgb: (u8, u8, u8)) {
-        let Ok(hwnd) = window.hwnd() else {
-            return;
-        };
-        let hwnd = hwnd.0 as isize;
-
-        // Windows COLORREF is little-endian 0x00BBGGRR
-        let (r, g, b) = rgb;
-        let caption_color: u32 =
-            ((b as u32) << 16) | ((g as u32) << 8) | (r as u32);
-
-        unsafe {
-            let set_attr = |attr: u32, value: *const std::ffi::c_void, size: u32| {
-                let _ = dwm::DwmSetWindowAttribute(hwnd, attr, value, size);
-            };
-
-            let dark_mode: i32 = if is_dark { 1 } else { 0 };
-            set_attr(
-                dwm::DWMWA_USE_IMMERSIVE_DARK_MODE,
-                &dark_mode as *const _ as *const std::ffi::c_void,
-                std::mem::size_of::<i32>() as u32,
-            );
-            set_attr(
-                dwm::DWMWA_CAPTION_COLOR,
-                &caption_color as *const _ as *const std::ffi::c_void,
-                std::mem::size_of::<u32>() as u32,
-            );
-            set_attr(
-                dwm::DWMWA_BORDER_COLOR,
-                &caption_color as *const _ as *const std::ffi::c_void,
-                std::mem::size_of::<u32>() as u32,
-            );
-        }
-    }
-}
-
 #[tauri::command]
 fn set_title_bar_theme(
-    app: AppHandle,
-    is_dark: bool,
-    r: u8,
-    g: u8,
-    b: u8,
+    _app: AppHandle,
+    _is_dark: bool,
+    _r: u8,
+    _g: u8,
+    _b: u8,
 ) -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        for (label, window) in app.webview_windows() {
-            if label == "main" || label.starts_with("preview-") {
-                windows_title_bar::apply_title_bar_theme(&window, is_dark, (r, g, b));
-            }
-        }
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = (app, is_dark, r, g, b);
-    }
     Ok(())
 }
 
 #[tauri::command]
 fn set_liquid_glass(app: AppHandle, enabled: bool) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    {
-        use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
-        for (label, window) in app.webview_windows() {
-            if label == "main" {
-                if enabled {
-                    let _ = apply_vibrancy(&window, NSVisualEffectMaterial::FullScreenUI, None, None);
-                } else {
-                    let _ = clear_vibrancy(&window);
-                }
+    use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
+    for (label, window) in app.webview_windows() {
+        if label == "main" {
+            if enabled {
+                let _ = apply_vibrancy(&window, NSVisualEffectMaterial::FullScreenUI, None, None);
+            } else {
+                let _ = clear_vibrancy(&window);
             }
         }
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = (app, enabled);
     }
     Ok(())
 }

@@ -14,7 +14,7 @@
 	import ShortcutsSettingsSection from './ShortcutsSettingsSection.svelte'
 	import AboutSettingsSection from './AboutSettingsSection.svelte'
 	import ToolsSettingsSection from './ToolsSettingsSection.svelte'
-	import { mod, isMac, isWindows } from '../../lib/platform'
+	import { mod } from '../../lib/platform'
 	import type { Component } from 'svelte'
 
 	interface Props {
@@ -91,18 +91,16 @@
 		class="w-64 h-full bg-bg-secondary border-r border-border flex flex-col select-none"
 	>
 		<!-- Drag region -->
-		{#if !isWindows}
-			<div class="h-11 shrink-0" data-tauri-drag-region></div>
-		{/if}
+		<div class="h-11 shrink-0" data-tauri-drag-region></div>
 
 		<!-- Header with back button and Settings title -->
 		<div
-			class={`flex items-center justify-between px-3 pb-2 border-b border-border shrink-0${isWindows ? ' pt-2' : ''}`}
+			class="flex items-center justify-between px-3 pb-2 border-b border-border shrink-0"
 		>
 			<div class="flex items-center gap-1">
 				<IconButton
 					onclick={onBack}
-					title={`Back (${mod}${isMac ? '' : '+'},)`}
+					title={`Back (${mod},)`}
 				>
 					<ArrowLeftIcon class="w-4.5 h-4.5 stroke-[1.5]" />
 				</IconButton>
@@ -146,9 +144,7 @@
 	<!-- Main content area -->
 	<div class="flex-1 min-h-0 flex flex-col bg-bg overflow-hidden">
 		<!-- Drag region -->
-		{#if !isWindows}
-			<div class="h-11 shrink-0" data-tauri-drag-region></div>
-		{/if}
+		<div class="h-11 shrink-0" data-tauri-drag-region></div>
 
 		<!-- Content - centered with max width -->
 		<div
@@ -156,7 +152,7 @@
 			class="flex-1 min-h-0 overflow-y-auto scrollbar-gutter-stable"
 		>
 			<div
-				class={`w-full max-w-3xl mx-auto px-6 pb-6${isWindows ? ' pt-2' : ''}`}
+				class="w-full max-w-3xl mx-auto px-6 pb-6"
 			>
 				{#if activeTab === 'general'}
 					<GeneralSettingsSection />

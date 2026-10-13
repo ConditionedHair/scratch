@@ -76,11 +76,8 @@ export default defineConfig(async () => ({
 
 	// Production build optimizations
 	build: {
-		// Target compatible with Tauri WebViews across platforms:
-		// - macOS: WebKit (Safari 13+)
-		// - Windows: WebView2 (Chromium-based)
-		// - Linux: WebKitGTK
-		target: ['es2021', 'chrome105', 'safari14'],
+		// Target compatible with macOS WebKit (Safari 14+)
+		target: ['es2021', 'safari14'],
 		// Use esbuild for fast minification
 		minify: 'esbuild',
 		// Optimize chunk splitting

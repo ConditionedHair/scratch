@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Scratch is a cross-platform, offline-first markdown note-taking app for macOS, Windows, and Linux, built with Tauri v2 (Rust backend) + React 19/TypeScript/Tailwind CSS (frontend) + TipTap (WYSIWYG / ProseMirror editor) + Tantivy (embedded full-text search). The UI is designed according to the Braun / Dieter Rams minimalist field instrument aesthetic.
+Scratch is an offline-first markdown note-taking app designed exclusively for macOS, built with Tauri v2 (Rust backend) + Svelte 5/TypeScript/Tailwind CSS (frontend) + TipTap (WYSIWYG / ProseMirror editor) + Tantivy (embedded full-text search). The UI is designed according to the Braun / Dieter Rams minimalist field instrument aesthetic.
 
 For an in-depth reference on architecture, subsystems, and invariants, see [AGENTS.md](./AGENTS.md).
 

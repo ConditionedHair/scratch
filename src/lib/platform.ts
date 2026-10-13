@@ -1,28 +1,20 @@
 /**
- * Platform detection utilities for cross-platform shortcut labels.
+ * Platform utilities for Scratch (macOS only).
  * On macOS: ⌘, ⌥, ⇧
- * On Windows/Linux: Ctrl, Alt, Shift
  */
 
-export const isMac =
-	typeof navigator !== 'undefined' &&
-	/Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-
-export const isWindows =
-	typeof navigator !== 'undefined' && /Windows/.test(navigator.userAgent)
+export const isMac = true
+export const isWindows = false
 
 /** Modifier key symbol/label */
-export const mod = isMac ? '⌘' : 'Ctrl'
-export const alt = isMac ? '⌥' : 'Alt'
-export const shift = isMac ? '⇧' : 'Shift'
+export const mod = '⌘'
+export const alt = '⌥'
+export const shift = '⇧'
 
 /**
  * Build a shortcut label string.
- * e.g. shortcut("B") => "⌘B" on Mac, "Ctrl+B" on Windows
+ * e.g. shortcut("B") => "⌘B"
  */
 export function shortcut(...parts: string[]): string {
-	if (isMac) {
-		return parts.join('')
-	}
-	return parts.join('+')
+	return parts.join('')
 }

@@ -2,20 +2,9 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process::Command;
 
-/// Create a `Command` for git that hides the console window on Windows.
+/// Create a `Command` for git.
 fn git_cmd() -> Command {
-    let cmd = Command::new("git");
-    #[cfg(target_os = "windows")]
-    {
-        use std::os::windows::process::CommandExt;
-        let mut cmd = cmd;
-        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
-        cmd
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        cmd
-    }
+    Command::new("git")
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

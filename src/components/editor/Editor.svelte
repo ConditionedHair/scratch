@@ -63,7 +63,7 @@
 		normalizeMarkdownSpacing,
 		cleanSerializedMarkdown
 	} from '../../lib/markdownSpacing'
-	import { mod, shift, isMac, isWindows } from '../../lib/platform'
+	import { mod, shift, isMac } from '../../lib/platform'
 	import { Button, IconButton, Tooltip } from '../ui'
 	import * as notesService from '../../services/notes'
 	import { downloadPdf, downloadMarkdown } from '../../services/pdf'
@@ -1730,36 +1730,30 @@
 {#if !currentNote}
 	{#if previewMode}
 		<div class="flex-1 flex flex-col bg-bg">
-			{#if !isWindows}
-				<div
-					class="h-10 shrink-0 flex items-end px-4 pb-1"
-					data-tauri-drag-region
-				></div>
-			{/if}
+			<div
+				class="h-10 shrink-0 flex items-end px-4 pb-1"
+				data-tauri-drag-region
+			></div>
 			<div class="flex-1 flex items-center justify-center">
 				<SpinnerIcon class="w-6 h-6 text-text-muted animate-spin" />
 			</div>
 		</div>
 	{:else if notesState.selectedNoteId}
 		<div class="flex-1 flex flex-col bg-bg">
-			{#if !isWindows}
-				<div
-					class="h-10 shrink-0 flex items-end px-4 pb-1"
-					data-tauri-drag-region
-				></div>
-			{/if}
+			<div
+				class="h-10 shrink-0 flex items-end px-4 pb-1"
+				data-tauri-drag-region
+			></div>
 			<div class="flex-1 flex items-center justify-center">
 				<SpinnerIcon class="w-6 h-6 text-text-muted animate-spin" />
 			</div>
 		</div>
 	{:else}
 		<div class="flex-1 flex flex-col bg-bg">
-			{#if !isWindows}
-				<div
-					class="h-10 shrink-0 flex items-end px-4 pb-1"
-					data-tauri-drag-region
-				></div>
-			{/if}
+			<div
+				class="h-10 shrink-0 flex items-end px-4 pb-1"
+				data-tauri-drag-region
+			></div>
 			<div class="flex-1 flex items-center justify-center pb-8">
 				<div class="text-center text-text-muted select-none">
 					<div

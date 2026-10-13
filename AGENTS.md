@@ -6,7 +6,7 @@ Welcome to the Scratch codebase. This document is written specifically for AI co
 
 ## 1. Project Overview & Philosophy
 
-**Scratch** is a high-performance, offline-first, cross-platform markdown note-taking instrument for macOS, Windows, and Linux.
+**Scratch** is a high-performance, offline-first markdown note-taking instrument designed exclusively for macOS.
 
 ### Key Tenets
 

@@ -3,7 +3,9 @@ import type { FlightRecord, LiveTelemetry, FlightStatus } from '../types/flight'
 import { getAirportByIata } from '../lib/airports'
 import {
 	calculateGreatCircleDistanceKm,
-	calculateGreatCircleDistanceNm
+	calculateGreatCircleDistanceNm,
+	calculateBearing,
+	generateGreatCircleArc
 } from '../lib/flightMath'
 
 export async function getVaultFlights(): Promise<FlightRecord[]> {
@@ -298,5 +300,239 @@ export async function fetchOpenSkyTelemetry(
 	} catch (e) {
 		console.warn(`OpenSky telemetry fetch failed for ${icao24}:`, e)
 		return null
+	}
+}
+
+export const AIRLINE_ICAO_MAP: Record<string, string> = {
+	TK: 'THY',
+	QF: 'QFA',
+	VA: 'VOZ',
+	JQ: 'JST',
+	UA: 'UAL',
+	AA: 'AAL',
+	DL: 'DAL',
+	BA: 'BAW',
+	LH: 'DLH',
+	AF: 'AFR',
+	KL: 'KLM',
+	SQ: 'SIA',
+	EK: 'UAE',
+	QR: 'QTR',
+	EY: 'ETD',
+	CX: 'CPA',
+	JL: 'JAL',
+	NH: 'ANA',
+	KE: 'KAL',
+	OZ: 'AAR',
+	AC: 'ACA',
+	IB: 'IBE',
+	AY: 'FIN',
+	SK: 'SAS',
+	AZ: 'ITY',
+	LX: 'SWR',
+	OS: 'AUA',
+	TP: 'TAP',
+	EI: 'EIN',
+	MH: 'MAS',
+	TG: 'THA',
+	GA: 'GIA',
+	WN: 'SWA',
+	B6: 'JBU',
+	AS: 'ASA',
+	NK: 'NKS',
+	F9: 'FFT',
+	WS: 'WJA',
+	NZ: 'ANZ',
+	FJ: 'FJI',
+	TN: 'THT'
+}
+
+/**
+ * Searches OpenSky Network within the flight's route bounding box for matching callsigns
+ * (e.g. "THY1785" or "TK1785" for flight TK1785). Returns ICAO24 and live telemetry if found.
+ */
+export async function findOpenSkyAircraftByCallsign(
+	flightNumber: string,
+	airlineIata: string,
+	bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number },
+	credentials?: { username?: string; password?: string }
+): Promise<{ icao24: string; telemetry: LiveTelemetry } | null> {
+	const numDigits = flightNumber.replace(/[^0-9]/g, '')
+	if (!numDigits) return null
+
+	const cleanIata = airlineIata.trim().toUpperCase()
+	const icaoPrefix = AIRLINE_ICAO_MAP[cleanIata] || cleanIata
+
+	const candidateCallsigns = [
+		`${icaoPrefix}${numDigits}`.toUpperCase(),
+		`${cleanIata}${numDigits}`.toUpperCase(),
+		flightNumber.replace(/\s+/g, '').toUpperCase()
+	]
+
+	// Add margin around route bounding box
+	const lamin = Math.max(-85, Math.floor(bounds.minLat - 4))
+	const lamax = Math.min(85, Math.ceil(bounds.maxLat + 4))
+	const lomin = Math.max(-180, Math.floor(bounds.minLon - 5))
+	const lomax = Math.min(180, Math.ceil(bounds.maxLon + 5))
+
+	const url = `https://opensky-network.org/api/states/all?lamin=${lamin}&lamax=${lamax}&lomin=${lomin}&lomax=${lomax}`
+
+	let headers: Record<string, string> | undefined
+	if (credentials?.username && credentials?.password) {
+		headers = {
+			Authorization: `Basic ${btoa(`${credentials.username}:${credentials.password}`)}`
+		}
+	}
+
+	try {
+		const rawJson = await proxyFetch(url, headers)
+		const parsed = JSON.parse(rawJson) as OpenSkyResponse
+		if (!parsed || !parsed.states) return null
+
+		for (const state of parsed.states) {
+			const cs = (state[1] || '').trim().toUpperCase()
+			if (!cs) continue
+
+			const matches = candidateCallsigns.some(
+				(cand) => cs === cand || cs.startsWith(cand)
+			)
+
+			if (matches) {
+				const icao24 = state[0].toLowerCase()
+				const lon = state[5]
+				const lat = state[6]
+				if (lat === null || lon === null) continue
+
+				const altMeters = state[7] ?? state[13] ?? 0
+				const speedMs = state[9] ?? 0
+				const trackDeg = state[10] ?? 0
+				const vertRateMs = state[11] ?? 0
+
+				return {
+					icao24,
+					telemetry: {
+						latitude: lat,
+						longitude: lon,
+						altitudeFt: Math.round(altMeters * 3.28084),
+						speedKts: Math.round(speedMs * 1.94384),
+						heading: Math.round(trackDeg),
+						verticalRateFpm: Math.round(vertRateMs * 196.85),
+						onGround: state[8],
+						lastContact: state[4],
+						lastUpdated: new Date().toISOString()
+					}
+				}
+			}
+		}
+		return null
+	} catch (e) {
+		console.warn('Callsign lookup failed in OpenSky:', e)
+		return null
+	}
+}
+
+/**
+ * Calculates smooth dead-reckoning telemetry based on scheduled departure & arrival times
+ * when an aircraft transponder is unassigned or out of receiver coverage.
+ */
+export function calculateDeadReckoningTelemetry(
+	flight: FlightRecord
+): { telemetry: LiveTelemetry; stage: 'scheduled' | 'enroute' | 'landed' } {
+	const depTimeStr = flight.departure.actualTime || flight.departure.estimatedTime || flight.departure.scheduledTime
+	const arrTimeStr = flight.arrival.actualTime || flight.arrival.estimatedTime || flight.arrival.scheduledTime
+
+	const depMs = new Date(depTimeStr).getTime()
+	const arrMs = new Date(arrTimeStr).getTime()
+	const nowMs = Date.now()
+
+	const depLat = flight.departure.lat ?? 0
+	const depLon = flight.departure.lon ?? 0
+	const arrLat = flight.arrival.lat ?? 0
+	const arrLon = flight.arrival.lon ?? 0
+
+	const bearing = calculateBearing(depLat, depLon, arrLat, arrLon)
+
+	if (nowMs < depMs) {
+		// Not departed yet: at origin gate
+		return {
+			stage: 'scheduled',
+			telemetry: {
+				latitude: depLat,
+				longitude: depLon,
+				altitudeFt: 0,
+				speedKts: 0,
+				heading: bearing,
+				verticalRateFpm: 0,
+				onGround: true,
+				lastContact: Math.floor(nowMs / 1000),
+				lastUpdated: new Date().toISOString()
+			}
+		}
+	}
+
+	if (nowMs > arrMs) {
+		// Flight has arrived: at destination
+		return {
+			stage: 'landed',
+			telemetry: {
+				latitude: arrLat,
+				longitude: arrLon,
+				altitudeFt: 0,
+				speedKts: 0,
+				heading: bearing,
+				verticalRateFpm: 0,
+				onGround: true,
+				lastContact: Math.floor(nowMs / 1000),
+				lastUpdated: new Date().toISOString()
+			}
+		}
+	}
+
+	// Currently airborne: interpolate progress
+	const totalDuration = Math.max(1, arrMs - depMs)
+	const elapsed = nowMs - depMs
+	const progressFraction = Math.max(0.01, Math.min(0.99, elapsed / totalDuration))
+
+	// Get position along Great Circle arc
+	const waypoints = generateGreatCircleArc(
+		{ lat: depLat, lon: depLon },
+		{ lat: arrLat, lon: arrLon },
+		100
+	)
+	const idx = Math.min(waypoints.length - 1, Math.floor(progressFraction * 100))
+	const currentPos = waypoints[idx]
+
+	// Estimate cruising altitude and speed
+	const cruiseAlt = 36000
+	const elapsedMins = elapsed / 60000
+	const remainingMins = (arrMs - nowMs) / 60000
+
+	let altitude = cruiseAlt
+	let vertRate = 0
+	if (elapsedMins < 25) {
+		// Climb stage
+		altitude = Math.round((elapsedMins / 25) * cruiseAlt)
+		vertRate = 1800
+	} else if (remainingMins < 25) {
+		// Descent stage
+		altitude = Math.round((remainingMins / 25) * cruiseAlt)
+		vertRate = -1800
+	}
+
+	const groundSpeed = elapsedMins < 10 || remainingMins < 10 ? 250 : 475
+
+	return {
+		stage: 'enroute',
+		telemetry: {
+			latitude: currentPos.lat,
+			longitude: currentPos.lon,
+			altitudeFt: altitude,
+			speedKts: groundSpeed,
+			heading: bearing,
+			verticalRateFpm: vertRate,
+			onGround: false,
+			lastContact: Math.floor(nowMs / 1000),
+			lastUpdated: new Date().toISOString()
+		}
 	}
 }

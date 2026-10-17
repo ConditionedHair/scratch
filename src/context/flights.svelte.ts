@@ -36,6 +36,8 @@ export class FlightsState {
 				const fs = noteSettings.flightSettings as Partial<FlightSettingsConfig>
 				this.settings = {
 					rapidApiKey: fs.rapidApiKey || '',
+					openSkyUsername: fs.openSkyUsername || '',
+					openSkyPassword: fs.openSkyPassword || '',
 					autoRefreshActive: fs.autoRefreshActive ?? true,
 					refreshIntervalMinutes: fs.refreshIntervalMinutes ?? 15,
 					metricUnits: fs.metricUnits ?? false
@@ -195,7 +197,10 @@ export class FlightsState {
 
 		this.isRefreshing = true
 		try {
-			const telemetry = await flightService.fetchOpenSkyTelemetry(icao24)
+			const telemetry = await flightService.fetchOpenSkyTelemetry(icao24, {
+				username: this.settings.openSkyUsername,
+				password: this.settings.openSkyPassword
+			})
 			if (telemetry) {
 				// Update flight
 				await this.updateFlight(flightId, {

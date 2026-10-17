@@ -97,6 +97,8 @@ export interface FlightStats {
 
 export interface FlightSettingsConfig {
 	rapidApiKey?: string
+	openSkyUsername?: string
+	openSkyPassword?: string
 	autoRefreshActive: boolean
 	refreshIntervalMinutes: number // default 15
 	metricUnits: boolean // true = km/m, false = miles/ft

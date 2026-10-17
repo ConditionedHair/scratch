@@ -247,17 +247,27 @@ interface OpenSkyResponse {
 }
 
 /**
- * Fetches free, real-time live ADS-B telemetry from OpenSky Network using ICAO24 transponder hex
+ * Fetches real-time live ADS-B telemetry from OpenSky Network using ICAO24 transponder hex.
+ * Works anonymously by default, or with Basic Auth credentials if configured for higher rate limits.
  */
 export async function fetchOpenSkyTelemetry(
-	icao24: string
+	icao24: string,
+	credentials?: { username?: string; password?: string }
 ): Promise<LiveTelemetry | null> {
 	if (!icao24 || icao24.trim().length === 0) return null
 	const cleanHex = icao24.trim().toLowerCase()
 	const url = `https://opensky-network.org/api/states/all?icao24=${cleanHex}`
 
+	let headers: Record<string, string> | undefined
+	if (credentials?.username && credentials?.password) {
+		const authString = `${credentials.username}:${credentials.password}`
+		headers = {
+			Authorization: `Basic ${btoa(authString)}`
+		}
+	}
+
 	try {
-		const rawJson = await proxyFetch(url)
+		const rawJson = await proxyFetch(url, headers)
 		const parsed = JSON.parse(rawJson) as OpenSkyResponse
 
 		if (!parsed || !parsed.states || parsed.states.length === 0) {

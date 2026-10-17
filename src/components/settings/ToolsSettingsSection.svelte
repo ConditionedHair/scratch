@@ -53,6 +53,8 @@
 	})
 
 	let flightApiKey = $state(flightsState.settings.rapidApiKey || '')
+	let openSkyUser = $state(flightsState.settings.openSkyUsername || '')
+	let openSkyPass = $state(flightsState.settings.openSkyPassword || '')
 	let flightMetric = $state(flightsState.settings.metricUnits)
 	let flightAutoRefresh = $state(flightsState.settings.autoRefreshActive)
 
@@ -60,11 +62,19 @@
 		if (flightsState.settings.rapidApiKey && !flightApiKey) {
 			flightApiKey = flightsState.settings.rapidApiKey
 		}
+		if (flightsState.settings.openSkyUsername && !openSkyUser) {
+			openSkyUser = flightsState.settings.openSkyUsername
+		}
+		if (flightsState.settings.openSkyPassword && !openSkyPass) {
+			openSkyPass = flightsState.settings.openSkyPassword
+		}
 	})
 
 	async function handleSaveFlightSettings() {
 		await flightsState.updateFlightSettings({
 			rapidApiKey: flightApiKey.trim(),
+			openSkyUsername: openSkyUser.trim(),
+			openSkyPassword: openSkyPass.trim(),
 			metricUnits: flightMetric,
 			autoRefreshActive: flightAutoRefresh
 		})
@@ -612,7 +622,42 @@
 						class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
 					/>
 					<span class="block text-[10px] text-text-muted mt-1">
-						OpenSky ADS-B live tracking runs for free without any key. AeroDataBox is only queried on-demand for commercial gates, luggage, and schedules.
+						AeroDataBox is queried on-demand for commercial gates, baggage carousels, and airline schedules.
+					</span>
+				</div>
+
+				<div>
+					<div class="flex items-center justify-between mb-1">
+						<label for="opensky-username" class="text-[11px] font-semibold text-text uppercase">
+							OpenSky Network Account (Optional)
+						</label>
+						<a
+							href="https://opensky-network.org"
+							target="_blank"
+							rel="noreferrer"
+							class="text-[10px] text-accent hover:underline"
+						>
+							OpenSky Network &rarr;
+						</a>
+					</div>
+					<div class="grid grid-cols-2 gap-2">
+						<input
+							id="opensky-username"
+							type="text"
+							bind:value={openSkyUser}
+							placeholder="Username (optional)"
+							class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
+						/>
+						<input
+							id="opensky-password"
+							type="password"
+							bind:value={openSkyPass}
+							placeholder="Password (optional)"
+							class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
+						/>
+					</div>
+					<span class="block text-[10px] text-text-muted mt-1">
+						OpenSky ADS-B live tracking works 100% free and anonymously out-of-the-box. Providing an account increases your daily query limit from 400 to 4,000.
 					</span>
 				</div>
 

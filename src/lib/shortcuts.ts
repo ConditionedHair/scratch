@@ -17,6 +17,7 @@ export const shortcutCategories: ShortcutCategory[] = [
 			{ keys: [mod, '1'], description: 'Notes mode' },
 			{ keys: [mod, '2'], description: 'Calendar mode' },
 			{ keys: [mod, '3'], description: 'Mail mode' },
+			{ keys: [mod, '4'], description: 'Flight Instrument' },
 			{ keys: [mod, 'P'], description: 'Command palette' },
 			{ keys: [mod, shift, 'F'], description: 'Search notes' },
 			{ keys: [mod, '\\'], description: 'Toggle sidebar' },

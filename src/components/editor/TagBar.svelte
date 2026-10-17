@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { dndzone, type DndEvent } from 'svelte-dnd-action'
-	import { DropdownMenu } from 'bits-ui'
+	import { DropdownMenu, Portal } from 'bits-ui'
 	import { notesState } from '../../context/notes.svelte'
 	import * as notesService from '../../services/notes'
 	import { getTagColor, assignTagColor, tagPillCss } from '../../lib/tags'
@@ -18,6 +18,10 @@
 	let inputValue = $state('')
 	let isEditing = $state(false)
 	let inputEl: HTMLInputElement | null = $state(null)
+	let listContainerEl: HTMLDivElement | null = $state(null)
+	let selectedIndex = $state(-1)
+	let dropdownRect = $state<{ top: number; left: number; width: number } | null>(null)
+	let isInteractingWithDropdown = $state(false)
 
 	interface TagItem {
 		id: string
@@ -36,12 +40,24 @@
 		return Array.from(set).sort((a, b) => a.localeCompare(b))
 	})
 
+	let cleanInput = $derived(inputValue.trim().replace(/^#/, ''))
+
 	let suggestions = $derived.by(() => {
-		const query = inputValue.trim().toLowerCase()
+		const query = cleanInput.toLowerCase()
 		const available = allTagNames.filter((t) => !tags.includes(t))
 		if (!query) return available
 		return available.filter((t) => t.toLowerCase().includes(query))
 	})
+
+	let isNewTag = $derived.by(() => {
+		if (!cleanInput) return false
+		return (
+			!tags.includes(cleanInput) &&
+			!allTagNames.some((t) => t.toLowerCase() === cleanInput.toLowerCase())
+		)
+	})
+
+	let totalOptions = $derived(suggestions.length + (isNewTag ? 1 : 0))
 
 	let visibleTags = $derived(tags.slice(0, maxDirectVisible))
 	let hiddenTags = $derived(tags.slice(maxDirectVisible))
@@ -50,6 +66,55 @@
 
 	$effect(() => {
 		dndItems = visibleTags.map((t) => ({ id: t, name: t }))
+	})
+
+	$effect(() => {
+		// Reset selectedIndex whenever input query changes
+		void inputValue
+		selectedIndex = -1
+	})
+
+	$effect(() => {
+		if (selectedIndex >= 0 && listContainerEl) {
+			const item = listContainerEl.querySelector(`[data-index="${selectedIndex}"]`)
+			if (item) {
+				item.scrollIntoView({ block: 'nearest' })
+			}
+		}
+	})
+
+	function updateDropdownPosition() {
+		if (!inputEl) {
+			dropdownRect = null
+			return
+		}
+		const rect = inputEl.getBoundingClientRect()
+		const menuWidth = Math.max(rect.width, 210)
+		let left = rect.left
+		if (left + menuWidth > window.innerWidth - 16) {
+			left = Math.max(16, window.innerWidth - menuWidth - 16)
+		}
+		dropdownRect = {
+			top: rect.bottom + 6,
+			left,
+			width: menuWidth
+		}
+	}
+
+	$effect(() => {
+		if (isEditing && inputEl) {
+			void tags.length
+			void inputValue
+			requestAnimationFrame(updateDropdownPosition)
+			window.addEventListener('resize', updateDropdownPosition)
+			window.addEventListener('scroll', updateDropdownPosition, true)
+			return () => {
+				window.removeEventListener('resize', updateDropdownPosition)
+				window.removeEventListener('scroll', updateDropdownPosition, true)
+			}
+		} else {
+			dropdownRect = null
+		}
 	})
 
 	async function applyTags(newTags: string[]) {
@@ -77,12 +142,21 @@
 	}
 
 	function commitTag(rawTag: string) {
-		const tag = rawTag.trim().replace(/^#/, '')
+		const parts = rawTag
+			.split(',')
+			.map((t) => t.trim().replace(/^#/, ''))
+			.filter((t) => t.length > 0)
 		inputValue = ''
-		if (!tag || tags.includes(tag)) return
-		const newTags = [...tags, tag]
+		if (parts.length === 0) return
+
+		const toAdd = parts.filter((t) => !tags.includes(t))
+		if (toAdd.length === 0) return
+
+		const newTags = [...tags, ...toAdd]
 		void applyTags(newTags)
-		void persistColorIfNew(tag)
+		for (const t of toAdd) {
+			void persistColorIfNew(t)
+		}
 	}
 
 	function removeTag(tag: string) {
@@ -100,13 +174,47 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		if (
-			e.key === 'Enter' ||
-			e.key === ',' ||
-			(e.key === ' ' && inputValue.trim().length > 0)
-		) {
+		if (e.isComposing) return
+
+		if (e.key === 'ArrowDown') {
+			if (totalOptions > 0) {
+				e.preventDefault()
+				if (selectedIndex < totalOptions - 1) {
+					selectedIndex++
+				} else {
+					selectedIndex = 0
+				}
+			}
+		} else if (e.key === 'ArrowUp') {
+			if (totalOptions > 0) {
+				e.preventDefault()
+				if (selectedIndex > 0) {
+					selectedIndex--
+				} else {
+					selectedIndex = totalOptions - 1
+				}
+			}
+		} else if (e.key === 'Tab') {
+			if (suggestions.length > 0) {
+				e.preventDefault()
+				const target =
+					selectedIndex >= 0 && selectedIndex < suggestions.length
+						? suggestions[selectedIndex]
+						: suggestions[0]
+				commitTag(target)
+			}
+		} else if (e.key === 'Enter') {
 			e.preventDefault()
-			commitTag(inputValue)
+			if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+				commitTag(suggestions[selectedIndex])
+			} else if (selectedIndex === suggestions.length && isNewTag) {
+				commitTag(cleanInput)
+			} else if (inputValue.trim()) {
+				commitTag(inputValue)
+			} else {
+				isEditing = false
+				inputEl?.blur()
+			}
 		} else if (
 			e.key === 'Backspace' &&
 			inputValue === '' &&
@@ -122,7 +230,10 @@
 
 	function handleWindowFocusTagInput() {
 		isEditing = true
-		requestAnimationFrame(() => inputEl?.focus())
+		requestAnimationFrame(() => {
+			inputEl?.focus()
+			updateDropdownPosition()
+		})
 	}
 
 	onMount(() => {
@@ -241,13 +352,16 @@
 			bind:this={inputEl}
 			type="text"
 			bind:value={inputValue}
+			oninput={updateDropdownPosition}
 			onkeydown={handleKeyDown}
 			onblur={() => {
 				setTimeout(() => {
-					if (inputValue.trim()) {
-						commitTag(inputValue)
+					if (!isInteractingWithDropdown) {
+						if (inputValue.trim()) {
+							commitTag(inputValue)
+						}
+						isEditing = false
 					}
-					isEditing = false
 				}, 180)
 			}}
 			placeholder="Add tag..."
@@ -262,7 +376,10 @@
 			type="button"
 			onclick={() => {
 				isEditing = true
-				requestAnimationFrame(() => inputEl?.focus())
+				requestAnimationFrame(() => {
+					inputEl?.focus()
+					updateDropdownPosition()
+				})
 			}}
 			class="flex items-center gap-1 text-[11px] text-text-muted hover:text-text px-1.5 py-0.5 rounded-md hover:bg-bg-muted/70 transition-colors border border-dashed border-border/70 hover:border-border cursor-pointer shrink-0"
 			title="Add tag"
@@ -272,28 +389,96 @@
 		</button>
 	{/if}
 
-	{#if isEditing && suggestions.length > 0}
-		<div
-			class="absolute top-full left-0 mt-1 z-50 bg-bg border border-border rounded-lg shadow-lg p-1.5 max-h-48 overflow-y-auto w-48 flex flex-col gap-0.5"
-		>
-			{#each suggestions as t (t)}
-				{@const color = getTagColor(t, tagColors)}
-				<button
-					type="button"
-					tabindex={-1}
-					onclick={() => {
-						commitTag(t)
-						requestAnimationFrame(() => inputEl?.focus())
-					}}
-					class="w-full text-left p-1.5 rounded-md transition-colors hover:bg-bg-muted text-text flex items-center gap-2 cursor-pointer"
-				>
-					<span
-						class="w-2 h-2 rounded-full shrink-0 shadow-xs"
-						style:background-color={color}
-					></span>
-					<span class="text-xs font-medium truncate">#{t}</span>
-				</button>
-			{/each}
-		</div>
+	{#if isEditing && dropdownRect && (suggestions.length > 0 || isNewTag || allTagNames.length === 0)}
+		<Portal>
+			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+			<div
+				bind:this={listContainerEl}
+				role="listbox"
+				tabindex={-1}
+				class="fixed z-50 bg-bg-secondary border border-border rounded-xl shadow-2xl p-1.5 min-w-52 max-w-72 max-h-56 overflow-y-auto flex flex-col gap-0.5 animate-in fade-in zoom-in-95 duration-100 select-none text-xs"
+				style="top: {dropdownRect.top}px; left: {dropdownRect.left}px; min-width: {dropdownRect.width}px;"
+				onpointerdown={() => {
+					isInteractingWithDropdown = true
+				}}
+				onpointerup={() => {
+					setTimeout(() => {
+						isInteractingWithDropdown = false
+					}, 200)
+				}}
+			>
+				{#if suggestions.length > 0}
+					<div
+						class="px-2 py-1 text-[10px] font-bold font-mono tracking-wider uppercase text-text-muted border-b border-border/50 mb-0.5 flex items-center justify-between"
+					>
+						<span>Tag Suggestions</span>
+						<span>{suggestions.length}</span>
+					</div>
+					{#each suggestions as t, idx (t)}
+						{@const color = getTagColor(t, tagColors)}
+						{@const isSelected = selectedIndex === idx}
+						<button
+							type="button"
+							role="option"
+							data-index={idx}
+							aria-selected={isSelected}
+							onmousedown={(e) => e.preventDefault()}
+							onmouseenter={() => (selectedIndex = idx)}
+							onclick={() => {
+								commitTag(t)
+								requestAnimationFrame(() => inputEl?.focus())
+							}}
+							class="w-full text-left px-2 py-1.5 rounded-lg transition-colors flex items-center justify-between gap-2 cursor-pointer {isSelected
+								? 'bg-bg-emphasis text-text font-medium'
+								: 'text-text-muted hover:text-text hover:bg-bg-muted/70'}"
+						>
+							<div class="flex items-center gap-2 min-w-0">
+								<span
+									class="w-2 h-2 rounded-full shrink-0 shadow-xs"
+									style:background-color={color}
+								></span>
+								<span class="truncate font-medium">#{t}</span>
+							</div>
+							{#if isSelected}
+								<span class="text-[10px] font-mono text-text-muted shrink-0">↵</span>
+							{/if}
+						</button>
+					{/each}
+				{/if}
+
+				{#if isNewTag}
+					{@const newTagIdx = suggestions.length}
+					{@const isSelected = selectedIndex === newTagIdx}
+					<button
+						type="button"
+						role="option"
+						data-index={newTagIdx}
+						aria-selected={isSelected}
+						onmousedown={(e) => e.preventDefault()}
+						onmouseenter={() => (selectedIndex = newTagIdx)}
+						onclick={() => {
+							commitTag(cleanInput)
+							requestAnimationFrame(() => inputEl?.focus())
+						}}
+						class="w-full text-left px-2 py-1.5 rounded-lg transition-colors flex items-center justify-between gap-2 cursor-pointer text-accent hover:bg-bg-muted/70 font-medium {isSelected
+							? 'bg-bg-emphasis ring-1 ring-accent/30'
+							: ''} {suggestions.length > 0 ? 'border-t border-border/50 mt-0.5 pt-1.5' : ''}"
+					>
+						<div class="flex items-center gap-1.5 min-w-0">
+							<PlusIcon class="w-3 h-3 stroke-[2] shrink-0" />
+							<span class="truncate">Create tag "#{cleanInput}"</span>
+						</div>
+						<span class="text-[10px] font-mono opacity-60 shrink-0">↵</span>
+					</button>
+				{:else if suggestions.length === 0 && !cleanInput}
+					<div class="px-2 py-2 text-[11px] text-text-muted text-center italic">
+						{allTagNames.length === 0
+							? 'Type a tag name to create one'
+							: 'All existing tags added'}
+					</div>
+				{/if}
+			</div>
+		</Portal>
 	{/if}
 </div>
+

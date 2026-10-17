@@ -153,6 +153,8 @@ pub struct Settings {
     pub tag_colors: Option<std::collections::HashMap<String, String>>,
     #[serde(rename = "liquidGlassEnabled")]
     pub liquid_glass_enabled: Option<bool>,
+    #[serde(rename = "flightSettings")]
+    pub flight_settings: Option<serde_json::Value>,
 }
 
 // AI execution result
@@ -738,6 +740,34 @@ fn load_settings(notes_folder: &str) -> Settings {
 fn save_settings(notes_folder: &str, settings: &Settings) -> Result<()> {
     let path = get_settings_path(notes_folder);
     let content = serde_json::to_string_pretty(settings)?;
+    std::fs::write(path, content)?;
+    Ok(())
+}
+
+// Get per-folder flights file path (in .scratch/flights.json within notes folder)
+fn get_flights_path(notes_folder: &str) -> PathBuf {
+    let scratch_dir = PathBuf::from(notes_folder).join(".scratch");
+    std::fs::create_dir_all(&scratch_dir).ok();
+    scratch_dir.join("flights.json")
+}
+
+// Load flights data from disk
+fn load_flights_data(notes_folder: &str) -> serde_json::Value {
+    let path = get_flights_path(notes_folder);
+    if path.exists() {
+        std::fs::read_to_string(&path)
+            .ok()
+            .and_then(|c| serde_json::from_str(&c).ok())
+            .unwrap_or_else(|| serde_json::json!([]))
+    } else {
+        serde_json::json!([])
+    }
+}
+
+// Save flights data to disk
+fn save_flights_data(notes_folder: &str, flights: &serde_json::Value) -> Result<()> {
+    let path = get_flights_path(notes_folder);
+    let content = serde_json::to_string_pretty(flights)?;
     std::fs::write(path, content)?;
     Ok(())
 }
@@ -2019,6 +2049,54 @@ fn update_git_enabled(
     save_settings(&folder, &settings).map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[tauri::command]
+fn get_flights(state: State<AppState>) -> Result<serde_json::Value, String> {
+    let folder = {
+        let app_config = state.app_config.read().expect("app_config read lock");
+        app_config.notes_folder.clone().ok_or("Notes folder not set")?
+    };
+    Ok(load_flights_data(&folder))
+}
+
+#[tauri::command]
+fn save_flights(flights: serde_json::Value, state: State<AppState>) -> Result<(), String> {
+    let folder = {
+        let app_config = state.app_config.read().expect("app_config read lock");
+        app_config.notes_folder.clone().ok_or("Notes folder not set")?
+    };
+    save_flights_data(&folder, &flights).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn flight_proxy_fetch(
+    url: String,
+    headers: Option<HashMap<String, String>>,
+) -> Result<String, String> {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(15))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let mut req = client.get(&url);
+    if let Some(h) = headers {
+        for (k, v) in h {
+            req = req.header(k, v);
+        }
+    }
+
+    let res = req.send().await.map_err(|e| e.to_string())?;
+    if !res.status().is_success() {
+        return Err(format!(
+            "HTTP error {}: {}",
+            res.status(),
+            res.text().await.unwrap_or_default()
+        ));
+    }
+
+    res.text().await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -4109,6 +4187,9 @@ pub fn run() {
             mail_trash_thread,
             mail_send,
             mail_get_attachment_data,
+            get_flights,
+            save_flights,
+            flight_proxy_fetch,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

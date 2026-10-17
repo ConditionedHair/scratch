@@ -47,7 +47,8 @@
 		PlusIcon,
 		XIcon,
 		CalendarIcon,
-		MailIcon
+		MailIcon,
+		PlaneIcon
 	} from '../icons'
 	import { mod, shift } from '../../lib/platform'
 	import type { AiProvider } from '../../services/ai'
@@ -68,6 +69,7 @@
 		onopenaimodal?: (provider: AiProvider) => void
 		onopencalendar?: () => void
 		onopenmail?: () => void
+		onopenflights?: () => void
 		focusMode?: boolean
 		ontogglefocusmode?: () => void
 		editor?: TiptapEditor | null
@@ -81,6 +83,7 @@
 		onopenaimodal,
 		onopencalendar,
 		onopenmail,
+		onopenflights,
 		focusMode = false,
 		ontogglefocusmode,
 		editor
@@ -206,6 +209,16 @@
 				icon: MailIcon,
 				action: () => {
 					onopenmail?.()
+					onclose()
+				}
+			},
+			{
+				id: 'open-flights',
+				label: 'Open Flight Instrument',
+				shortcut: `${mod} 4`,
+				icon: PlaneIcon,
+				action: () => {
+					onopenflights?.()
 					onclose()
 				}
 			}

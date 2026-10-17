@@ -26,6 +26,7 @@
 	import { SettingsPage } from './components/settings'
 	import { CalendarPage } from './components/calendar'
 	import { MailPage } from './components/mail'
+	import { FlightsPage } from './components/flights'
 	import { AiEditModal } from './components/ai'
 	import { KeyboardShortcutsModal } from './components/shortcuts'
 	import { showUpdateToast } from './services/updater'
@@ -59,7 +60,7 @@
 	const isPreview = windowMode.isPreview
 	const previewFile = windowMode.previewFile
 
-	type ViewState = 'notes' | 'settings' | 'calendar' | 'mail'
+	type ViewState = 'notes' | 'settings' | 'calendar' | 'mail' | 'flights'
 
 	let paletteOpen = $state(false)
 	let view = $state<ViewState>('notes')
@@ -108,6 +109,14 @@
 	}
 
 	function closeMail() {
+		view = 'notes'
+	}
+
+	function openFlights() {
+		view = 'flights'
+	}
+
+	function closeFlights() {
 		view = 'notes'
 	}
 
@@ -318,6 +327,13 @@
 				return
 			}
 
+			// Cmd+4 - Flight instrument mode
+			if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === '4') {
+				e.preventDefault()
+				view = 'flights'
+				return
+			}
+
 			// Block all other shortcuts when in settings or calendar view
 			if (view === 'settings') {
 				return
@@ -335,6 +351,14 @@
 				if (e.key === 'Escape') {
 					e.preventDefault()
 					closeMail()
+				}
+				return
+			}
+
+			if (view === 'flights') {
+				if (e.key === 'Escape') {
+					e.preventDefault()
+					closeFlights()
 				}
 				return
 			}
@@ -604,14 +628,27 @@
 				</div>
 			{/if}
 
+			{#if view === 'flights'}
+				<div
+					data-flights-container
+					in:viewFadeIn
+					out:viewFadeOut
+					class="absolute inset-0 z-10 bg-bg overflow-hidden"
+				>
+					<FlightsPage onBack={closeFlights} {sidebarVisible} />
+				</div>
+			{/if}
+
 			<div
 				class="h-full w-full flex overflow-hidden transition-opacity duration-200"
 				class:opacity-0={view === 'settings' ||
 					view === 'calendar' ||
-					view === 'mail'}
+					view === 'mail' ||
+					view === 'flights'}
 				class:pointer-events-none={view === 'settings' ||
 					view === 'calendar' ||
-					view === 'mail'}
+					view === 'mail' ||
+					view === 'flights'}
 			>
 				<!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
 				<div
@@ -627,6 +664,7 @@
 							onOpenSettings={toggleSettings}
 							onOpenCalendar={openCalendar}
 							onOpenMail={openMail}
+							onOpenFlights={openFlights}
 						/>
 					</div>
 				</div>
@@ -701,6 +739,7 @@
 		}}
 		onopencalendar={openCalendar}
 		onopenmail={openMail}
+		onopenflights={openFlights}
 		onopenaimodal={(provider) => {
 			aiProvider = provider
 			aiModalOpen = true

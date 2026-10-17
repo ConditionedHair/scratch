@@ -12,10 +12,12 @@
 		OllamaIcon,
 		CalendarIcon,
 		MailIcon,
-		RefreshCwIcon
+		RefreshCwIcon,
+		PlaneIcon
 	} from '../icons'
 	import { calendarState } from '../../context/calendar.svelte'
 	import { mailState } from '../../context/mail.svelte'
+	import { flightsState } from '../../context/flights.svelte'
 	import { AI_PROVIDER_ORDER, type AiProvider } from '../../services/ai'
 	import * as aiService from '../../services/ai'
 	import { mod } from '../../lib/platform'
@@ -49,6 +51,24 @@
 			)
 		}
 	})
+
+	let flightApiKey = $state(flightsState.settings.rapidApiKey || '')
+	let flightMetric = $state(flightsState.settings.metricUnits)
+	let flightAutoRefresh = $state(flightsState.settings.autoRefreshActive)
+
+	$effect(() => {
+		if (flightsState.settings.rapidApiKey && !flightApiKey) {
+			flightApiKey = flightsState.settings.rapidApiKey
+		}
+	})
+
+	async function handleSaveFlightSettings() {
+		await flightsState.updateFlightSettings({
+			rapidApiKey: flightApiKey.trim(),
+			metricUnits: flightMetric,
+			autoRefreshActive: flightAutoRefresh
+		})
+	}
 
 	async function handleStartAuth() {
 		if (!customClientSecret.trim()) {
@@ -546,6 +566,98 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Flight Instrument Settings -->
+		<div
+			class="rounded-[10px] border border-border p-4 space-y-4 bg-bg-secondary/40 mt-4"
+		>
+			<div class="flex items-start justify-between gap-4">
+				<div class="flex items-start gap-3">
+					<div
+						class="w-9 h-9 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0"
+					>
+						<PlaneIcon class="w-5 h-5 stroke-[2] text-accent" />
+					</div>
+					<div>
+						<h3 class="text-sm font-semibold text-text">
+							Flight Instrument &amp; Radar
+						</h3>
+						<p class="text-xs text-text-muted leading-relaxed mt-0.5">
+							Live flight tracking powered by AeroDataBox (RapidAPI) commercial metadata and OpenSky Network free ADS-B radar telemetry.
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="pt-2 border-t border-border/50 space-y-3 font-mono text-xs">
+				<div>
+					<div class="flex items-center justify-between mb-1">
+						<label for="flight-api-key" class="text-[11px] font-semibold text-text uppercase">
+							RapidAPI Key (AeroDataBox)
+						</label>
+						<a
+							href="https://rapidapi.com/aeroapi-aeroapi-default/api/aerodatabox"
+							target="_blank"
+							rel="noreferrer"
+							class="text-[10px] text-accent hover:underline"
+						>
+							Get API Key &rarr;
+						</a>
+					</div>
+					<input
+						id="flight-api-key"
+						type="password"
+						bind:value={flightApiKey}
+						placeholder="Paste your RapidAPI key here..."
+						class="w-full px-2.5 py-1.5 rounded-lg bg-bg-secondary border border-border font-mono text-xs focus:border-accent focus:outline-none text-text"
+					/>
+					<span class="block text-[10px] text-text-muted mt-1">
+						OpenSky ADS-B live tracking runs for free without any key. AeroDataBox is only queried on-demand for commercial gates, luggage, and schedules.
+					</span>
+				</div>
+
+				<div class="flex items-center justify-between pt-1">
+					<div class="flex flex-col">
+						<span class="text-xs text-text font-semibold">Measurement Units</span>
+						<span class="text-[10px] text-text-muted">
+							{flightMetric ? 'Kilometers / Meters (Metric)' : 'Nautical Miles / Feet (Aviation Standard)'}
+						</span>
+					</div>
+					<button
+						type="button"
+						onclick={() => (flightMetric = !flightMetric)}
+						class="px-2.5 py-1 rounded-md border border-border bg-bg text-xs font-mono text-text hover:bg-bg-emphasis cursor-pointer"
+					>
+						{flightMetric ? 'METRIC (KM/M)' : 'AVIATION (NM/FT)'}
+					</button>
+				</div>
+
+				<div class="flex items-center justify-between pt-1">
+					<div class="flex flex-col">
+						<span class="text-xs text-text font-semibold">Auto-refresh Active Flights</span>
+						<span class="text-[10px] text-text-muted">
+							Periodically query OpenSky for live coordinates while airborne
+						</span>
+					</div>
+					<input
+						type="checkbox"
+						bind:checked={flightAutoRefresh}
+						class="accent-accent cursor-pointer w-4 h-4"
+					/>
+				</div>
+
+				<div class="pt-2 flex justify-end">
+					<Button
+						onclick={handleSaveFlightSettings}
+						variant="default"
+						size="sm"
+						class="font-mono text-xs font-bold bg-accent text-slate-950 hover:brightness-105"
+					>
+						Save Flight Settings
+					</Button>
+				</div>
+			</div>
+		</div>
 	</section>
 
 	<div class="border-t border-border border-dashed"></div>

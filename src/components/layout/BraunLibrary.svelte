@@ -14,12 +14,10 @@
 		PencilIcon,
 		SwatchIcon,
 		ChevronRightIcon,
-		MailIcon,
-		PlaneIcon
+		MailIcon
 	} from '../icons'
 	import { calendarState } from '../../context/calendar.svelte'
 	import { mailState } from '../../context/mail.svelte'
-	import { flightsState } from '../../context/flights.svelte'
 	import { mod, isMac } from '../../lib/platform'
 	import { cn } from '../../lib/utils'
 	import { toast } from 'svelte-sonner'
@@ -28,10 +26,9 @@
 		onOpenSettings?: () => void
 		onOpenCalendar?: () => void
 		onOpenMail?: () => void
-		onOpenFlights?: () => void
 	}
 
-	let { onOpenSettings, onOpenCalendar, onOpenMail, onOpenFlights }: Props = $props()
+	let { onOpenSettings, onOpenCalendar, onOpenMail }: Props = $props()
 
 	let settings = $state<Settings | null>(null)
 	let plusMenuOpen = $state(false)
@@ -289,26 +286,6 @@
 						class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-accent text-slate-950 shadow-2xs"
 					>
 						{mailState.unreadCount}
-					</span>
-				{/if}
-			</button>
-
-			<button
-				type="button"
-				onclick={onOpenFlights}
-				class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text hover:bg-bg-muted/70 transition-colors text-left cursor-pointer group"
-			>
-				<div class="flex items-center gap-2">
-					<PlaneIcon
-						class="w-4 h-4 opacity-75 stroke-[1.8] group-hover:text-accent transition-colors"
-					/>
-					<span>Flights</span>
-				</div>
-				{#if flightsState.flights.length > 0}
-					<span
-						class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full {flightsState.activeFlights.length > 0 ? 'bg-accent text-slate-950 shadow-2xs' : 'bg-bg-muted text-text-muted'}"
-					>
-						{flightsState.activeFlights.length > 0 ? `${flightsState.activeFlights.length} LIVE` : flightsState.flights.length}
 					</span>
 				{/if}
 			</button>

@@ -60,5 +60,4 @@ export interface Settings {
 	customColorsDark?: CustomColors
 	tagColors?: Record<string, string>
 	liquidGlassEnabled?: boolean
-	flightSettings?: Record<string, unknown>
 }

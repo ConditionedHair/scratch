@@ -38,6 +38,9 @@
 		backdropOut
 	} from './lib/motion'
 
+	import { workspaceDirection, workspaceMotion } from './lib/workspaceMotion'
+	import type { AppView, WorkspaceDirection } from './types/workspace'
+
 	// Detect preview mode from URL search params
 	function getWindowMode(): {
 		isPreview: boolean
@@ -59,10 +62,15 @@
 	const isPreview = windowMode.isPreview
 	const previewFile = windowMode.previewFile
 
-	type ViewState = 'notes' | 'settings' | 'calendar' | 'mail'
-
 	let paletteOpen = $state(false)
-	let view = $state<ViewState>('notes')
+	let view = $state<AppView>('notes')
+	let previousView: AppView = 'notes'
+	let direction = $state<WorkspaceDirection>(0)
+
+	$effect.pre(() => {
+		direction = workspaceDirection(previousView, view)
+		previousView = view
+	})
 	let sidebarVisible = $state(true)
 	let aiModalOpen = $state(false)
 	let shortcutsOpen = $state(false)
@@ -559,7 +567,10 @@
 {:else if !notesState.notesFolder}
 	<FolderPicker />
 {:else}
-	<div data-app-shell class="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden">
+	<div
+		data-app-shell
+		class="h-full min-h-0 flex flex-col bg-bg text-text overflow-hidden"
+	>
 		<!-- Braun System Header Bar -->
 		{#if !focusMode && view === 'notes'}
 			<BraunHeader
@@ -585,8 +596,11 @@
 			{#if view === 'calendar'}
 				<div
 					data-calendar-container
-					in:viewFadeIn
-					out:viewFadeOut
+					use:workspaceMotion={{
+						active: true,
+						direction,
+						enabled: themeState.animationsEnabled
+					}}
 					class="absolute inset-0 z-10 bg-bg overflow-hidden"
 				>
 					<CalendarPage onBack={closeCalendar} {sidebarVisible} />
@@ -596,8 +610,11 @@
 			{#if view === 'mail'}
 				<div
 					data-mail-container
-					in:viewFadeIn
-					out:viewFadeOut
+					use:workspaceMotion={{
+						active: true,
+						direction,
+						enabled: themeState.animationsEnabled
+					}}
 					class="absolute inset-0 z-10 bg-bg overflow-hidden"
 				>
 					<MailPage onBack={closeMail} {sidebarVisible} />
@@ -605,13 +622,16 @@
 			{/if}
 
 			<div
-				class="h-full w-full flex overflow-hidden transition-opacity duration-200"
-				class:opacity-0={view === 'settings' ||
-					view === 'calendar' ||
-					view === 'mail'}
-				class:pointer-events-none={view === 'settings' ||
-					view === 'calendar' ||
-					view === 'mail'}
+				data-notes-container
+				use:workspaceMotion={{
+					active: view === 'notes',
+					direction,
+					enabled: themeState.animationsEnabled
+				}}
+				class="h-full w-full flex overflow-hidden"
+				class:invisible={view !== 'notes'}
+				inert={view !== 'notes'}
+				aria-hidden={view !== 'notes'}
 			>
 				<!-- Column 1: Library (Folders, Pinned, Tags, New Note) -->
 				<div
